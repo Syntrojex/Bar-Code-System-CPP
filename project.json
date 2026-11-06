@@ -1,0 +1,23 @@
+{
+  "project": {
+    "name": "Bar-Code-Generator-CPP",
+    "title": "Barcode Generator",
+    "course": "Introduction to Software Engineering",
+    "language": "C++",
+    "version": "1.0.0",
+    "current_increment": 1,
+    "status": "In Development"
+  },
+  "development": {
+    "methodology": "Incremental Development",
+    "repository": "Syntrojex/Bar-Code-System-CPP",
+    "default_branch": "main"
+  },
+  "increments": [
+    {
+      "increment": 1,
+      "version": "1.0.0",
+      "status": "In Progress"
+    }
+  ]
+}
