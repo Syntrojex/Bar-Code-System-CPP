@@ -1,69 +1,99 @@
 # Contributing Guidelines
 
-This document outlines the contribution workflow for **Bar-Code-System-CPP**. All team members are expected to follow these guidelines when contributing to the project.
+This document explains how team members can contribute to **Bar-Code-System-CPP**.
 
-## Development Workflow
+## 1. Clone the Repository
 
-### 1. Clone the Repository
+Clone the repository and navigate into the project directory:
 
 ```bash
 git clone https://github.com/Syntrojex/Bar-Code-System-CPP.git
 cd Bar-Code-System-CPP
 ```
 
-### 2. Switch to Your Assigned Branch
+## 2. Switch to Your Assigned Branch
+
+Switch to your assigned branch. Replace `your-branch` with your actual branch name.
 
 ```bash
 git checkout your-branch
 ```
 
-### 3. Get the Latest Changes
+## 3. Synchronize with Main
+
+Before starting a new task, update your assigned branch with the latest changes from `main`.
 
 ```bash
-git pull origin your-branch
+git fetch origin
+git merge origin/main
 ```
 
-### 4. Make Your Changes
+Resolve any merge conflicts before continuing.
 
-Implement your assigned functionality and test your changes before submitting them.
+## 4. Make Your Changes
 
-### 5. Stage and Commit
+Add or modify the files required for your assigned task.
+
+Follow the existing project structure and coding conventions. Avoid modifying unrelated files.
+
+## 5. Stage and Commit Changes
+
+Check your changes:
+
+```bash
+git status
+```
+
+Stage your files:
 
 ```bash
 git add .
-git commit -m "Add barcode validation"
 ```
 
-Use clear and descriptive commit messages.
+Commit your changes with a meaningful message:
 
-### 6. Push Your Changes
+```bash
+git commit -m "Add barcode generation"
+```
+
+## 6. Push Your Branch
+
+Push your changes to your assigned branch:
 
 ```bash
 git push origin your-branch
 ```
 
-### 7. Submit a Pull Request
+## 7. Create a Pull Request
 
-- Open the repository on GitHub.
-- Select **Compare & pull request**.
-- Set the base branch to `main`.
-- Select your assigned branch as the compare branch.
-- Provide a meaningful title and description.
-- Create the Pull Request.
+Submit your changes for integration into `main`.
 
-The project lead will review and merge contributions into the `main` branch.
+1. Open the project repository on GitHub.
+2. Select **Compare & pull request**.
+3. Set the base branch to `main`.
+4. Select your assigned branch as the compare branch.
+5. Add a meaningful title and description.
+6. Create the Pull Request.
 
-## Contribution Guidelines
+## 8. Review and Merge
 
-- Work only on your assigned tasks.
-- Follow the existing project structure and coding conventions.
-- Keep changes relevant to the assigned functionality.
-- Test your code before submitting a Pull Request.
-- Avoid modifying unrelated files.
-- Coordinate with team members when changes affect shared functionality.
+The project lead will review and merge Pull Requests into `main`.
 
-## Project Development
+Team members should not directly push changes to `main`.
 
-This project follows an incremental development approach. Each completed increment will be documented through a corresponding GitHub Release, including its version and implementation details.
+## 9. Start Your Next Task
 
+After your Pull Request has been merged, synchronize your assigned branch with the latest `main` before starting another task.
 
+Repeat the synchronization commands from Section 3, then continue with the same workflow.
+
+## General Guidelines
+
+- Always work on your assigned branch.
+- Keep commits meaningful and focused.
+- Follow the existing C++ coding conventions.
+- Test your changes before submitting a Pull Request.
+- Keep Pull Requests limited to the assigned task.
+- Coordinate with the project lead when necessary.
+
+Thank you for contributing to the project.
