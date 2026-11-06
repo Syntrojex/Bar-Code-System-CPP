@@ -1,0 +1,68 @@
+# ==========================================
+# Visual Studio
+# ==========================================
+
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# ==========================================
+# Visual Studio Code
+# ==========================================
+
+.vscode/*
+!.vscode/extensions.json
+
+# ==========================================
+# CMake Build Files
+# ==========================================
+
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+Makefile
+.ninja_deps
+.ninja_log
+
+# ==========================================
+# Compiled Files
+# ==========================================
+
+*.obj
+*.o
+*.exe
+*.dll
+*.lib
+*.a
+*.pdb
+*.ilk
+*.pch
+*.idb
+*.tlog/
+
+# ==========================================
+# Build Configurations
+# ==========================================
+
+Debug/
+Release/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+out/
+
+# ==========================================
+# Temporary Files
+# ==========================================
+
+*.log
+*.tmp
+*.bak
+Thumbs.db
+Desktop.ini
