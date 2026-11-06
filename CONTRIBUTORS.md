@@ -13,4 +13,10 @@
 
 ---
 
-*Developed collaboratively by the project team.*
+**Project:** Barcode System
+
+**Course:** Introduction to Software Engineering
+
+**Institution:** FAST-NUCES
+
+**Development Language:** C++
