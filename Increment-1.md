@@ -112,7 +112,7 @@ include/
 |---|---|
 | C++20 | Programming language |
 | CMake | Build system |
-| SFML | Graphical interface |
+| Qt | Graphical interface |
 | ZXing-C++ | Barcode generation and decoding |
 | OpenCV | Camera capture and frame processing |
 
