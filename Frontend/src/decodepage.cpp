@@ -9,8 +9,10 @@
 #include <QGridLayout>   // used by the stat/tile grids
 #include <QPainter>
 #include <QProgressBar>
+#include <QRegularExpression>
 #include <QStackedWidget>
 #include <QTime>
+#include <QTimer>
 
 // ------------------------------------------------------------------ local helpers
 static QLabel *bigCode(const QString &text, int px, const QString &color)
@@ -33,13 +35,25 @@ static QHBoxLayout *kv(const QString &k, QWidget *v, int px = 14)
     return h;
 }
 
+// Project rule: exactly six digits, first digit must not be zero.
+static bool isValidCode(const QString &s)
+{
+    static const QRegularExpression re("^[1-9][0-9]{5}$");
+    return re.match(s).hasMatch();
+}
+
 static void wireCopy(QPushButton *b, QLabel *code)
 {
     QObject::connect(b, &QPushButton::clicked, b, [b, code] {
+        if (b->property("copied").toBool()) return;     // double-click guard
         QApplication::clipboard()->setText(code->text());
         const QString old = b->text();
+        b->setProperty("copied", true);
         b->setText(" Copied!");
-        QTimer::singleShot(1300, b, [b, old] { b->setText(old); });
+        QTimer::singleShot(1300, b, [b, old] {
+            b->setText(old);
+            b->setProperty("copied", false);
+        });
     });
 }
 
@@ -94,14 +108,16 @@ QFrame *DecodePage::makeFailBox()
     top->addStretch();
     top->addWidget(T("Telemetry Exception", 11, 400, "#737686", true));
     v->addLayout(top);
-    auto *t = T(tr("Optical blur or damaged contrast quiet zones detected in historical sample frame. Verify lighting "
-                   "conditions, minimize glare, or increase capture sensor resolution."), 14, 400, "#0B1C30");
+    auto *t = T(tr("Could not decode the barcode."), 14, 400, "#0B1C30");
+    t->setObjectName("failReason");
     t->setWordWrap(true);
     v->addWidget(t);
     auto *b = hrow();
     b->addWidget(T(tr("Troubleshoot Optical Quality Guide  \xE2\x86\x92"), 12, 700, "#BA1A1A"));
     b->addStretch();
-    b->addWidget(T("ERR_CONTRAST_LOW", 10, 400, "#737686", true));
+    auto *errLbl = T("ERR_UNKNOWN", 10, 400, "#737686", true);
+    errLbl->setObjectName("failCode");
+    b->addWidget(errLbl);
     v->addLayout(b);
     return f;
 }
@@ -124,9 +140,7 @@ QWidget *DecodePage::buildCameraPage()
     tt->addWidget(T(tr("Real-time hardware optical recognition & industrial symbology parsing"), 14, 400, "#434655"));
     head->addLayout(tt);
     head->addStretch();
-    head->addWidget(monoPill("<span style='color:#0B4BCB'>\xE2\x97\x8F</span>&nbsp; ENGINE: "
-                             "<span style='color:#0B4BCB;font-weight:600'>WebAssembly v2.4 (NEON)</span>"), 0, Qt::AlignTop);
-    head->addWidget(monoPill("FPS: <b>59.8</b>"), 0, Qt::AlignTop);
+    head->addWidget(monoPill("<span style='color:#0B4BCB'>\xE2\x97\x8F</span>&nbsp; ENGINE: <b>Idle</b>"), 0, Qt::AlignTop);
     root->addLayout(head);
     root->addWidget(makeTabs(0), 0, Qt::AlignLeft);
 
@@ -267,8 +281,7 @@ QWidget *DecodePage::buildUploadPage()
     tt->addWidget(T(tr("Multi-format payload extractor & verification stage"), 14, 400, "#434655"));
     head->addLayout(tt);
     head->addStretch();
-    head->addWidget(monoPill("<span style='color:#0B4BCB'>\xE2\x97\x8F</span>&nbsp; ZXing v3.4.1 Ready"), 0, Qt::AlignTop);
-    head->addWidget(T("Latency: ~18ms", 12, 400, "#737686", true), 0, Qt::AlignVCenter);
+    head->addWidget(monoPill("<span style='color:#0B4BCB'>\xE2\x97\x8F</span>&nbsp; Decoder Ready"), 0, Qt::AlignTop);
     root->addLayout(head);
     root->addWidget(makeTabs(1), 0, Qt::AlignLeft);
 
@@ -403,7 +416,13 @@ QWidget *DecodePage::buildUploadPage()
     // ---- wiring
     connect(drop, &DropZone::fileChosen, this, &DecodePage::loadImage);
     connect(remove, &QPushButton::clicked, this, [this] { m_loaded->hide(); m_path.clear(); resetResult(); });
-    connect(decode, &QPushButton::clicked, this, [this] { emit decodeImageRequested(m_path); });
+    connect(decode, &QPushButton::clicked, this, [this] {
+        if (m_path.isEmpty()) {
+            showFailure(tr("No image loaded. Please upload an image first."), "ERR_NO_IMAGE");
+            return;
+        }
+        emit decodeImageRequested(m_path);
+    });
     connect(s1, &QPushButton::clicked, this, [this] {
         m_loaded->show(); m_path.clear();
         m_fileName->setText("sample_barcode_scan.png");
@@ -426,10 +445,24 @@ QWidget *DecodePage::buildUploadPage()
 
 void DecodePage::loadImage(const QString &path)
 {
-    QPixmap pm(path);
-    if (pm.isNull()) return;
-    m_path = path;
     const QFileInfo fi(path);
+    if (!fi.exists() || !fi.isFile()) {
+        m_path.clear(); m_loaded->hide();
+        showFailure(tr("File not found."), "ERR_FILE_NOT_FOUND");
+        return;
+    }
+    if (fi.size() > 32LL * 1024 * 1024) {
+        m_path.clear(); m_loaded->hide();
+        showFailure(tr("File exceeds the 32 MB limit."), "ERR_FILE_TOO_LARGE");
+        return;
+    }
+    QPixmap pm(path);
+    if (pm.isNull()) {
+        m_path.clear(); m_loaded->hide();
+        showFailure(tr("Unsupported or corrupted image."), "ERR_BAD_IMAGE");
+        return;
+    }
+    m_path = path;
     m_thumb->setPixmap(pm.scaled(QSize(54, 44), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     m_fileName->setText(fi.fileName());
     m_fileMeta->setText(QString("%1 KB &nbsp;\xE2\x80\xA2&nbsp; <span style='color:#0B4BCB'>%2 \xC3\x97 %3 px</span>")
@@ -656,6 +689,7 @@ QWidget *DecodePage::buildLogsPage()
     right->addWidget(rc);
 
     m_log.fail = makeFailBox();
+    m_log.fail->hide();
     m_log.fail->setFixedWidth(386);
     right->addWidget(m_log.fail);
 
@@ -695,14 +729,19 @@ void DecodePage::applyResult(const ResultUi &r, const QString &code)
 
 void DecodePage::showResult(const QString &code)
 {
+    if (!isValidCode(code)) {
+        showFailure(tr("Invalid code: must be exactly 6 digits, first digit non-zero."), "ERR_INVALID_CODE");
+        return;
+    }
     applyResult(m_cam, code);
     applyResult(m_up, code);
     m_log.code->setText(code);                       // overview keeps its permanent telemetry box
     m_log.copy->setEnabled(true);
+    if (m_log.fail) m_log.fail->hide();
     m_camera->setPreviewCode(code);
 }
 
-void DecodePage::showFailure()
+void DecodePage::showFailure(const QString &reason, const QString &errCode)
 {
     for (const ResultUi *r : {&m_cam, &m_up}) {
         if (!r->code) continue;
@@ -711,7 +750,14 @@ void DecodePage::showFailure()
         if (r->badge) setBadge(r->badge, "Could not read barcode", "red");
         if (r->copy) r->copy->setEnabled(false);
     }
-    m_up.fail->show();
+    for (QFrame *f : {m_up.fail, m_log.fail}) {
+        if (!f) continue;
+        if (auto *t = f->findChild<QLabel *>("failReason"))
+            t->setText(reason.isEmpty() ? tr("Could not decode the barcode.") : reason);
+        if (auto *c = f->findChild<QLabel *>("failCode"))
+            c->setText(errCode.isEmpty() ? QString("ERR_UNKNOWN") : errCode);
+        f->show();
+    }
 }
 
 void DecodePage::resetResult()
@@ -724,6 +770,7 @@ void DecodePage::resetResult()
         if (r->copy) r->copy->setEnabled(false);
         if (r->fail) r->fail->hide();
     }
+    if (m_log.fail) m_log.fail->hide();
 }
 
 void DecodePage::setCameraList(const QStringList &names)
