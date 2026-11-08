@@ -53,8 +53,11 @@ add_executable(BarcodeHub WIN32
 )
 
 # Include Directories
+# NOTE: Frontend/include/ui is required because the sources use flat includes
+# like #include "mainwindow.h" while the headers live in Frontend/include/ui/.
 target_include_directories(BarcodeHub PRIVATE
     Frontend/include
+    Frontend/include/ui
     Backend/include
     ${OpenCV_INCLUDE_DIRS}
 )
