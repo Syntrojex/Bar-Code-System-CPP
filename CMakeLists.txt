@@ -1,4 +1,13 @@
 cmake_minimum_required(VERSION 3.16)
+
+# vcpkg (OpenCV): use it automatically when VCPKG_ROOT is set, so Qt Creator,
+# VS Code and Visual Studio all work without extra per-IDE configuration.
+# Must be set BEFORE project(). Presets already set this, so it is skipped then.
+if(NOT DEFINED CMAKE_TOOLCHAIN_FILE AND DEFINED ENV{VCPKG_ROOT})
+    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        CACHE STRING "vcpkg toolchain file")
+endif()
+
 project(BarcodeHub
     VERSION 0.1.0
     LANGUAGES CXX
@@ -9,13 +18,19 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Qt Configuration
+# Qt Configuration (Qt comes from the Qt installer / Qt Creator kit, NOT from vcpkg)
 set(CMAKE_AUTOMOC ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-# OpenCV Configuration
+# OpenCV Configuration (comes from vcpkg)
+if(NOT CMAKE_TOOLCHAIN_FILE AND NOT OpenCV_DIR)
+    message(WARNING
+        "VCPKG_ROOT is not set, so vcpkg cannot provide OpenCV. "
+        "Install vcpkg, set the VCPKG_ROOT environment variable (e.g. C:\\vcpkg), "
+        "restart your IDE and configure again.")
+endif()
 find_package(OpenCV REQUIRED)
 
 # Application Sources
