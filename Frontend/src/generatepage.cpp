@@ -7,9 +7,28 @@
 #include <QClipboard>
 #include <QFileDialog>
 #include <QLineEdit>
+#include <QMessageBox>
+#include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <QSlider>
 #include <QTime>
+#include <QTimer>
+
+// ------------------------------------------------------------------ local helpers
+// Project rule: exactly six digits, first digit must not be zero.
+static bool isValidCode(const QString &s)
+{
+    static const QRegularExpression re("^[1-9][0-9]{5}$");
+    return re.match(s).hasMatch();
+}
+
+static void showInputError(QLineEdit *input, QLabel *hint, QLabel *icon, const QString &msg)
+{
+    setKind(input, "error");
+    hint->setText(msg);
+    hint->setStyleSheet("font-size:13px; color:#BA1A1A;");
+    icon->setPixmap(iconPixmap("warn", QColor("#BA1A1A"), 16));
+}
 
 GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
 {
@@ -28,10 +47,8 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
     titles->addWidget(T(tr("Generate Barcode"), 26, 600, "#0B1C30"));
     head->addLayout(titles);
     head->addStretch();
-    auto *p1 = pill("<span style='color:#0B4BCB'>\xE2\x97\x8F</span>&nbsp;&nbsp;Engine v2.4 Active", "white");
+    auto *p1 = pill("<span style='color:#0B4BCB'>\xE2\x97\x8F</span>&nbsp;&nbsp;Generator Ready", "white");
     head->addWidget(p1, 0, Qt::AlignBottom);
-    head->addSpacing(8);
-    head->addWidget(iconChip("check", "Profile: High Precision", "#E1EAFF", "#1D4ED8", QString(), true, 12, 11), 0, Qt::AlignBottom);
     root->addLayout(head);
 
     auto *body = hrow(20);
@@ -64,7 +81,8 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
     m_input->setObjectName("codeInput");
     m_input->setMaxLength(6);
     m_input->setPlaceholderText("123456");
-    m_input->setValidator(new QRegularExpressionValidator(QRegularExpression("\\d{0,6}"), m_input));
+    // digits only; the "first digit must not be zero" rule is checked in onTextChanged() so the user gets feedback
+    m_input->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]{0,6}"), m_input));
     QFont mf = monoFont(20);
     mf.setLetterSpacing(QFont::AbsoluteSpacing, 3);
     m_input->setFont(mf);
@@ -75,11 +93,11 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
 
     auto *hr = hrow(8);
     m_hintIcon = iconLabel("info", QColor("#0B4BCB"), 16);
-    m_hint = T(tr("Must be exactly 6 numeric digits"), 13, 400, "#434655");
+    m_hint = T(tr("Must be exactly 6 digits, first digit not zero"), 13, 400, "#434655");
     hr->addWidget(m_hintIcon);
     hr->addWidget(m_hint);
     hr->addStretch();
-    m_validChip = chip("Mod10 Valid", "blue");
+    m_validChip = chip("Format OK", "blue");
     m_validChip->hide();
     hr->addWidget(m_validChip);
     cl->addLayout(hr);
@@ -110,6 +128,9 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
     m_code128 = new RadioCard("Code 128", "High-density\nAuto");
     m_ean8 = new RadioCard("EAN-8", "Retail Compact");
     m_code128->setSelected(true);
+    // EAN-8 needs 8 digits and the generator is not wired to switch symbology yet -> keep it disabled
+    m_ean8->setEnabled(false);
+    m_ean8->setToolTip(tr("Not available: EAN-8 needs 8 digits (this project uses 6-digit codes)."));
     rr->addWidget(m_code128);
     rr->addWidget(m_ean8);
     sl->addLayout(rr);
@@ -134,6 +155,11 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
     addSlider("Quiet Zone", 4, 20, 10, m_quietVal, m_quietSlider);
     m_barVal->setText("2.2 px");
     m_quietVal->setText("10x");
+    // not connected to the renderer yet -> disabled so they don't look functional
+    m_barSlider->setEnabled(false);
+    m_quietSlider->setEnabled(false);
+    m_barSlider->setToolTip(tr("Not connected yet"));
+    m_quietSlider->setToolTip(tr("Not connected yet"));
     sl->addLayout(sr);
 
     auto *tr3 = hrow(12);
@@ -150,7 +176,7 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
     auto *note = panel("panelB");
     auto *nl = hbox(note, 14, 12, 14, 12, 10);
     nl->addWidget(iconLabel("gauge", QColor("#0B4BCB"), 18), 0, Qt::AlignTop);
-    auto *nt = new QLabel("Linear rasterizer ready. Scan compliance grade: <b>ISO 15416 Grade 4.0 (A)</b>.");
+    auto *nt = new QLabel("Linear rasterizer ready.");
     nt->setWordWrap(true);
     nt->setStyleSheet("font-size:12px; color:#434655; font-family:" + monoFamily() + ";");
     nl->addWidget(nt, 1);
@@ -192,6 +218,12 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
     ab2->addWidget(thermal);
     pl->addLayout(ab2);
 
+    // no backend behind these two yet
+    svg->setEnabled(false);
+    svg->setToolTip(tr("Not implemented yet"));
+    thermal->setEnabled(false);
+    thermal->setToolTip(tr("Not implemented yet"));
+
     auto *info = panel();
     auto *il = hbox(info, 16, 12, 16, 12, 12);
     auto *infoL = new QLabel("<span style='color:#434655'>Dimensions: 600\xC3\x97" "240px &nbsp;\xE2\x80\xA2&nbsp; Format: PNG (300 DPI)"
@@ -220,21 +252,21 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
     body->addLayout(right, 1);
     root->addLayout(body, 1);
 
-    // ---------------------------------------------------------------- initial (screenshot) state
-    m_sessions = {{"749205", "Code 128", "14:02:18"}, {"618903", "Code 128", "13:58:45"}, {"502391", "EAN-8", "13:50:11"}};
+    // ---------------------------------------------------------------- initial state (empty, no fake data)
+    m_sessions.clear();
     rebuildSessions();
+    m_view->clear();
+    m_save->setEnabled(false);
+    m_copy->setEnabled(false);
 
     // ---------------------------------------------------------------- wiring
     connect(m_input, &QLineEdit::textChanged, this, &GeneratePage::onTextChanged);
     connect(m_input, &QLineEdit::returnPressed, this, [this] { if (m_generate->isEnabled()) onGenerate(); });
     connect(m_input, &QLineEdit::editingFinished, this, [this] {
-        const int n = m_input->text().size();
-        if (n > 0 && n < 6) {
-            setKind(m_input, "error");
-            m_hint->setText(tr("Code must be exactly 6 digits"));
-            m_hint->setStyleSheet("font-size:13px; color:#BA1A1A;");
-            m_hintIcon->setPixmap(iconPixmap("warn", QColor("#BA1A1A"), 16));
-        }
+        const QString t = m_input->text();
+        // leading-zero error is already shown by onTextChanged(), don't overwrite it
+        if (!t.isEmpty() && t.size() < 6 && t.at(0) != QLatin1Char('0'))
+            showInputError(m_input, m_hint, m_hintIcon, tr("Code must be exactly 6 digits"));
     });
     connect(m_generate, &QPushButton::clicked, this, &GeneratePage::onGenerate);
     connect(m_clear, &QPushButton::clicked, this, &GeneratePage::onClear);
@@ -242,51 +274,70 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
     connect(m_copy, &QPushButton::clicked, this, &GeneratePage::onCopy);
     connect(m_ocr, &ToggleSwitch::toggled, m_view, &BarcodeView::setShowDigits);
     connect(m_stageSeg, &SegBar::currentChanged, this, [this](int i) { m_view->setAwaiting(i == 1); });
-    connect(m_code128, &RadioCard::clicked, this, [this] { m_code128->setSelected(true); m_ean8->setSelected(false); });
-    connect(m_ean8, &RadioCard::clicked, this, [this] { m_code128->setSelected(false); m_ean8->setSelected(true); });
+    connect(m_code128, &RadioCard::clicked, this, [this] { m_code128->setSelected(true); });
     connect(m_barSlider, &QSlider::valueChanged, this, [this](int v) { m_barVal->setText(QString("%1 px").arg(v / 10.0, 0, 'f', 1)); });
     connect(m_quietSlider, &QSlider::valueChanged, this, [this](int v) { m_quietVal->setText(QString("%1x").arg(v)); });
-
-    setCode("749205", true);                                         // matches the design screenshot
 }
 
 void GeneratePage::setBarcodeImage(const QPixmap &pm) { m_view->setImage(pm); }
 
 void GeneratePage::setCode(const QString &code, bool generate)
 {
-    m_input->setText(code);
-    if (generate && code.size() == 6) {
-        m_view->setCode(code);
-        m_save->setEnabled(true);
-        m_copy->setEnabled(true);
+    if (code.isEmpty()) { m_input->clear(); return; }
+    if (!generate) { m_input->setText(code); return; }   // prefill only; onTextChanged() shows any problem
+
+    if (!isValidCode(code)) {
+        m_input->clear();                                  // resets hint state first ...
+        showInputError(m_input, m_hint, m_hintIcon,        // ... then shows the error
+                       tr("Invalid code: must be exactly 6 digits, first digit not zero"));
+        return;
     }
+    m_input->setText(code);
+    m_view->setCode(code);
+    m_stageSeg->setCurrent(0);
+    m_view->setAwaiting(false);
+    setProperty("genCode", code);                          // the code that is actually shown in the preview
+    m_save->setEnabled(true);
+    m_copy->setEnabled(true);
 }
 
 void GeneratePage::onTextChanged(const QString &t)
 {
-    const int n = t.size();
-    m_counter->setText(QString("%1 / 6").arg(n));
-    m_generate->setEnabled(n == 6);
-    m_validChip->setVisible(n == 6);
-    m_checkAction->setVisible(n == 6);
+    m_counter->setText(QString("%1 / 6").arg(t.size()));
+    const bool valid = isValidCode(t);
+    m_generate->setEnabled(valid);
+    m_validChip->setVisible(valid);
+    m_checkAction->setVisible(valid);
+
     setKind(m_input, "");
-    m_hint->setText(tr("Must be exactly 6 numeric digits"));
+    m_hint->setText(tr("Must be exactly 6 digits, first digit not zero"));
     m_hint->setStyleSheet("font-size:13px; color:#434655;");
     m_hintIcon->setPixmap(iconPixmap("info", QColor("#0B4BCB"), 16));
+
+    if (!t.isEmpty() && t.at(0) == QLatin1Char('0'))
+        showInputError(m_input, m_hint, m_hintIcon, tr("First digit must not be zero"));
 }
 
 void GeneratePage::onGenerate()
 {
     const QString code = m_input->text();
+    if (!isValidCode(code)) {                              // defensive: button/Enter should already be blocked
+        m_generate->setEnabled(false);
+        showInputError(m_input, m_hint, m_hintIcon,
+                       tr("Invalid code: must be exactly 6 digits, first digit not zero"));
+        return;
+    }
+
     m_view->setCode(code);
     m_stageSeg->setCurrent(0);
     m_view->setAwaiting(false);
+    setProperty("genCode", code);
     m_save->setEnabled(true);
     m_copy->setEnabled(true);
 
     for (int i = m_sessions.size() - 1; i >= 0; --i)
         if (m_sessions[i].code == code) m_sessions.removeAt(i);
-    m_sessions.prepend({code, m_ean8->selected() ? "EAN-8" : "Code 128", QTime::currentTime().toString("HH:mm:ss")});
+    m_sessions.prepend({code, "Code 128", QTime::currentTime().toString("HH:mm:ss")});
     while (m_sessions.size() > 3) m_sessions.removeLast();
     rebuildSessions();
     emit generateRequested(code);
@@ -296,6 +347,7 @@ void GeneratePage::onClear()
 {
     m_input->clear();
     m_view->clear();
+    setProperty("genCode", QString());
     m_save->setEnabled(false);
     m_copy->setEnabled(false);
     m_input->setFocus();
@@ -303,15 +355,40 @@ void GeneratePage::onClear()
 
 void GeneratePage::onSave()
 {
-    const QString path = QFileDialog::getSaveFileName(this, tr("Save barcode"), m_input->text() + ".png", tr("PNG image (*.png)"));
-    if (!path.isEmpty()) m_view->renderBarcode().save(path, "PNG");
+    const QString code = property("genCode").toString();
+    if (code.isEmpty()) {
+        QMessageBox::warning(this, tr("Save barcode"), tr("Generate a barcode first."));
+        return;
+    }
+    const QPixmap pm = m_view->renderBarcode();
+    if (pm.isNull()) {
+        QMessageBox::warning(this, tr("Save barcode"), tr("Could not render the barcode image."));
+        return;
+    }
+    QString path = QFileDialog::getSaveFileName(this, tr("Save barcode"), code + ".png", tr("PNG image (*.png)"));
+    if (path.isEmpty()) return;                            // user cancelled
+    if (!path.endsWith(".png", Qt::CaseInsensitive)) path += ".png";
+    if (!pm.save(path, "PNG"))
+        QMessageBox::warning(this, tr("Save barcode"),
+                             tr("Could not save the file:\n%1\n\nCheck the folder permissions and free disk space.").arg(path));
 }
 
 void GeneratePage::onCopy()
 {
-    QApplication::clipboard()->setPixmap(m_view->renderBarcode());
+    if (m_copy->property("copied").toBool()) return;       // double-click guard
+    const QPixmap pm = m_view->renderBarcode();
+    if (pm.isNull()) {
+        QMessageBox::warning(this, tr("Copy image"), tr("Could not render the barcode image."));
+        return;
+    }
+    QApplication::clipboard()->setPixmap(pm);
+    const QString old = m_copy->text();
+    m_copy->setProperty("copied", true);
     m_copy->setText(tr(" Copied!"));
-    QTimer::singleShot(1500, this, [this] { m_copy->setText(tr(" Copy Image")); });
+    QTimer::singleShot(1500, this, [this, old] {
+        m_copy->setText(old);
+        m_copy->setProperty("copied", false);
+    });
 }
 
 void GeneratePage::rebuildSessions()
@@ -320,6 +397,10 @@ void GeneratePage::rebuildSessions()
         QLayoutItem *it = m_sessionRow->takeAt(0);
         if (it->widget()) it->widget()->deleteLater();
         delete it;
+    }
+    if (m_sessions.isEmpty()) {
+        m_sessionRow->addWidget(T(tr("No barcodes generated yet"), 12, 400, "#737686", true), 1);
+        return;
     }
     for (int i = 0; i < m_sessions.size(); ++i) {
         const Session &s = m_sessions[i];
