@@ -53,7 +53,7 @@ The application must be able to read a barcode generated through the application
 
 ### Farzam — UI Development & Barcode Reading
 
-- UI Development
+- UI Development (with Ali)
 - Barcode Reading (with Shauzab)
 - Barcode Decoding
 - Decoded Value Return Handling
