@@ -8,10 +8,23 @@
     "configurePresets": [
         {
             "name": "default",
-            "displayName": "BarcodeHub - Visual Studio",
-            "description": "Configure BarcodeHub using Visual Studio and vcpkg",
+            "displayName": "BarcodeHub - Visual Studio 2026 (needs CMake 4.2+)",
+            "description": "Configure BarcodeHub using Visual Studio 2026 and vcpkg",
             "generator": "Visual Studio 18 2026",
             "binaryDir": "${sourceDir}/build",
+            "architecture": "x64",
+            "cacheVariables": {
+                "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
+                "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+                "VCPKG_TARGET_TRIPLET": "x64-windows"
+            }
+        },
+        {
+            "name": "vs2022",
+            "displayName": "BarcodeHub - Visual Studio 2022",
+            "description": "Same as default, for machines with Visual Studio 2022 / older CMake",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build-vs2022",
             "architecture": "x64",
             "cacheVariables": {
                 "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
@@ -31,6 +44,18 @@
             "name": "debug",
             "displayName": "Build BarcodeHub - Debug",
             "configurePreset": "default",
+            "configuration": "Debug"
+        },
+        {
+            "name": "release-vs2022",
+            "displayName": "Build BarcodeHub - Release (VS 2022)",
+            "configurePreset": "vs2022",
+            "configuration": "Release"
+        },
+        {
+            "name": "debug-vs2022",
+            "displayName": "Build BarcodeHub - Debug (VS 2022)",
+            "configurePreset": "vs2022",
             "configuration": "Debug"
         }
     ]
