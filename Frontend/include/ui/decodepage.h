@@ -23,7 +23,8 @@ public:
     void setCameraList(const QStringList &names);
     CameraView *cameraView() const { return m_camera; }
     void showResult(const QString &code);           // success state on every screen
-    void showFailure();                             // "Could not read barcode"
+    // "Could not read barcode"; reason / errCode are optional (defaults keep old calls working)
+    void showFailure(const QString &reason = QString(), const QString &errCode = QString());
     void resetResult();
 
 signals:
