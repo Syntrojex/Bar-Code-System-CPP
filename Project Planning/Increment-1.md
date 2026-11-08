@@ -26,8 +26,6 @@ The application must:
 
 The application must be able to read a barcode generated through the application.
 
-Two input methods must be supported:
-
 **A. Image Upload**
 
 - Allow the user to select and upload a barcode image.
@@ -51,67 +49,41 @@ Two input methods must be supported:
 
 ---
 
-## Team Responsibilities
+## Team Contributions
 
-The work for this increment is divided among the four team members as follows:
+### Farzam — UI Development & Barcode Reading
 
-### 1. Mustafa — Project Lead & Barcode Generation
+- UI Development
+- Barcode Reading (with Shauzab)
+- Barcode Decoding
+- Decoded Value Return Handling
+- Invalid Input Handling
+- File Handling (with Mustafa)
 
-- Implement barcode generation functionality.
-- Handle six-digit input validation.
-- Generate and save barcode images.
-- Manage project integration and overall code coordination.
-- Handle error management and testing.
-- Review and merge team contributions.
+### Ali — UI Development & Barcode Generation
 
-### 2. Ali — Frontend Development
+- UI Development (with Farzam)
+- Barcode Generation
+- Image Processing
+- Input Handling
+- Taking 6-Digit Number as Input
 
-- Develop the desktop application interface using Qt.
-- Design the barcode generation interface.
-- Design the barcode image upload interface.
-- Design the camera scanning interface.
-- Display generated barcodes and decoded results.
-- Connect frontend components with backend functionality.
+### Mustafa — Project Lead, Management & Integration
 
-### 3. Farzam — Image-Based Barcode Reading
+- Project Management
+- Project Integration
+- Error Handling
+- File Handling (with Farzam)
+- CMake Build Configuration
+- Live Scanner Implementation (with Farzam and Shauzab)
 
-- Implement barcode reading from uploaded images.
-- Handle image input and processing.
-- Integrate barcode decoding functionality.
-- Return the decoded number to the application.
+### Shauzab — Camera & Live Scanner Development
 
-### 4. Shozab — Camera-Based Barcode Reading
-
-- Implement camera capture using OpenCV.
-- Process live camera frames.
-- Detect and read barcodes from the camera feed.
-- Integrate barcode decoding functionality.
-- Handle camera-related operations.
-
----
-
-## Acceptance Criteria
-
-The increment must satisfy the following requirements:
-
-- [ ] The application accepts valid six-digit numbers.
-- [ ] Inputs beginning with zero are rejected.
-- [ ] A barcode is successfully generated for a valid input.
-- [ ] The generated barcode is displayed on the screen.
-- [ ] The generated barcode is saved as an image on disk.
-- [ ] The application successfully reads a generated barcode from an uploaded image.
-- [ ] The application successfully reads a generated barcode through the laptop camera.
-- [ ] The decoded six-digit number is displayed correctly on the screen.
-
----
-
-## Submission & Evaluation
-
-| Detail | Information |
-|---|---|
-| Submission Platform | GitHub |
-| Evaluation | Graded In-Class Demonstration |
-| Demonstration Date | November 12, 2026 |
+- Barcode Reading (with Farzam)
+- Live Scanner Implementation
+- Camera Opening and Initialization
+- Camera Frame Capturing
+- Scanner Functionality
 
 ---
 
