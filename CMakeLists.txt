@@ -1,11 +1,21 @@
 cmake_minimum_required(VERSION 3.16)
 
-# vcpkg (OpenCV): use it automatically when VCPKG_ROOT is set, so Qt Creator,
-# VS Code and Visual Studio all work without extra per-IDE configuration.
-# Must be set BEFORE project(). Presets already set this, so it is skipped then.
-if(NOT DEFINED CMAKE_TOOLCHAIN_FILE AND DEFINED ENV{VCPKG_ROOT})
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
-        CACHE STRING "vcpkg toolchain file")
+# Skip Qt Creator's automatic vcpkg package manager injection and background maintenance tool check
+set(QT_CREATOR_SKIP_VCPKG_SETUP ON CACHE BOOL "Skip Qt Creator vcpkg setup" FORCE)
+set(QT_CREATOR_ENABLE_PACKAGE_MANAGER_SETUP OFF CACHE BOOL "Disable Qt Creator package manager setup" FORCE)
+set(QT_CREATOR_ENABLE_MAINTENANCE_TOOL_PROVIDER OFF CACHE BOOL "Disable Qt Creator maintenance tool check" FORCE)
+
+# Disable vcpkg manifest mode by default
+if(NOT DEFINED VCPKG_MANIFEST_MODE)
+    set(VCPKG_MANIFEST_MODE OFF CACHE BOOL "Disable vcpkg manifest mode by default")
+endif()
+
+# Normalize CMAKE_TOOLCHAIN_FILE path if defined
+if(DEFINED CMAKE_TOOLCHAIN_FILE)
+    file(TO_CMAKE_PATH "${CMAKE_TOOLCHAIN_FILE}" CMAKE_TOOLCHAIN_FILE)
+elseif(DEFINED ENV{VCPKG_ROOT})
+    file(TO_CMAKE_PATH "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" _vcpkg_toolchain)
+    set(CMAKE_TOOLCHAIN_FILE "${_vcpkg_toolchain}" CACHE STRING "vcpkg toolchain file")
 endif()
 
 project(BarcodeHub
@@ -21,17 +31,53 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Qt Configuration (Qt comes from the Qt installer / Qt Creator kit, NOT from vcpkg)
 set(CMAKE_AUTOMOC ON)
 
+# Auto-detect Qt installation if not already provided by IDE or environment
+if(NOT CMAKE_PREFIX_PATH AND NOT DEFINED ENV{QTDIR})
+    file(GLOB _qt_candidates 
+        "C:/Qt/6.*/mingw_64" 
+        "C:/Qt/6.*/msvc2022_64" 
+        "D:/Qt/6.*/mingw_64" 
+        "D:/Qt/6.*/msvc2022_64"
+    )
+    if(_qt_candidates)
+        list(GET _qt_candidates -1 _latest_qt)
+        list(APPEND CMAKE_PREFIX_PATH "${_latest_qt}")
+    endif()
+endif()
+
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 
-# OpenCV Configuration (comes from vcpkg)
-if(NOT CMAKE_TOOLCHAIN_FILE AND NOT OpenCV_DIR)
-    message(WARNING
-        "VCPKG_ROOT is not set, so vcpkg cannot provide OpenCV. "
-        "Install vcpkg, set the VCPKG_ROOT environment variable (e.g. C:\\vcpkg), "
-        "restart your IDE and configure again.")
+# OpenCV Configuration (automatically detects MinGW or MSVC prebuilt packages)
+if(NOT OpenCV_DIR)
+    if(DEFINED ENV{OpenCV_DIR})
+        set(OpenCV_DIR "$ENV{OpenCV_DIR}")
+    elseif(MINGW)
+        file(GLOB _opencv_mingw_candidates "C:/opencv-mingw" "C:/opencv/mingw*" "D:/opencv-mingw")
+        foreach(_cand IN LISTS _opencv_mingw_candidates)
+            if(EXISTS "${_cand}/OpenCVConfig.cmake")
+                set(OpenCV_DIR "${_cand}")
+                break()
+            endif()
+        endforeach()
+    elseif(MSVC)
+        file(GLOB _opencv_msvc_candidates "C:/opencv-msvc" "C:/opencv/build" "D:/opencv/build" "C:/Users/*/Downloads/opencv/build")
+        foreach(_cand IN LISTS _opencv_msvc_candidates)
+            if(EXISTS "${_cand}/OpenCVConfig.cmake")
+                set(OpenCV_DIR "${_cand}")
+                break()
+            endif()
+        endforeach()
+    endif()
 endif()
-find_package(OpenCV REQUIRED)
+
+find_package(OpenCV QUIET)
+if(OpenCV_FOUND)
+    message(STATUS "OpenCV found: ${OpenCV_VERSION} (${OpenCV_DIR})")
+    add_compile_definitions(HAVE_OPENCV)
+else()
+    message(STATUS "OpenCV not found. Building without OpenCV support (mock camera mode).")
+endif()
 
 # Application Sources
 add_executable(BarcodeHub WIN32
@@ -74,14 +120,27 @@ target_include_directories(BarcodeHub PRIVATE
     Frontend/include
     Frontend/include/ui
     Backend/include
-    ${OpenCV_INCLUDE_DIRS}
 )
 
 # Link Libraries
 target_link_libraries(BarcodeHub PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
-    ${OpenCV_LIBS}
 )
+
+if(OpenCV_FOUND)
+    target_include_directories(BarcodeHub PRIVATE ${OpenCV_INCLUDE_DIRS})
+    target_link_libraries(BarcodeHub PRIVATE ${OpenCV_LIBS})
+
+    # Automatically copy OpenCV runtime DLLs to output directory on Windows
+    if(WIN32 AND OpenCV_LIB_PATH)
+        add_custom_command(TARGET BarcodeHub POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+                "${OpenCV_LIB_PATH}/../bin"
+                "$<TARGET_FILE_DIR:BarcodeHub>"
+            COMMENT "Copying OpenCV runtime DLLs to output directory..."
+        )
+    endif()
+endif()
 
 # Windows Configuration
 if(WIN32)
