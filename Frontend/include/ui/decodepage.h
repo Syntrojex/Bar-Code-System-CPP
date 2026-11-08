@@ -1,5 +1,6 @@
 #pragma once
 #include <QWidget>
+#include <QStringList>
 
 class QComboBox;
 class QLabel;

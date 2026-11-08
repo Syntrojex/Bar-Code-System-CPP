@@ -1,5 +1,8 @@
 #pragma once
 #include <QWidget>
+#include <QString>
+#include <QPixmap>
+#include <QList>
 
 class QLabel;
 class QLineEdit;

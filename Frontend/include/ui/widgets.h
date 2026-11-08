@@ -7,6 +7,18 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QColor>
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDropEvent>
+#include <QList>
+#include <QMouseEvent>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QSize>
+#include <QString>
+#include <QStringList>
+#include <QFont>
 
 // ======================================================= layout / factory helpers
 QVBoxLayout *vbox(QWidget *w, int l, int t, int r, int b, int spacing);
