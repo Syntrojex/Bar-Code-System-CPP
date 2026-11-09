@@ -257,6 +257,7 @@ QWidget *DecodePage::buildCameraPage()
     root->addLayout(body, 1);
 
     // ---- wiring
+<<<<<<< HEAD
     m_freeze->setEnabled(false);
     connect(m_stream, &QPushButton::clicked, this, [this] {
         if (m_streaming) { stopCamera(); return; }
@@ -266,6 +267,19 @@ QWidget *DecodePage::buildCameraPage()
     });
     connect(m_freeze, &QPushButton::clicked, this, [this] {
         const bool frozen = !m_camera->frozen();
+=======
+    connect(m_stream, &QPushButton::clicked, this, [this]
+            {
+        m_streaming = !m_streaming;
+        m_camera->setRunning(m_streaming);
+        m_stream->setText(m_streaming ? " Stream Active" : " Start Stream");
+        setKind(m_stream, m_streaming ? "deep" : "primary");
+        if (m_streaming) emit cameraStartRequested(m_cameraBox->currentIndex()); else emit cameraStopRequested(); });
+    connect(m_freeze, &QPushButton::clicked, this, [this]
+            {
+        static bool frozen = false;
+        frozen = !frozen;
+>>>>>>> 9dbc7fbd625c9785052ddb1dd8ebe4b824bb6694
         m_camera->setFrozen(frozen);
         m_freeze->setText(frozen ? " Resume" : " Freeze"); });
     return page;
@@ -779,7 +793,13 @@ void DecodePage::showResult(const QString &code)
     applyResult(m_up, code);
     m_log.code->setText(code); // overview keeps its permanent telemetry box
     m_log.copy->setEnabled(true);
+<<<<<<< HEAD
     if (m_log.fail) m_log.fail->hide();
+=======
+    if (m_log.fail)
+        m_log.fail->hide();
+    m_camera->setPreviewCode(code);
+>>>>>>> 9dbc7fbd625c9785052ddb1dd8ebe4b824bb6694
 }
 
 void DecodePage::showFailure(const QString &reason, const QString &errCode)
