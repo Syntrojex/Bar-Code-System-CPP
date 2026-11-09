@@ -19,26 +19,20 @@ Switch to your assigned branch. Replace `your-branch` with your actual branch na
 git checkout your-branch
 ```
 
-## 3. Synchronize with Main
+Available team branches:
 
+- `ali`
+- `farzam`
+- `syntrojex`
+- `shauzab`
 
-
-Before starting a new task, update your assigned branch with the latest changes from `main`.
-
-```bash
-git fetch origin
-git merge origin/main
-```
-
-Resolve any merge conflicts before continuing.
-
-## 4. Make Your Changes
+## 3. Make Your Changes
 
 Add or modify the files required for your assigned task.
 
 Follow the existing project structure and coding conventions. Avoid modifying unrelated files.
 
-## 5. Stage and Commit Changes
+## 4. Stage and Commit Changes
 
 Check your changes:
 
@@ -58,7 +52,7 @@ Commit your changes with a meaningful message:
 git commit -m "Add barcode generation"
 ```
 
-## 6. Push Your Branch
+## 5. Push Your Branch
 
 Push your changes to your assigned branch:
 
@@ -66,7 +60,7 @@ Push your changes to your assigned branch:
 git push origin your-branch
 ```
 
-## 7. Create a Pull Request
+## 6. Create a Pull Request
 
 Submit your changes for integration into `main`.
 
@@ -77,17 +71,23 @@ Submit your changes for integration into `main`.
 5. Add a meaningful title and description.
 6. Create the Pull Request.
 
-## 8. Review and Merge
+## 7. Review and Merge
 
-The project lead will review and merge Pull Requests into `main`.
+The project lead will review submitted Pull Requests.
 
-Team members should not directly push changes to `main`.
+- The project lead's approval is required before merging.
+- Address any requested changes before approval.
+- Team members should not directly push changes to `main`.
+- Only reviewed and approved contributions should be merged.
 
-## 9. Start Your Next Task
+## 8. Automatic Branch Synchronization
 
-After your Pull Request has been merged, synchronize your assigned branch with the latest `main` before starting another task.
+Whenever changes are merged into `main`, GitHub Actions automatically attempts to synchronize all team branches with the latest `main`.
 
-Repeat the synchronization commands from Section 3, then continue with the same workflow.
+- No manual fetching or merging is required after successful synchronization.
+- Existing branch commits and contributions are preserved.
+- If a merge conflict occurs, the affected branch will be skipped and must be resolved manually.
+- Check the GitHub Actions workflow status if synchronization fails.
 
 ## General Guidelines
 
@@ -97,5 +97,6 @@ Repeat the synchronization commands from Section 3, then continue with the same 
 - Test your changes before submitting a Pull Request.
 - Keep Pull Requests limited to the assigned task.
 - Coordinate with the project lead when necessary.
+- Never commit directly to `main`.
 
 Thank you for contributing to the project.
