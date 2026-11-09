@@ -360,13 +360,32 @@ CameraView::CameraView(QWidget *parent) : QWidget(parent)
     setFixedHeight(352);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     m_timer.setInterval(16);
-    connect(&m_timer, &QTimer::timeout, this, [this] { m_phase += 0.03; update(); });
-    m_timer.start();
+    connect(&m_timer, &QTimer::timeout, this, [this] { m_phase += 0.03; update(); });   // scan-line animation
 }
-void CameraView::setRunning(bool on) { m_running = on; if (on && !m_frozen) m_timer.start(); else m_timer.stop(); update(); }
-void CameraView::setFrozen(bool on)  { m_frozen = on; if (on) m_timer.stop(); else if (m_running) m_timer.start(); update(); }
-void CameraView::setPreviewCode(const QString &d) { m_code = d; update(); }
-void CameraView::setFrame(const QPixmap &pm) { m_frame = pm; update(); }
+void CameraView::setRunning(bool on)
+{
+    m_running = on;
+    if (!on) { m_frame = QPixmap(); m_frozen = false; }
+    if (on && !m_frozen) m_timer.start(); else m_timer.stop();
+    update();
+}
+void CameraView::setFrozen(bool on)
+{
+    m_frozen = on;
+    if (on) m_timer.stop(); else if (m_running) m_timer.start();
+    update();
+}
+void CameraView::setFrame(const QPixmap &pm)
+{
+    if (m_frozen) return;
+    m_frame = pm;
+    update();
+}
+
+static int chipWidth(const QFontMetrics &fm, const QString &text, bool dot, bool icon)
+{
+    return fm.horizontalAdvance(text) + 20 + (dot ? 14 : 0) + (icon ? 20 : 0);
+}
 
 static void drawChip(QPainter &p, const QRect &r, const QString &text, const QColor &bg, const QColor &fg,
                      const QColor &dot = QColor(), const QString &icon = QString())
@@ -393,18 +412,27 @@ void CameraView::paintEvent(QPaintEvent *)
     bg.setColorAt(0, QColor("#10243F"));
     bg.setColorAt(1, QColor("#070F1C"));
     p.fillRect(rect(), bg);
-    if (!m_frame.isNull())
-        p.drawPixmap(rect(), m_frame.scaled(size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
 
-    p.setPen(QPen(QColor(255, 255, 255, 14), 1.5, Qt::SolidLine, Qt::RoundCap));
-    for (int y = 14; y < height(); y += 18)
-        for (int x = 14; x < width(); x += 18) p.drawPoint(x, y);
+    const bool live = m_running && !m_frame.isNull();
+    qreal scale = 1.0;                                                    // widget px per camera px
+    if (live) {
+        p.setRenderHint(QPainter::SmoothPixmapTransform);
+        scale = qMax(qreal(width()) / m_frame.width(), qreal(height()) / m_frame.height());   // "cover" fit
+        const QSizeF sz(m_frame.width() * scale, m_frame.height() * scale);
+        p.drawPixmap(QRectF((width() - sz.width()) / 2, (height() - sz.height()) / 2, sz.width(), sz.height()),
+                     m_frame, QRectF(m_frame.rect()));
+        p.fillRect(rect(), QColor(5, 12, 24, 40));                        // slight dim so the HUD stays readable
+    } else {
+        p.setPen(QPen(QColor(255, 255, 255, 14), 1.5, Qt::SolidLine, Qt::RoundCap));
+        for (int y = 14; y < height(); y += 18)
+            for (int x = 14; x < width(); x += 18) p.drawPoint(x, y);
+    }
 
     // scan frame (corner brackets)
     const int fw = int(width() * 0.74), fh = int(height() * 0.64);
     const QRect f((width() - fw) / 2, (height() - fh) / 2, fw, fh);
     p.setBrush(Qt::NoBrush);
-    p.setPen(QPen(QColor("#1B52D6"), 4, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
+    p.setPen(QPen(QColor(m_running ? "#2F6BF0" : "#2A3E63"), 4, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
     const int L = 30;
     auto corner = [&](QPoint c, int dx, int dy) {
         p.drawLine(c, c + QPoint(dx * L, 0));
@@ -415,18 +443,22 @@ void CameraView::paintEvent(QPaintEvent *)
     corner(f.bottomLeft() + QPoint(2, -2), 1, -1);
     corner(f.bottomRight() + QPoint(-2, -2), -1, -1);
 
-    // sample barcode card
-    const int cw = int(width() * 0.62), ch = int(height() * 0.47);
-    const QRect bc((width() - cw) / 2, (height() - ch) / 2, cw, ch);
-    p.setPen(Qt::NoPen);
-    p.setBrush(Qt::white);
-    p.drawRoundedRect(bc, 10, 10);
-    const int mx = int(bc.width() * 0.09);
-    drawMockBars(p, QRect(bc.left() + mx, bc.top() + 22, bc.width() - 2 * mx, bc.height() - 70), m_code, QColor("#0B1C30"));
-    QFont df = monoFont(15, true);
-    p.setFont(df);
-    p.setPen(QColor("#0B1C30"));
-    p.drawText(QRect(bc.left(), bc.bottom() - 40, bc.width(), 30), Qt::AlignCenter, spaced(m_code));
+    p.setFont(monoFont(11));
+    const QFontMetrics fm(p.font());
+
+    if (!m_running) {                                                     // camera off
+        const QString t = "CAMERA OFF";
+        drawChip(p, QRect(14, 14, chipWidth(fm, t, true, false), 26), t, QColor(0, 0, 0, 110), QColor("#CBD5E1"), QColor("#94A3B8"));
+        QFont tf; tf.setPixelSize(17); tf.setWeight(QFont::DemiBold);
+        p.setFont(tf);
+        p.setPen(QColor("#D5DEEE"));
+        p.drawText(f.adjusted(0, 0, 0, -20), Qt::AlignCenter, tr("Camera is off"));
+        tf.setPixelSize(13); tf.setWeight(QFont::Normal);
+        p.setFont(tf);
+        p.setPen(QColor("#8493AE"));
+        p.drawText(f.adjusted(0, 34, 0, 0), Qt::AlignCenter, tr("Press \"Start Camera\" to begin scanning"));
+        return;
+    }
 
     // scan line
     const qreal t = m_frozen ? 0.5 : (qSin(m_phase) + 1) / 2;
@@ -443,13 +475,18 @@ void CameraView::paintEvent(QPaintEvent *)
     p.setPen(QPen(QBrush(ln), 2));
     p.drawLine(f.left(), y, f.right(), y);
 
-    // HUD chips
+    // HUD chips (real values from the camera frame)
     p.setFont(monoFont(11));
-    drawChip(p, QRect(14, 14, 252, 26), "LIVE SENSOR: 1920x1080@60Hz", QColor(0, 0, 0, 110), QColor("#E2E8F0"),
-             m_running ? QColor("#34D399") : QColor("#94A3B8"));
-    drawChip(p, QRect(width() - 202, 14, 188, 26), "ROI: ACTIVE [460x220]", QColor(0, 0, 0, 110), QColor("#CFE0FF"),
-             QColor(), "target");
-    drawChip(p, QRect(width() - 224, height() - 40, 210, 26), "AGC: +2.4dB | EXP: 1/120s", QColor(0, 0, 0, 120), QColor("#CBD5E1"));
+    QString left = m_frozen ? QString("FROZEN") : QString("LIVE");
+    if (live) left += QString(" SENSOR: %1x%2").arg(m_frame.width()).arg(m_frame.height());
+    else      left = "CONNECTING...";
+    drawChip(p, QRect(14, 14, chipWidth(fm, left, true, false), 26), left, QColor(0, 0, 0, 120), QColor("#E2E8F0"),
+             m_frozen ? QColor("#FBBF24") : QColor("#34D399"));
+    if (live) {
+        const QString roi = QString("ROI: [%1x%2]").arg(qRound(f.width() / scale)).arg(qRound(f.height() / scale));
+        const int rw = chipWidth(fm, roi, false, true);
+        drawChip(p, QRect(width() - rw - 14, 14, rw, 26), roi, QColor(0, 0, 0, 120), QColor("#CFE0FF"), QColor(), "target");
+    }
 }
 
 // ======================================================= DropZone

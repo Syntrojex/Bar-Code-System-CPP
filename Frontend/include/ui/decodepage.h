@@ -21,6 +21,10 @@ public:
 
     // ---- hooks for the backend ----
     void setCameraList(const QStringList &names);
+    void setCameraActive(bool on);                  // sync buttons/viewport with the real camera state
+    void setCameraMessage(const QString &text, bool error = false);   // hint line under the viewport
+    bool cameraActive() const { return m_streaming; }
+    void stopCamera();                              // stops (and emits cameraStopRequested) if running
     CameraView *cameraView() const { return m_camera; }
     void showResult(const QString &code);           // success state on every screen
     // "Could not read barcode"; reason / errCode are optional (defaults keep old calls working)
@@ -56,7 +60,8 @@ private:
     QComboBox *m_cameraBox = nullptr;
     QPushButton *m_stream = nullptr, *m_freeze = nullptr;
     CameraView *m_camera = nullptr;
-    bool m_streaming = true;
+    QLabel *m_camHint = nullptr;
+    bool m_streaming = false;
     // upload
     QFrame *m_loaded = nullptr;
     QLabel *m_thumb = nullptr, *m_fileName = nullptr, *m_fileMeta = nullptr;
