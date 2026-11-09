@@ -20,13 +20,3 @@
 **Institution:** FAST-NUCES
 
 **Development Language:** C++
-
-
-## Ali — Barcode Generation Module: Feature & Verification Log
-
-Project: BarcodeHub / Bar-Code-System-CPP
-Branch: ali (local; remote divergence not yet reconciled)
-Last verification date: 2026-11-09
-Status: Generator implemented and integrated with UI; compiled, displayed, and exported. External scanner interoperability not yet verified.
-GEN-001 — Six-digit numeric input validation
-with ean-8 
