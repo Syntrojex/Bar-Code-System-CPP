@@ -1,8 +1,0 @@
-{
-    "name": "barcode-hub",
-    "version-string": "0.1.0",
-    "description": "A C++ barcode generation and scanning desktop application",
-    "dependencies": [
-        "opencv"
-    ]
-}
