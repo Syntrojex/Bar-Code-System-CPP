@@ -6,7 +6,7 @@
 #include <QClipboard>
 #include <QComboBox>
 #include <QFileInfo>
-#include <QGridLayout>   // used by the stat/tile grids
+#include <QGridLayout> // used by the stat/tile grids
 #include <QPainter>
 #include <QProgressBar>
 #include <QRegularExpression>
@@ -44,7 +44,8 @@ static bool isValidCode(const QString &s)
 
 static void wireCopy(QPushButton *b, QLabel *code)
 {
-    QObject::connect(b, &QPushButton::clicked, b, [b, code] {
+    QObject::connect(b, &QPushButton::clicked, b, [b, code]
+                     {
         if (b->property("copied").toBool()) return;     // double-click guard
         QApplication::clipboard()->setText(code->text());
         const QString old = b->text();
@@ -53,8 +54,7 @@ static void wireCopy(QPushButton *b, QLabel *code)
         QTimer::singleShot(1300, b, [b, old] {
             b->setText(old);
             b->setProperty("copied", false);
-        });
-    });
+        }); });
 }
 
 static QFrame *resultHeader(const QString &title, QLabel *badge, int px = 18)
@@ -191,7 +191,11 @@ QWidget *DecodePage::buildCameraPage()
     m_cam.okKind = "green";
     m_cam.badge = pill("\xE2\x97\x8F Barcode Detected", "green");
     m_cam.badge->setContentsMargins(7, 3, 7, 3);
-    { QFont bf = m_cam.badge->font(); bf.setPixelSize(11); m_cam.badge->setFont(bf); }
+    {
+        QFont bf = m_cam.badge->font();
+        bf.setPixelSize(11);
+        m_cam.badge->setFont(bf);
+    }
     rl->addWidget(resultHeader(tr("Decoded Code"), m_cam.badge, 16));
     rl->addWidget(hline());
 
@@ -228,7 +232,8 @@ QWidget *DecodePage::buildCameraPage()
     auto *two = hrow(10);
     auto *re = btn(tr("Re-encode"), "soft", "barcode");
     auto *api = btn(tr("Dispatch API"), "soft", "arrow");
-    for (auto *b : {re, api}) b->setStyleSheet("font-size:13px; padding:0 8px;");
+    for (auto *b : {re, api})
+        b->setStyleSheet("font-size:13px; padding:0 8px;");
     two->addWidget(re, 1);
     two->addWidget(api, 1);
     rl->addLayout(two);
@@ -248,19 +253,19 @@ QWidget *DecodePage::buildCameraPage()
     root->addLayout(body, 1);
 
     // ---- wiring
-    connect(m_stream, &QPushButton::clicked, this, [this] {
+    connect(m_stream, &QPushButton::clicked, this, [this]
+            {
         m_streaming = !m_streaming;
         m_camera->setRunning(m_streaming);
         m_stream->setText(m_streaming ? " Stream Active" : " Start Stream");
         setKind(m_stream, m_streaming ? "deep" : "primary");
-        if (m_streaming) emit cameraStartRequested(m_cameraBox->currentIndex()); else emit cameraStopRequested();
-    });
-    connect(m_freeze, &QPushButton::clicked, this, [this] {
+        if (m_streaming) emit cameraStartRequested(m_cameraBox->currentIndex()); else emit cameraStopRequested(); });
+    connect(m_freeze, &QPushButton::clicked, this, [this]
+            {
         static bool frozen = false;
         frozen = !frozen;
         m_camera->setFrozen(frozen);
-        m_freeze->setText(frozen ? " Resume" : " Freeze");
-    });
+        m_freeze->setText(frozen ? " Resume" : " Freeze"); });
     return page;
 }
 
@@ -336,7 +341,8 @@ QWidget *DecodePage::buildUploadPage()
     auto *qr = vcol(8);
     auto *s1 = new QPushButton(tr(" Load Sample 1 (Code 128: 749205)"));
     auto *s2 = new QPushButton(tr(" Load Sample 2 (Damaged Scan)"));
-    for (auto *b : {s1, s2}) {
+    for (auto *b : {s1, s2})
+    {
         b->setObjectName("chipBtn");
         b->setCursor(Qt::PointingHandCursor);
         b->setIcon(makeIcon("barcode", QColor("#0B4BCB"), 16));
@@ -415,50 +421,57 @@ QWidget *DecodePage::buildUploadPage()
 
     // ---- wiring
     connect(drop, &DropZone::fileChosen, this, &DecodePage::loadImage);
-    connect(remove, &QPushButton::clicked, this, [this] { m_loaded->hide(); m_path.clear(); resetResult(); });
-    connect(decode, &QPushButton::clicked, this, [this] {
+    connect(remove, &QPushButton::clicked, this, [this]
+            { m_loaded->hide(); m_path.clear(); resetResult(); });
+    connect(decode, &QPushButton::clicked, this, [this]
+            {
         if (m_path.isEmpty()) {
             showFailure(tr("No image loaded. Please upload an image first."), "ERR_NO_IMAGE");
             return;
         }
-        emit decodeImageRequested(m_path);
-    });
-    connect(s1, &QPushButton::clicked, this, [this] {
+        emit decodeImageRequested(m_path); });
+    connect(s1, &QPushButton::clicked, this, [this]
+            {
         m_loaded->show(); m_path.clear();
         m_fileName->setText("sample_barcode_scan.png");
         m_thumb->setPixmap(miniBarPixmap("749205", QSize(48, 40)));
-        showResult("749205");
-    });
-    connect(s2, &QPushButton::clicked, this, [this] {
+        showResult("749205"); });
+    connect(s2, &QPushButton::clicked, this, [this]
+            {
         m_loaded->show(); m_path.clear();
         m_fileName->setText("sample_damaged_scan.png");
         m_thumb->setPixmap(miniBarPixmap("000000", QSize(48, 40)));
-        showFailure();
-    });
-    connect(m_simulate, &QPushButton::clicked, this, [this] {
+        showFailure(); });
+    connect(m_simulate, &QPushButton::clicked, this, [this]
+            {
         m_simulating = !m_simulating;
         if (m_simulating) { showFailure(); m_simulate->setText(tr("Restore Success")); }
-        else { showResult("749205"); m_simulate->setText(tr("Simulate Error")); }
-    });
+        else { showResult("749205"); m_simulate->setText(tr("Simulate Error")); } });
     return page;
 }
 
 void DecodePage::loadImage(const QString &path)
 {
     const QFileInfo fi(path);
-    if (!fi.exists() || !fi.isFile()) {
-        m_path.clear(); m_loaded->hide();
+    if (!fi.exists() || !fi.isFile())
+    {
+        m_path.clear();
+        m_loaded->hide();
         showFailure(tr("File not found."), "ERR_FILE_NOT_FOUND");
         return;
     }
-    if (fi.size() > 32LL * 1024 * 1024) {
-        m_path.clear(); m_loaded->hide();
+    if (fi.size() > 32LL * 1024 * 1024)
+    {
+        m_path.clear();
+        m_loaded->hide();
         showFailure(tr("File exceeds the 32 MB limit."), "ERR_FILE_TOO_LARGE");
         return;
     }
     QPixmap pm(path);
-    if (pm.isNull()) {
-        m_path.clear(); m_loaded->hide();
+    if (pm.isNull())
+    {
+        m_path.clear();
+        m_loaded->hide();
         showFailure(tr("Unsupported or corrupted image."), "ERR_BAD_IMAGE");
         return;
     }
@@ -466,7 +479,9 @@ void DecodePage::loadImage(const QString &path)
     m_thumb->setPixmap(pm.scaled(QSize(54, 44), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     m_fileName->setText(fi.fileName());
     m_fileMeta->setText(QString("%1 KB &nbsp;\xE2\x80\xA2&nbsp; <span style='color:#0B4BCB'>%2 \xC3\x97 %3 px</span>")
-                            .arg(qMax<qint64>(1, fi.size() / 1024)).arg(pm.width()).arg(pm.height()));
+                            .arg(qMax<qint64>(1, fi.size() / 1024))
+                            .arg(pm.width())
+                            .arg(pm.height()));
     m_loaded->show();
     resetResult();
 }
@@ -503,7 +518,8 @@ QWidget *DecodePage::buildLogsPage()
     auto *left = vcol(18);
 
     auto *two = hrow(18);
-    auto makeEntry = [&](const QString &icon, const QString &meta, const QString &title, const QString &desc) {
+    auto makeEntry = [&](const QString &icon, const QString &meta, const QString &title, const QString &desc)
+    {
         auto *c = card();
         auto *v = vbox(c, 18, 18, 18, 18, 10);
         auto *top = hrow();
@@ -563,23 +579,31 @@ QWidget *DecodePage::buildLogsPage()
     hr->addWidget(btn(tr("Clear History"), "link", "trash"));
     hv->addLayout(hr);
 
-    const char *cols[] = {"Timestamp", "Symbology Format", "Decoded Value", "Engine Metric", "Action"};   // 12px headers
+    const char *cols[] = {"Timestamp", "Symbology Format", "Decoded Value", "Engine Metric", "Action"}; // 12px headers
     auto *hdr = panel();
     hdr->setFixedHeight(40);
     auto *hl = hbox(hdr, 14, 0, 14, 0, 10);
     const int stretch[] = {20, 24, 20, 22, 10};
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 5; ++i)
+    {
         auto *c = T(cols[i], 12, 600, "#0B1C30");
-        if (i == 4) c->setAlignment(Qt::AlignCenter);
+        if (i == 4)
+            c->setAlignment(Qt::AlignCenter);
         hl->addWidget(c, stretch[i]);
     }
     hv->addWidget(hdr);
 
-    struct Row { const char *ts, *fmt, *val; int ms; bool first; };
+    struct Row
+    {
+        const char *ts, *fmt, *val;
+        int ms;
+        bool first;
+    };
     const Row rows[] = {{"14:28:02.11", "Code 128", "839104", 42, true},
                         {"14:26:45.88", "EAN-8", "552190", 38, false},
                         {"14:20:19.04", "DataMatrix", "901423", 51, false}};
-    for (const Row &r : rows) {
+    for (const Row &r : rows)
+    {
         auto *rowW = new QWidget;
         rowW->setFixedHeight(58);
         auto *rl = hbox(rowW, 14, 0, 14, 0, 10);
@@ -609,10 +633,13 @@ QWidget *DecodePage::buildLogsPage()
     left->addWidget(hist);
 
     auto *stats = hrow(14);
-    struct Stat { const char *k, *v, *s; };
-    const Stat sts[] = {{"Total Parsed", "1,248", "+12.4% this hr"}, {"Success Rate", "99.78%", "0.02% error margin"},
-                        {"Avg Latency", "41.2ms", "Sub-frame lock"}, {"Format Buffer", "1D & 2D", "All engines active"}};
-    for (const Stat &s : sts) {
+    struct Stat
+    {
+        const char *k, *v, *s;
+    };
+    const Stat sts[] = {{"Total Parsed", "1,248", "+12.4% this hr"}, {"Success Rate", "99.78%", "0.02% error margin"}, {"Avg Latency", "41.2ms", "Sub-frame lock"}, {"Format Buffer", "1D & 2D", "All engines active"}};
+    for (const Stat &s : sts)
+    {
         auto *c = card();
         auto *v = vbox(c, 16, 14, 16, 14, 4);
         v->addWidget(T(s.k, 13, 500, "#434655"));
@@ -660,12 +687,17 @@ QWidget *DecodePage::buildLogsPage()
     auto *tiles = new QGridLayout;
     tiles->setHorizontalSpacing(10);
     tiles->setVerticalSpacing(10);
-    struct Tile { const char *k, *v, *s; bool blue; };
+    struct Tile
+    {
+        const char *k, *v, *s;
+        bool blue;
+    };
     const Tile tl[] = {{"Format Symbology", "EAN-8 / Code 128", "Auto-detected profile", false},
                        {"Decode Latency", "42ms", "Ultra-fast hardware tick", true},
                        {"Match Confidence", "99.8%", "High SNR clarity", false},
                        {"Timestamp", "Just now", "14:28:02.11 UTC", false}};
-    for (int i = 0; i < 4; ++i) {
+    for (int i = 0; i < 4; ++i)
+    {
         auto *t = panel();
         auto *tv = vbox(t, 14, 12, 14, 12, 3);
         tv->addWidget(T(tl[i].k, 12, 500, "#434655", true));
@@ -710,48 +742,63 @@ QWidget *DecodePage::buildLogsPage()
     root->addLayout(body, 1);
 
     // ---- wiring
-    connect(openCam, &QPushButton::clicked, this, [this] { setTab(0); });
-    connect(openUp, &QPushButton::clicked, this, [this] { setTab(1); });
-    connect(gen, &QPushButton::clicked, this, [this] { emit generateFromCodeRequested(m_log.code->text()); });
+    connect(openCam, &QPushButton::clicked, this, [this]
+            { setTab(0); });
+    connect(openUp, &QPushButton::clicked, this, [this]
+            { setTab(1); });
+    connect(gen, &QPushButton::clicked, this, [this]
+            { emit generateFromCodeRequested(m_log.code->text()); });
     return page;
 }
 
 // ================================================================== result state (all screens)
 void DecodePage::applyResult(const ResultUi &r, const QString &code)
 {
-    if (!r.code) return;
+    if (!r.code)
+        return;
     r.code->setText(code);
     r.code->setStyleSheet("color:#0B1C30;");
-    if (r.badge) setBadge(r.badge, r.detectedWording ? "\xE2\x97\x8F Barcode Detected" : "\xE2\x97\x8F  Success", r.okKind);
-    if (r.copy) r.copy->setEnabled(true);
-    if (r.fail) r.fail->hide();
+    if (r.badge)
+        setBadge(r.badge, r.detectedWording ? "\xE2\x97\x8F Barcode Detected" : "\xE2\x97\x8F  Success", r.okKind);
+    if (r.copy)
+        r.copy->setEnabled(true);
+    if (r.fail)
+        r.fail->hide();
 }
 
 void DecodePage::showResult(const QString &code)
 {
-    if (!isValidCode(code)) {
+    if (!isValidCode(code))
+    {
         showFailure(tr("Invalid code: must be exactly 6 digits, first digit non-zero."), "ERR_INVALID_CODE");
         return;
     }
     applyResult(m_cam, code);
     applyResult(m_up, code);
-    m_log.code->setText(code);                       // overview keeps its permanent telemetry box
+    m_log.code->setText(code); // overview keeps its permanent telemetry box
     m_log.copy->setEnabled(true);
-    if (m_log.fail) m_log.fail->hide();
+    if (m_log.fail)
+        m_log.fail->hide();
     m_camera->setPreviewCode(code);
 }
 
 void DecodePage::showFailure(const QString &reason, const QString &errCode)
 {
-    for (const ResultUi *r : {&m_cam, &m_up}) {
-        if (!r->code) continue;
+    for (const ResultUi *r : {&m_cam, &m_up})
+    {
+        if (!r->code)
+            continue;
         r->code->setText("------");
         r->code->setStyleSheet("color:#C2CCDF;");
-        if (r->badge) setBadge(r->badge, "Could not read barcode", "red");
-        if (r->copy) r->copy->setEnabled(false);
+        if (r->badge)
+            setBadge(r->badge, "Could not read barcode", "red");
+        if (r->copy)
+            r->copy->setEnabled(false);
     }
-    for (QFrame *f : {m_up.fail, m_log.fail}) {
-        if (!f) continue;
+    for (QFrame *f : {m_up.fail, m_log.fail})
+    {
+        if (!f)
+            continue;
         if (auto *t = f->findChild<QLabel *>("failReason"))
             t->setText(reason.isEmpty() ? tr("Could not decode the barcode.") : reason);
         if (auto *c = f->findChild<QLabel *>("failCode"))
@@ -762,15 +809,21 @@ void DecodePage::showFailure(const QString &reason, const QString &errCode)
 
 void DecodePage::resetResult()
 {
-    for (const ResultUi *r : {&m_cam, &m_up}) {
-        if (!r->code) continue;
+    for (const ResultUi *r : {&m_cam, &m_up})
+    {
+        if (!r->code)
+            continue;
         r->code->setText("------");
         r->code->setStyleSheet("color:#C2CCDF;");
-        if (r->badge) setBadge(r->badge, "\xE2\x97\x8F  Waiting", "idle");
-        if (r->copy) r->copy->setEnabled(false);
-        if (r->fail) r->fail->hide();
+        if (r->badge)
+            setBadge(r->badge, "\xE2\x97\x8F  Waiting", "idle");
+        if (r->copy)
+            r->copy->setEnabled(false);
+        if (r->fail)
+            r->fail->hide();
     }
-    if (m_log.fail) m_log.fail->hide();
+    if (m_log.fail)
+        m_log.fail->hide();
 }
 
 void DecodePage::setCameraList(const QStringList &names)

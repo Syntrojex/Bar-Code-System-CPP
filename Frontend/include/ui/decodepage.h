@@ -12,17 +12,18 @@ class DropZone;
 class SegBar;
 
 // Screens 2-4 – "Decode Barcode": camera tab, upload tab and the "Scan Logs" overview.
-class DecodePage : public QWidget {
+class DecodePage : public QWidget
+{
     Q_OBJECT
 public:
     explicit DecodePage(QWidget *parent = nullptr);
 
-    void setTab(int index);                         // 0 camera, 1 upload, 2 scan logs
+    void setTab(int index); // 0 camera, 1 upload, 2 scan logs
 
     // ---- hooks for the backend ----
     void setCameraList(const QStringList &names);
     CameraView *cameraView() const { return m_camera; }
-    void showResult(const QString &code);           // success state on every screen
+    void showResult(const QString &code); // success state on every screen
     // "Could not read barcode"; reason / errCode are optional (defaults keep old calls working)
     void showFailure(const QString &reason = QString(), const QString &errCode = QString());
     void resetResult();
@@ -34,12 +35,13 @@ signals:
     void generateFromCodeRequested(const QString &code);
 
 private:
-    struct ResultUi {
+    struct ResultUi
+    {
         QLabel *badge = nullptr;
         QLabel *code = nullptr;
         QPushButton *copy = nullptr;
         QFrame *fail = nullptr;
-        bool detectedWording = false;               // "Barcode Detected" instead of "Success"
+        bool detectedWording = false; // "Barcode Detected" instead of "Success"
         const char *okKind = "tint";
     };
 
