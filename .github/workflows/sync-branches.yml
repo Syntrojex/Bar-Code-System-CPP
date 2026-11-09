@@ -1,0 +1,82 @@
+name: Sync Team Branches
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-team-branches
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Merge main into team branches
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync team branches
+        shell: bash
+        run: |
+          set -u
+
+          git fetch origin main
+
+          branches=("ali" "farzam" "syntrojex" "shauzab")
+          failed=()
+
+          for branch in "${branches[@]}"; do
+            echo "::group::Syncing ${branch}"
+
+            if ! git fetch origin "$branch"; then
+              echo "::warning::Branch '${branch}' could not be fetched."
+              failed+=("$branch (fetch failed)")
+              echo "::endgroup::"
+              continue
+            fi
+
+            if ! git checkout -B "$branch" "origin/$branch"; then
+              echo "::warning::Could not check out '${branch}'."
+              failed+=("$branch (checkout failed)")
+              echo "::endgroup::"
+              continue
+            fi
+
+            if git merge --no-edit origin/main; then
+              if git push origin "HEAD:$branch"; then
+                echo "Successfully synced '${branch}' with main."
+              else
+                echo "::warning::Push to '${branch}' failed."
+                failed+=("$branch (push failed)")
+              fi
+            else
+              echo "::warning::Merge conflict in '${branch}'."
+              git merge --abort || true
+              failed+=("$branch (merge conflict)")
+            fi
+
+            echo "::endgroup::"
+          done
+
+          if (( ${#failed[@]} > 0 )); then
+            echo "::error::Some branches were not synced:"
+            printf ' - %s\n' "${failed[@]}"
+            exit 1
+          fi
+
+          echo "All team branches are up to date with main."
