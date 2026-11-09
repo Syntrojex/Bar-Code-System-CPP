@@ -13,6 +13,7 @@
 #include <QTimer>
 
 // brand logo tile (barcode glyph on a blue gradient)
+
 class LogoTile : public QWidget {
 public:
     explicit LogoTile(int s) { setFixedSize(s, s); }
@@ -72,6 +73,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     });
 
     // ---- live camera: Backend CameraScanner -> CameraView in the Decode > Camera tab
+
     m_scanner = new CameraScanner;
     m_camTimer = new QTimer(this);
     m_camTimer->setInterval(33);                     // ~30 fps; reads happen on the GUI thread
@@ -79,10 +81,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     connect(m_decode, &DecodePage::cameraStartRequested, this, &MainWindow::startCamera);
     connect(m_decode, &DecodePage::cameraStopRequested, this, &MainWindow::stopCamera);
 
-    // ---------------------------------------------------------------------------
+  
     // PLACEHOLDER (UI demo only) – delete once the real decoder exists.
     // Pressing "Decode Image" just alternates the success / failure states.
-    // ---------------------------------------------------------------------------
+   
     connect(m_decode, &DecodePage::decodeImageRequested, this, [this](const QString &) {
         static bool ok = false;
         if (ok) m_decode->showResult("749205"); else m_decode->showFailure();
@@ -92,7 +94,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
 MainWindow::~MainWindow()
 {
-    stopCamera();                                    // release the webcam before the window goes away
+
+    // release the webcam before the window goes away
+    stopCamera();                                  
     delete m_scanner;
 }
 
