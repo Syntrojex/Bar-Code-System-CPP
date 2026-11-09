@@ -2,7 +2,6 @@
 #include "icons.h"
 #include "widgets.h"
 
-
 #include <QAction>
 #include <QApplication>
 #include <QClipboard>
