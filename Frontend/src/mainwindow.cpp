@@ -4,7 +4,7 @@
 #include "icons.h"
 #include "widgets.h"
 #include "scanner/CameraScanner.h"
-
+#include "barcode/BarcodeGenerator.h"
 #include <QButtonGroup>
 #include <QPainter>
 #include <QScrollArea>
@@ -66,6 +66,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     m_pages->addWidget(scrollWrap(m_decode));
     right->addWidget(m_pages, 1);
     h->addLayout(right, 1);
+   
+    connect(m_generate, &GeneratePage::generateRequested, this, [this](const QString &code) {
+    BarcodeGenerator generator;
+    BarcodeResult result = generator.generate(code);
+
+    if (result.success) {
+        m_generate->setBarcodeImage(QPixmap::fromImage(result.image));
+    }
+});
 
     connect(m_decode, &DecodePage::generateFromCodeRequested, this, [this](const QString &code) {
         m_generate->setCode(code, true);
