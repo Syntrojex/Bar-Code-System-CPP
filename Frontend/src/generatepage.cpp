@@ -9,18 +9,21 @@
 #include <QLineEdit>
 #include <QMessageBox>
 #include <QRegularExpression>
+
 #include <QRegularExpressionValidator>
 #include <QSlider>
 #include <QTime>
 #include <QTimer>
 
-// ------------------------------------------------------------------ local helpers
+// --------------------------------------------------- local helpers
 // Project rule: exactly six digits, first digit must not be zero.
 static bool isValidCode(const QString &s)
 {
     static const QRegularExpression re("^[1-9][0-9]{5}$");
     return re.match(s).hasMatch();
 }
+
+
 
 static void showInputError(QLineEdit *input, QLabel *hint, QLabel *icon, const QString &msg)
 {
@@ -53,7 +56,7 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
 
     auto *body = hrow(20);
 
-    // ================================================================ left: configuration
+    // ----------- left: configuration
     auto *cfg = card();
     cfg->setFixedWidth(394);
     auto *cl = vbox(cfg, 28, 28, 28, 28, 12);

@@ -83,17 +83,16 @@ class CameraView : public QWidget {
     Q_OBJECT
 public:
     explicit CameraView(QWidget *parent = nullptr);
-    void setRunning(bool on);
-    void setFrozen(bool on);
-    void setPreviewCode(const QString &digits);     // demo barcode shown in the viewport
-    void setFrame(const QPixmap &pm);               // optional: paint real camera frames
+    void setRunning(bool on);                       // camera on/off (off clears the picture)
+    void setFrozen(bool on);                        // keep the camera running but stop updating the picture
+    bool frozen() const { return m_frozen; }
+    void setFrame(const QPixmap &pm);               // live camera frame (ignored while frozen)
     QSize sizeHint() const override { return {620, 350}; }
 protected:
     void paintEvent(QPaintEvent *) override;
 private:
-    bool m_running = true, m_frozen = false;
+    bool m_running = false, m_frozen = false;
     qreal m_phase = 0;
-    QString m_code = "492817";
     QPixmap m_frame;
     QTimer m_timer;
 };

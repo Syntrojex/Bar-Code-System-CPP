@@ -89,7 +89,11 @@ DecodePage::DecodePage(QWidget *parent) : QWidget(parent)
     l->addWidget(m_stack);
 }
 
-void DecodePage::setTab(int i) { m_stack->setCurrentIndex(i); }
+void DecodePage::setTab(int i)
+{
+    if (i != 0) stopCamera();                        // never keep the webcam on while another tab is shown
+    m_stack->setCurrentIndex(i);
+}
 
 SegBar *DecodePage::makeTabs(int current)
 {
@@ -154,12 +158,12 @@ QWidget *DecodePage::buildCameraPage()
     auto *bl = hbox(bar, 14, 10, 14, 10, 10);
     bl->addWidget(T("CAPTURE INPUT:", 11, 500, "#737686", true));
     m_cameraBox = new QComboBox;
-    m_cameraBox->addItem("FaceTime HD Camera (Built-in)");
+    m_cameraBox->addItems({tr("Camera 0 (default)"), tr("Camera 1"), tr("Camera 2")});
     m_cameraBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     m_cameraBox->setMinimumContentsLength(10);
     m_cameraBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     bl->addWidget(m_cameraBox, 1);
-    m_stream = btn(tr("Stream Active"), "deep", "camera");
+    m_stream = btn(tr("Start Camera"), "primary", "camera");
     m_freeze = btn(tr("Freeze"), "outline", "pause");
     auto *cfg = btn("", "square", "sliders");
     bl->addWidget(m_stream);
@@ -173,9 +177,9 @@ QWidget *DecodePage::buildCameraPage()
     auto *hint = panel();
     auto *hl = hbox(hint, 16, 12, 16, 12, 12);
     hl->addWidget(iconLabel("scan", QColor("#0B4BCB"), 20));
-    auto *ht = T(tr("Hold the barcode steady inside the frame. Auto-detect is running continuous inference."), 14, 400, "#1F2A44");
-    ht->setWordWrap(true);
-    hl->addWidget(ht, 1);
+    m_camHint = T(tr("Press \"Start Camera\" to open the selected webcam."), 14, 400, "#1F2A44");
+    m_camHint->setWordWrap(true);
+    hl->addWidget(m_camHint, 1);
     hl->addWidget(iconLabel("target", QColor("#737686"), 18));
     hl->addWidget(T("Tap to\nRefocus", 11, 400, "#737686", true));
     ll->addWidget(hint);
@@ -253,17 +257,15 @@ QWidget *DecodePage::buildCameraPage()
     root->addLayout(body, 1);
 
     // ---- wiring
-    connect(m_stream, &QPushButton::clicked, this, [this]
-            {
-        m_streaming = !m_streaming;
-        m_camera->setRunning(m_streaming);
-        m_stream->setText(m_streaming ? " Stream Active" : " Start Stream");
-        setKind(m_stream, m_streaming ? "deep" : "primary");
-        if (m_streaming) emit cameraStartRequested(m_cameraBox->currentIndex()); else emit cameraStopRequested(); });
-    connect(m_freeze, &QPushButton::clicked, this, [this]
-            {
-        static bool frozen = false;
-        frozen = !frozen;
+    m_freeze->setEnabled(false);
+    connect(m_stream, &QPushButton::clicked, this, [this] {
+        if (m_streaming) { stopCamera(); return; }
+        setCameraActive(true);                       // optimistic; MainWindow reverts it if the camera can't open
+        setCameraMessage(tr("Opening camera..."));
+        emit cameraStartRequested(m_cameraBox->currentIndex());
+    });
+    connect(m_freeze, &QPushButton::clicked, this, [this] {
+        const bool frozen = !m_camera->frozen();
         m_camera->setFrozen(frozen);
         m_freeze->setText(frozen ? " Resume" : " Freeze"); });
     return page;
@@ -777,9 +779,7 @@ void DecodePage::showResult(const QString &code)
     applyResult(m_up, code);
     m_log.code->setText(code); // overview keeps its permanent telemetry box
     m_log.copy->setEnabled(true);
-    if (m_log.fail)
-        m_log.fail->hide();
-    m_camera->setPreviewCode(code);
+    if (m_log.fail) m_log.fail->hide();
 }
 
 void DecodePage::showFailure(const QString &reason, const QString &errCode)
@@ -822,8 +822,33 @@ void DecodePage::resetResult()
         if (r->fail)
             r->fail->hide();
     }
-    if (m_log.fail)
-        m_log.fail->hide();
+    if (m_log.fail) m_log.fail->hide();
+}
+
+void DecodePage::setCameraActive(bool on)
+{
+    m_streaming = on;
+    m_camera->setRunning(on);
+    m_stream->setText(on ? " Stop Camera" : " Start Camera");
+    setKind(m_stream, on ? "deep" : "primary");
+    m_cameraBox->setEnabled(!on);
+    m_freeze->setEnabled(on);
+    m_freeze->setText(" Freeze");
+    if (!on) setCameraMessage(tr("Press \"Start Camera\" to open the selected webcam."));
+    else     setCameraMessage(tr("Hold the barcode steady inside the frame."));
+}
+
+void DecodePage::setCameraMessage(const QString &text, bool error)
+{
+    m_camHint->setText(text);
+    m_camHint->setStyleSheet(QString("font-size:14px; color:%1;").arg(error ? "#BA1A1A" : "#1F2A44"));
+}
+
+void DecodePage::stopCamera()
+{
+    if (!m_streaming) return;
+    setCameraActive(false);
+    emit cameraStopRequested();
 }
 
 void DecodePage::setCameraList(const QStringList &names)

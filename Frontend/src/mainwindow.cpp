@@ -3,13 +3,17 @@
 #include "generatepage.h"
 #include "icons.h"
 #include "widgets.h"
+#include "scanner/CameraScanner.h"
 
 #include <QButtonGroup>
 #include <QPainter>
 #include <QScrollArea>
+#include <QPixmap>
 #include <QStackedWidget>
+#include <QTimer>
 
 // brand logo tile (barcode glyph on a blue gradient)
+
 class LogoTile : public QWidget {
 public:
     explicit LogoTile(int s) { setFixedSize(s, s); }
@@ -68,15 +72,74 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
         m_nav->button(0)->click();
     });
 
-    // ---------------------------------------------------------------------------
+    // ---- live camera: Backend CameraScanner -> CameraView in the Decode > Camera tab
+
+    m_scanner = new CameraScanner;
+    m_camTimer = new QTimer(this);
+    m_camTimer->setInterval(33);                     // ~30 fps; reads happen on the GUI thread
+    connect(m_camTimer, &QTimer::timeout, this, &MainWindow::pumpCamera);
+    connect(m_decode, &DecodePage::cameraStartRequested, this, &MainWindow::startCamera);
+    connect(m_decode, &DecodePage::cameraStopRequested, this, &MainWindow::stopCamera);
+
+  
     // PLACEHOLDER (UI demo only) – delete once the real decoder exists.
     // Pressing "Decode Image" just alternates the success / failure states.
-    // ---------------------------------------------------------------------------
+   
     connect(m_decode, &DecodePage::decodeImageRequested, this, [this](const QString &) {
         static bool ok = false;
         if (ok) m_decode->showResult("749205"); else m_decode->showFailure();
         ok = !ok;
     });
+}
+
+MainWindow::~MainWindow()
+{
+
+    // release the webcam before the window goes away
+    stopCamera();                                  
+    delete m_scanner;
+}
+
+void MainWindow::startCamera(int index)
+{
+#ifndef HAVE_OPENCV
+    m_decode->setCameraActive(false);
+    m_decode->setCameraMessage(tr("This build has no OpenCV, so the webcam cannot be used. "
+                                  "Install OpenCV and reconfigure CMake."), true);
+    return;
+#else
+    QString error;
+    m_failedReads = 0;
+    if (!m_scanner->openCamera(index, &error)) {
+        m_decode->setCameraActive(false);
+        m_decode->setCameraMessage(error.isEmpty() ? tr("Could not open camera %1.").arg(index) : error, true);
+        return;
+    }
+    m_camTimer->start();
+#endif
+}
+
+void MainWindow::stopCamera()
+{
+    if (m_camTimer) m_camTimer->stop();
+    if (m_scanner) m_scanner->closeCamera();
+}
+
+void MainWindow::pumpCamera()
+{
+    if (!m_scanner->isOpened()) { stopCamera(); return; }
+    const CameraFrameResult r = m_scanner->readFrame();
+    if (r.success && !r.frame.isNull()) {
+        m_failedReads = 0;
+        // mirrored for display only (like a mirror / selfie view); the original frame stays unflipped for decoding
+        m_decode->cameraView()->setFrame(QPixmap::fromImage(r.frame.mirrored(true, false)));
+        return;
+    }
+    if (++m_failedReads >= 30) {                     // ~1 s without a frame: camera unplugged / busy
+        stopCamera();
+        m_decode->setCameraActive(false);
+        m_decode->setCameraMessage(r.error.isEmpty() ? tr("Camera stopped delivering frames.") : r.error, true);
+    }
 }
 
 QWidget *MainWindow::buildSidebar()
@@ -122,7 +185,10 @@ QWidget *MainWindow::buildSidebar()
         il->addWidget(b);
         if (i == 0) b->setChecked(true);
     }
-    connect(m_nav, &QButtonGroup::idClicked, this, [this](int id) { m_pages->setCurrentIndex(id); });
+    connect(m_nav, &QButtonGroup::idClicked, this, [this](int id) {
+        if (id != 1) m_decode->stopCamera();         // leaving Decode: switch the webcam off
+        m_pages->setCurrentIndex(id);
+    });
     il->addStretch();
     l->addWidget(inner, 1);
 
