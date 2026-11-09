@@ -21,6 +21,8 @@ git checkout your-branch
 
 ## 3. Synchronize with Main
 
+
+
 Before starting a new task, update your assigned branch with the latest changes from `main`.
 
 ```bash
