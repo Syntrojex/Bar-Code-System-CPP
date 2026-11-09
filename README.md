@@ -45,7 +45,6 @@ Bar-Code-System-CPP/
 │
 ├── CMakeLists.txt        # Build configuration
 ├── CMakePresets.json     # CMake build presets
-├── vcpkg.json            # Dependency manifest
 ├── .gitignore
 └── README.md
 ```
