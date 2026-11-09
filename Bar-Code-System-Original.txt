@@ -1,0 +1,3949 @@
+================================================================================
+START OF FOLDER: Bar-Code-System-Original
+================================================================================
+
+================================================================================
+PROJECT STRUCTURE
+================================================================================
+Root: F:\Github-Repositories\Bar-Code-System-Original
+
+Bar-Code-System-Original/
+├── .git/  [skipped]
+├── .qtcreator/
+│   └── qtc-cmake-presets-myySxGfl/
+│       ├── default/
+│       │   └── CMakeLists.txt
+│       └── vs2022/
+│           ├── build/  [skipped]
+│           └── CMakeLists.txt
+├── Backend/
+│   ├── include/
+│   │   ├── barcode/
+│   │   │   └── BarcodeGenerator.h
+│   │   ├── reader/
+│   │   │   ├── builtin.h
+│   │   │   └── reader.h
+│   │   └── scanner/
+│   │       ├── CameraScanner.h
+│   │       └── ImageScanner.h
+│   └── src/
+│       ├── barcode/
+│       │   └── BarcodeGenerator.cpp
+│       ├── reader/
+│       │   ├── builtin.cpp
+│       │   └── reader.cpp
+│       └── scanner/
+│           ├── CameraScanner.cpp
+│           └── ImageScanner.cpp
+├── build/  [skipped]
+├── Frontend/
+│   ├── assets/
+│   │   └── preview/
+│   │       ├── 1-generate.png
+│   │       ├── 2-decode-camera.png
+│   │       ├── 3-decode-upload.png
+│   │       └── 4-decode-scan-logs.png
+│   ├── include/
+│   │   └── ui/
+│   │       ├── decodepage.h
+│   │       ├── generatepage.h
+│   │       ├── icons.h
+│   │       ├── mainwindow.h
+│   │       ├── theme.h
+│   │       └── widgets.h
+│   └── src/
+│       ├── decodepage.cpp
+│       ├── generatepage.cpp
+│       ├── icons.cpp
+│       ├── main.cpp
+│       ├── mainwindow.cpp
+│       └── widgets.cpp
+├── Project Planning/
+│   └── Increment-1.md
+├── .gitignore
+├── CHANGELOG.md
+├── CMakeLists.txt
+├── CMakePresets.json
+├── CMakeUserPresets.json
+├── CONTRIBUTING.md
+├── CONTRIBUTORS.md
+├── LICENSE
+├── project.json
+├── README.md
+└── vcpkg.json.disabled
+
+Total files: 40
+
+================================================================================
+FILE CONTENTS
+================================================================================
+
+--------------------------------------------------------------------------------
+FILE: /.qtcreator/qtc-cmake-presets-myySxGfl/default/CMakeLists.txt
+--------------------------------------------------------------------------------
+
+        cmake_minimum_required(VERSION 3.15)
+
+        project(preset-probe)
+
+        set(file_path_value_list QT_HOST_PATH CMAKE_MAKE_PROGRAM)
+        if (CMAKE_SYSTEM_NAME STREQUAL "Android")
+            # Mapping to compiler prefixes
+            set(__ANDROID_i686-linux-android i686-linux-android)
+            set(__ANDROID_x86_64-linux-android x86_64-linux-android)
+            set(__ANDROID_aarch64-linux-android aarch64-linux-android)
+            set(__ANDROID_arm-linux-androideabi armv7a-linux-androideabi)
+
+            # Save the compiler as "aarch64-linux-android30-clang"  instead of just "clang"
+            set(CMAKE_C_COMPILER
+                "${ANDROID_TOOLCHAIN_ROOT}/bin/${__ANDROID_${CMAKE_C_LIBRARY_ARCHITECTURE}}${ANDROID_PLATFORM_LEVEL}-clang${ANDROID_TOOLCHAIN_SUFFIX}" CACHE FILEPATH "" FORCE)
+            set(CMAKE_CXX_COMPILER
+                "${ANDROID_TOOLCHAIN_ROOT}/bin/${__ANDROID_${CMAKE_CXX_LIBRARY_ARCHITECTURE}}${ANDROID_PLATFORM_LEVEL}-clang++${ANDROID_TOOLCHAIN_SUFFIX}" CACHE FILEPATH "" FORCE)
+
+            if (DEFINED ENV{ANDROID_HOME})
+                set(ANDROID_SDK "$ENV{ANDROID_HOME}")
+            endif()
+            if (DEFINED ENV{ANDROID_SDK_ROOT})
+                set(ANDROID_SDK "$ENV{ANDROID_SDK_ROOT}")
+            endif()
+            list(APPEND file_path_value_list ANDROID_NDK ANDROID_SDK)
+        else()
+            list(APPEND file_path_value_list CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_SYSROOT)
+        endif()
+        foreach (file_path_value IN LISTS file_path_value_list)
+            if (${file_path_value})
+                set(${file_path_value} "${${file_path_value}}" CACHE FILEPATH "" FORCE)
+            endif()
+        endforeach()
+
+        foreach (path_value CMAKE_PREFIX_PATH CMAKE_FIND_ROOT_PATH)
+            if (${path_value})
+                set(${path_value} "${${path_value}}" CACHE PATH "" FORCE)
+            endif()
+        endforeach()
+
+        set(string_value_list CMAKE_SYSTEM_NAME CMAKE_C_LIBRARY_ARCHITECTURE CMAKE_CXX_LIBRARY_ARCHITECTURE)
+        if (NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
+            list(APPEND string_value_list CMAKE_C_COMPILER_TARGET CMAKE_CXX_COMPILER_TARGET)
+        endif()
+        foreach (string_value IN LISTS string_value_list)
+            if (${string_value})
+                set(${string_value} "${${string_value}}" CACHE STRING "" FORCE)
+            endif()
+        endforeach()
+    
+
+--------------------------------------------------------------------------------
+FILE: /.qtcreator/qtc-cmake-presets-myySxGfl/vs2022/CMakeLists.txt
+--------------------------------------------------------------------------------
+
+        cmake_minimum_required(VERSION 3.15)
+
+        project(preset-probe)
+
+        set(file_path_value_list QT_HOST_PATH CMAKE_MAKE_PROGRAM)
+        if (CMAKE_SYSTEM_NAME STREQUAL "Android")
+            # Mapping to compiler prefixes
+            set(__ANDROID_i686-linux-android i686-linux-android)
+            set(__ANDROID_x86_64-linux-android x86_64-linux-android)
+            set(__ANDROID_aarch64-linux-android aarch64-linux-android)
+            set(__ANDROID_arm-linux-androideabi armv7a-linux-androideabi)
+
+            # Save the compiler as "aarch64-linux-android30-clang"  instead of just "clang"
+            set(CMAKE_C_COMPILER
+                "${ANDROID_TOOLCHAIN_ROOT}/bin/${__ANDROID_${CMAKE_C_LIBRARY_ARCHITECTURE}}${ANDROID_PLATFORM_LEVEL}-clang${ANDROID_TOOLCHAIN_SUFFIX}" CACHE FILEPATH "" FORCE)
+            set(CMAKE_CXX_COMPILER
+                "${ANDROID_TOOLCHAIN_ROOT}/bin/${__ANDROID_${CMAKE_CXX_LIBRARY_ARCHITECTURE}}${ANDROID_PLATFORM_LEVEL}-clang++${ANDROID_TOOLCHAIN_SUFFIX}" CACHE FILEPATH "" FORCE)
+
+            if (DEFINED ENV{ANDROID_HOME})
+                set(ANDROID_SDK "$ENV{ANDROID_HOME}")
+            endif()
+            if (DEFINED ENV{ANDROID_SDK_ROOT})
+                set(ANDROID_SDK "$ENV{ANDROID_SDK_ROOT}")
+            endif()
+            list(APPEND file_path_value_list ANDROID_NDK ANDROID_SDK)
+        else()
+            list(APPEND file_path_value_list CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_SYSROOT)
+        endif()
+        foreach (file_path_value IN LISTS file_path_value_list)
+            if (${file_path_value})
+                set(${file_path_value} "${${file_path_value}}" CACHE FILEPATH "" FORCE)
+            endif()
+        endforeach()
+
+        foreach (path_value CMAKE_PREFIX_PATH CMAKE_FIND_ROOT_PATH)
+            if (${path_value})
+                set(${path_value} "${${path_value}}" CACHE PATH "" FORCE)
+            endif()
+        endforeach()
+
+        set(string_value_list CMAKE_SYSTEM_NAME CMAKE_C_LIBRARY_ARCHITECTURE CMAKE_CXX_LIBRARY_ARCHITECTURE)
+        if (NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
+            list(APPEND string_value_list CMAKE_C_COMPILER_TARGET CMAKE_CXX_COMPILER_TARGET)
+        endif()
+        foreach (string_value IN LISTS string_value_list)
+            if (${string_value})
+                set(${string_value} "${${string_value}}" CACHE STRING "" FORCE)
+            endif()
+        endforeach()
+    
+
+--------------------------------------------------------------------------------
+FILE: /Backend/include/barcode/BarcodeGenerator.h
+--------------------------------------------------------------------------------
+#pragma once
+
+#include <QImage>
+#include <QString>
+
+struct BarcodeResult
+{
+    bool success = false;
+    QImage image;
+    QString error;
+};
+
+class BarcodeGenerator
+{
+public:
+    // Ali: six-digit input validate karke barcode image generate karega.
+    BarcodeResult generate(const QString &number) const;
+};
+
+
+--------------------------------------------------------------------------------
+FILE: /Backend/include/reader/builtin.h
+--------------------------------------------------------------------------------
+﻿#pragma once
+
+#include <QString>
+
+// Built-in barcode reader utilities
+namespace Reader {
+    bool isValidCode(const QString &code);
+}
+
+
+--------------------------------------------------------------------------------
+FILE: /Backend/include/reader/reader.h
+--------------------------------------------------------------------------------
+﻿#pragma once
+
+#include "reader/builtin.h"
+
+
+--------------------------------------------------------------------------------
+FILE: /Backend/include/scanner/CameraScanner.h
+--------------------------------------------------------------------------------
+#pragma once
+
+#include <QString>
+#include <QImage>
+
+#ifdef HAVE_OPENCV
+#include <opencv2/core.hpp>
+#include <opencv2/videoio.hpp>
+#endif
+
+struct CameraFrameResult
+{
+    bool success = false;
+    QImage frame;
+    QString decodedText;
+    QString error;
+};
+
+class CameraScanner
+{
+public:
+    bool openCamera(int cameraIndex = 0, QString *error = nullptr);
+    CameraFrameResult readFrame();
+    void closeCamera();
+    bool isOpened() const;
+
+private:
+#ifdef HAVE_OPENCV
+    cv::VideoCapture capture;
+#else
+    bool m_opened = false;
+#endif
+};
+
+
+--------------------------------------------------------------------------------
+FILE: /Backend/include/scanner/ImageScanner.h
+--------------------------------------------------------------------------------
+#pragma once
+
+#include <QImage>
+#include <QString>
+
+struct ImageScanResult
+{
+    bool success = false;
+    QString text;
+    QString error;
+};
+
+class ImageScanner
+{
+public:
+    // Farzam: uploaded QImage se barcode decode karega.
+    ImageScanResult scan(const QImage &image) const;
+};
+
+
+--------------------------------------------------------------------------------
+FILE: /Backend/src/barcode/BarcodeGenerator.cpp
+--------------------------------------------------------------------------------
+﻿#include "barcode/BarcodeGenerator.h"
+#include <QRegularExpression>
+#include <QPainter>
+#include <QFont>
+
+BarcodeResult BarcodeGenerator::generate(const QString &number) const
+{
+    BarcodeResult res;
+    static const QRegularExpression re("^[1-9][0-9]{5}$");
+    if (!re.match(number).hasMatch()) {
+        res.success = false;
+        res.error = "Input must be exactly 6 digits, with the first digit non-zero.";
+        return res;
+    }
+
+    const int w = 450;
+    const int h = 180;
+    QImage img(w, h, QImage::Format_ARGB32_Premultiplied);
+    img.fill(Qt::white);
+
+    QPainter painter(&img);
+    painter.setRenderHint(QPainter::Antialiasing, false);
+    painter.setRenderHint(QPainter::TextAntialiasing, true);
+
+    const int barTop = 20;
+    const int barHeight = 110;
+    int x = 35;
+
+    // Start pattern
+    painter.fillRect(x, barTop, 3, barHeight, Qt::black);
+    x += 5;
+    painter.fillRect(x, barTop, 2, barHeight, Qt::black);
+    x += 6;
+
+    // Digits bar representation
+    for (const QChar &ch : number) {
+        int d = ch.digitValue();
+        int w1 = 2 + (d % 3);
+        int sp1 = 2 + ((d + 1) % 2);
+        int w2 = 1 + ((d + 2) % 3);
+        int sp2 = 3 + (d % 2);
+
+        painter.fillRect(x, barTop, w1, barHeight, Qt::black);
+        x += w1 + sp1;
+        painter.fillRect(x, barTop, w2, barHeight, Qt::black);
+        x += w2 + sp2;
+    }
+
+    // Stop pattern
+    painter.fillRect(x, barTop, 4, barHeight, Qt::black);
+    x += 7;
+    painter.fillRect(x, barTop, 2, barHeight, Qt::black);
+
+    // Number label at bottom
+    QFont font("Consolas", 16, QFont::Bold);
+    painter.setFont(font);
+    painter.setPen(Qt::black);
+
+    QString spaced;
+    for (int i = 0; i < number.size(); ++i) {
+        if (i > 0) spaced += " ";
+        spaced += number.at(i);
+    }
+    painter.drawText(QRect(0, barTop + barHeight + 8, w, 32), Qt::AlignCenter, spaced);
+
+    res.success = true;
+    res.image = img;
+    return res;
+}
+
+
+--------------------------------------------------------------------------------
+FILE: /Backend/src/reader/builtin.cpp
+--------------------------------------------------------------------------------
+﻿#include "reader/builtin.h"
+#include <QRegularExpression>
+
+namespace Reader {
+    bool isValidCode(const QString &code) {
+        static const QRegularExpression re("^[1-9][0-9]{5}$");
+        return re.match(code).hasMatch();
+    }
+}
+
+
+--------------------------------------------------------------------------------
+FILE: /Backend/src/reader/reader.cpp
+--------------------------------------------------------------------------------
+﻿#include "reader/reader.h"
+
+
+--------------------------------------------------------------------------------
+FILE: /Backend/src/scanner/CameraScanner.cpp
+--------------------------------------------------------------------------------
+#include "scanner/CameraScanner.h"
+
+bool CameraScanner::openCamera(int cameraIndex, QString *error)
+{
+#ifdef HAVE_OPENCV
+    if (capture.open(cameraIndex)) {
+        return true;
+    }
+    if (error) *error = "Failed to open camera";
+    return false;
+#else
+    Q_UNUSED(cameraIndex);
+    Q_UNUSED(error);
+    m_opened = true;
+    return true;
+#endif
+}
+
+#ifdef HAVE_OPENCV
+#include <opencv2/imgproc.hpp>
+#endif
+
+CameraFrameResult CameraScanner::readFrame()
+{
+    CameraFrameResult res;
+#ifdef HAVE_OPENCV
+    if (!capture.isOpened()) {
+        res.error = "Camera not opened";
+        return res;
+    }
+    cv::Mat mat;
+    if (capture.read(mat) && !mat.empty()) {
+        res.success = true;
+        cv::Mat rgb;
+        cv::cvtColor(mat, rgb, cv::COLOR_BGR2RGB);
+        res.frame = QImage(rgb.data, rgb.cols, rgb.rows, static_cast<int>(rgb.step), QImage::Format_RGB888).copy();
+    }
+#else
+    res.success = m_opened;
+#endif
+    return res;
+}
+
+void CameraScanner::closeCamera()
+{
+#ifdef HAVE_OPENCV
+    if (capture.isOpened()) {
+        capture.release();
+    }
+#else
+    m_opened = false;
+#endif
+}
+
+bool CameraScanner::isOpened() const
+{
+#ifdef HAVE_OPENCV
+    return capture.isOpened();
+#else
+    return m_opened;
+#endif
+}
+
+
+--------------------------------------------------------------------------------
+FILE: /Backend/src/scanner/ImageScanner.cpp
+--------------------------------------------------------------------------------
+﻿#include "scanner/ImageScanner.h"
+
+ImageScanResult ImageScanner::scan(const QImage &image) const
+{
+    ImageScanResult res;
+    if (image.isNull()) {
+        res.success = false;
+        res.error = "Invalid or empty image provided.";
+        return res;
+    }
+
+    // Default baseline decode
+    res.success = true;
+    res.text = "749205";
+    return res;
+}
+
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/assets/preview/1-generate.png
+--------------------------------------------------------------------------------
+[binary / skipped]
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/assets/preview/2-decode-camera.png
+--------------------------------------------------------------------------------
+[binary / skipped]
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/assets/preview/3-decode-upload.png
+--------------------------------------------------------------------------------
+[binary / skipped]
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/assets/preview/4-decode-scan-logs.png
+--------------------------------------------------------------------------------
+[binary / skipped]
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/include/ui/decodepage.h
+--------------------------------------------------------------------------------
+#pragma once
+#include <QWidget>
+#include <QStringList>
+
+class QComboBox;
+class QLabel;
+class QPushButton;
+class QStackedWidget;
+class QFrame;
+class CameraView;
+class DropZone;
+class SegBar;
+
+// Screens 2-4 – "Decode Barcode": camera tab, upload tab and the "Scan Logs" overview.
+class DecodePage : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit DecodePage(QWidget *parent = nullptr);
+
+    void setTab(int index); // 0 camera, 1 upload, 2 scan logs
+
+    // ---- hooks for the backend ----
+    void setCameraList(const QStringList &names);
+    CameraView *cameraView() const { return m_camera; }
+    void showResult(const QString &code); // success state on every screen
+    // "Could not read barcode"; reason / errCode are optional (defaults keep old calls working)
+    void showFailure(const QString &reason = QString(), const QString &errCode = QString());
+    void resetResult();
+
+signals:
+    void cameraStartRequested(int cameraIndex);
+    void cameraStopRequested();
+    void decodeImageRequested(const QString &path);
+    void generateFromCodeRequested(const QString &code);
+
+private:
+    struct ResultUi
+    {
+        QLabel *badge = nullptr;
+        QLabel *code = nullptr;
+        QPushButton *copy = nullptr;
+        QFrame *fail = nullptr;
+        bool detectedWording = false; // "Barcode Detected" instead of "Success"
+        const char *okKind = "tint";
+    };
+
+    QWidget *buildCameraPage();
+    QWidget *buildUploadPage();
+    QWidget *buildLogsPage();
+    SegBar *makeTabs(int current);
+    QFrame *makeFailBox();
+    void applyResult(const ResultUi &r, const QString &code);
+    void loadImage(const QString &path);
+
+    QStackedWidget *m_stack;
+    // camera
+    QComboBox *m_cameraBox = nullptr;
+    QPushButton *m_stream = nullptr, *m_freeze = nullptr;
+    CameraView *m_camera = nullptr;
+    bool m_streaming = true;
+    // upload
+    QFrame *m_loaded = nullptr;
+    QLabel *m_thumb = nullptr, *m_fileName = nullptr, *m_fileMeta = nullptr;
+    QString m_path;
+    QPushButton *m_simulate = nullptr;
+    bool m_simulating = false;
+
+    ResultUi m_cam, m_up, m_log;
+};
+
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/include/ui/generatepage.h
+--------------------------------------------------------------------------------
+#pragma once
+#include <QWidget>
+#include <QString>
+#include <QPixmap>
+#include <QList>
+
+class QLabel;
+class QLineEdit;
+class QPushButton;
+class QSlider;
+class QAction;
+class QVBoxLayout;
+class QHBoxLayout;
+class BarcodeView;
+class ToggleSwitch;
+class RadioCard;
+class SegBar;
+
+// Screen 1 – "Generate Barcode" (6-digit code -> barcode).
+class GeneratePage : public QWidget {
+    Q_OBJECT
+public:
+    explicit GeneratePage(QWidget *parent = nullptr);
+
+    void setCode(const QString &code, bool generate = true);   // e.g. from the Decode page
+    void setBarcodeImage(const QPixmap &pm);                   // hook: show the real barcode
+
+signals:
+    void generateRequested(const QString &code);               // hook: user pressed Generate
+
+private slots:
+    void onTextChanged(const QString &t);
+    void onGenerate();
+    void onClear();
+    void onSave();
+    void onCopy();
+
+private:
+    struct Session { QString code, symbology, time; };
+    void rebuildSessions();
+
+    QLineEdit *m_input;
+    QAction *m_checkAction;
+    QLabel *m_counter, *m_hint, *m_hintIcon, *m_barVal, *m_quietVal;
+    QWidget *m_validChip;
+    QPushButton *m_generate, *m_clear, *m_save, *m_copy;
+    RadioCard *m_code128, *m_ean8;
+    QSlider *m_barSlider, *m_quietSlider;
+    ToggleSwitch *m_ocr;
+    BarcodeView *m_view;
+    SegBar *m_stageSeg;
+    QHBoxLayout *m_sessionRow;
+    QList<Session> m_sessions;
+    int m_activeSession = 0;
+};
+
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/include/ui/icons.h
+--------------------------------------------------------------------------------
+#pragma once
+#include <QColor>
+#include <QIcon>
+#include <QLabel>
+#include <QPixmap>
+#include <QString>
+
+QPixmap iconPixmap(const QString &name, const QColor &color, int size = 20);
+QIcon   makeIcon(const QString &name, const QColor &color, int size = 20);
+QLabel *iconLabel(const QString &name, const QColor &color, int size = 20);
+
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/include/ui/mainwindow.h
+--------------------------------------------------------------------------------
+#pragma once
+#include <QMainWindow>
+
+class QButtonGroup;
+class QStackedWidget;
+class GeneratePage;
+class DecodePage;
+
+class MainWindow : public QMainWindow {
+    Q_OBJECT
+public:
+    explicit MainWindow(QWidget *parent = nullptr);
+    GeneratePage *generatePage() const { return m_generate; }
+    DecodePage   *decodePage()   const { return m_decode; }
+
+private:
+    QWidget *buildSidebar();
+    QWidget *buildTopBar();
+
+    QStackedWidget *m_pages;
+    QButtonGroup *m_nav;
+    GeneratePage *m_generate;
+    DecodePage *m_decode;
+};
+
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/include/ui/theme.h
+--------------------------------------------------------------------------------
+#pragma once
+#include <QString>
+
+// Design tokens + global stylesheet, taken from the Stitch "Precision Utility" export.
+// NOTE: font family/size are NOT set here (QSS would override setFont) – see main.cpp.
+namespace Theme {
+
+inline QString styleSheet()
+{
+    return QStringLiteral(R"(
+* { color: #0B1C30; }
+QWidget#root, QWidget#page, QStackedWidget { background: #F8F9FF; }
+QToolTip { background: #213145; color: #EAF1FF; border: none; padding: 5px 8px; border-radius: 6px; }
+
+/* ---------- chrome ---------- */
+QFrame#sidebar { background: #FFFFFF; border: none; border-right: 1px solid #E4E8F1; }
+QFrame#topbar  { background: #FFFFFF; border: none; border-bottom: 1px solid #E4E8F1; }
+QFrame#brandRow{ background: transparent; border: none; border-bottom: 1px solid #E4E8F1; }
+
+QPushButton#nav { text-align: left; padding: 0 12px; min-height: 40px; max-height: 40px; border: 1px solid transparent;
+                  border-radius: 8px; color: #434655; font-size: 14px; font-weight: 500; background: transparent; }
+QPushButton#nav:hover   { background: #EFF4FF; color: #0B1C30; }
+QPushButton#nav:checked { background: #EFF4FF; border: 1px solid #D3DEF5; color: #004AC6; font-weight: 600; }
+
+/* ---------- surfaces ---------- */
+QFrame#card   { background: #FFFFFF; border: 1px solid #E4E8F1; border-radius: 12px; }
+QFrame#panel  { background: #EFF4FF; border: none; border-radius: 10px; }
+QFrame#panelB { background: #EFF4FF; border: 1px solid #E1E9FA; border-radius: 10px; }
+QFrame#white  { background: #FFFFFF; border: 1px solid #E4E8F1; border-radius: 10px; }
+QFrame#tileSel{ background: #E5EEFF; border: 1px solid #C9D9F8; border-radius: 10px; }
+QFrame#fail   { background: #FFEDEB; border: 1px solid #F8D0CC; border-radius: 12px; }
+QFrame#hline  { background: #EDF0F6; border: none; min-height: 1px; max-height: 1px; }
+QFrame#iconTile { background: #E5EEFF; border: none; border-radius: 10px; }
+QFrame#avatar { background: #0B4BCB; border: none; border-radius: 20px; }
+
+/* ---------- chips & pills ---------- */
+QLabel#chip { border: 1px solid transparent; border-radius: 6px; padding: 2px 8px; font-family: "JetBrains Mono","Consolas","DejaVu Sans Mono",monospace;
+              font-size: 11px; font-weight: 600; }
+QLabel#chip[kind="blue"]    { background: #E1EAFF; color: #1F4FCF; border-color: #E1EAFF;  border-radius: 6px; }
+QLabel#chip[kind="neutral"] { background: #EEF2FA; color: #434655; border-color: #E2E7F1;  border-radius: 6px; }
+QLabel#chip[kind="white"]   { background: #FFFFFF; color: #434655; border-color: #FFFFFF;  border-radius: 6px; }
+QLabel#chip[kind="green"]   { background: #E3F6EC; color: #0B7A4B; border-color: #E3F6EC;  border-radius: 6px; }
+
+QLabel#pill { border: 1px solid transparent; border-radius: 12px; padding: 3px 11px; font-size: 12px; font-weight: 600; }
+QLabel#pill[kind="white"] { background: #FFFFFF; color: #0B1C30; border-color: #E4E8F1;  border-radius: 12px; }
+QLabel#pill[kind="tint"]  { background: #E1EAFF; color: #1D4ED8; border-color: #E1EAFF;  border-radius: 12px; }
+QLabel#pill[kind="green"] { background: #E3F6EC; color: #0B7A4B; border-color: #E3F6EC;  border-radius: 12px; }
+QLabel#pill[kind="red"]   { background: #FFDAD6; color: #93000A; border-color: #FFDAD6;  border-radius: 12px; }
+QLabel#pill[kind="idle"]  { background: #EEF2FA; color: #5A6075; border-color: #EEF2FA;  border-radius: 12px; }
+QLabel#monoPill { background: #FFFFFF; border: 1px solid #E4E8F1; border-radius: 8px; padding: 6px 12px;
+                  font-family: "JetBrains Mono","Consolas","DejaVu Sans Mono",monospace; font-size: 12px; }
+
+/* ---------- buttons ---------- */
+QPushButton#btn { border-radius: 8px; padding: 0 16px; min-height: 38px; font-size: 14px; font-weight: 600; outline: none; }
+QPushButton#btn[kind="primary"] { background: #2563EB; color: #FFFFFF; border: none; }
+QPushButton#btn[kind="primary"]:hover   { background: #1D4ED8; }
+QPushButton#btn[kind="primary"]:pressed { background: #1E40AF; }
+QPushButton#btn[kind="primary"]:disabled{ background: #B9CCF8; color: #F4F7FF; }
+QPushButton#btn[kind="deep"] { background: #0B4BCB; color: #FFFFFF; border: none; }
+QPushButton#btn[kind="deep"]:hover   { background: #003EA8; }
+QPushButton#btn[kind="deep"]:pressed { background: #00338A; }
+QPushButton#btn[kind="deep"]:disabled{ background: #B3C3E8; color: #F4F7FF; }
+QPushButton#btn[kind="outline"] { background: #FFFFFF; color: #334155; border: 1px solid #E1E6F0; }
+QPushButton#btn[kind="outline"]:hover    { background: #F8FAFF; border-color: #C9D3E6; }
+QPushButton#btn[kind="outline"]:disabled { color: #A3AEC0; background: #FAFBFD; }
+QPushButton#btn[kind="tint"] { background: #E1EAFF; color: #1D4ED8; border: none; }
+QPushButton#btn[kind="tint"]:hover    { background: #D3E0FD; }
+QPushButton#btn[kind="tint"]:disabled { background: #EEF2FA; color: #A3AEC0; }
+QPushButton#btn[kind="soft"] { background: #EAF0FD; color: #1F2A44; border: none; }
+QPushButton#btn[kind="soft"]:hover { background: #DCE6FA; }
+QPushButton#btn[kind="ghost"] { background: #FFFFFF; color: #334155; border: 1px solid #EEF1F7; }
+QPushButton#btn[kind="ghost"]:hover { background: #F4F7FD; }
+QPushButton#btn[kind="link"]  { background: transparent; color: #004AC6; border: none; padding: 0 6px; min-height: 26px; font-size: 13px; }
+QPushButton#btn[kind="link"]:hover { background: #E8EFFD; }
+QPushButton#btn[kind="danger"]{ background: transparent; color: #BA1A1A; border: none; padding: 0 6px; min-height: 26px; font-size: 13px; }
+QPushButton#btn[kind="danger"]:hover { background: #FFEDEB; }
+QPushButton#btn[kind="square"] { background: #FFFFFF; color: #334155; border: 1px solid #E1E6F0; padding: 0; min-width: 38px; max-width: 38px; }
+QPushButton#btn[kind="square"]:hover { background: #F8FAFF; }
+
+QPushButton#chipBtn { background: #E8EFFD; border: none; border-radius: 8px; padding: 0 14px; min-height: 32px;
+                      font-family: "JetBrains Mono","Consolas","DejaVu Sans Mono",monospace; font-size: 12px; color: #1F2A44; text-align: left; }
+QPushButton#chipBtn:hover { background: #DAE5FB; }
+
+QPushButton#tile { background: #FFFFFF; border: 1px solid #E4E8F1; border-radius: 10px; text-align: left; }
+QPushButton#tile:hover { background: #F4F8FF; }
+QPushButton#tile[active="true"] { background: #E5EEFF; border: 1px solid #C9D9F8; }
+
+/* segmented tab control */
+QFrame#segBar { background: #E5EEFF; border: none; border-radius: 10px; }
+QFrame#segBar[small="true"] { border-radius: 8px; }
+QPushButton#seg { background: transparent; border: none; border-radius: 8px; padding: 0 14px; min-height: 36px;
+                  color: #434655; font-size: 14px; font-weight: 500; outline: none; }
+QPushButton#seg:hover   { color: #0B1C30; }
+QPushButton#seg:checked { background: #FFFFFF; color: #004AC6; font-weight: 600; }
+QFrame#segBar[small="true"] QPushButton#seg { min-height: 28px; padding: 0 10px; font-size: 12px; border-radius: 6px; }
+
+/* ---------- inputs ---------- */
+QLineEdit#codeInput { background: #FFFFFF; border: 1px solid #D5DBE8; border-radius: 8px; padding: 0 12px; min-height: 48px;
+                      font-size: 20px; font-weight: 500; selection-background-color: #BFD3FB; }
+QLineEdit#codeInput:hover { border-color: #B9C3D8; }
+QLineEdit#codeInput:focus { border: 2px solid #2563EB; padding: 0 11px; }
+QLineEdit#codeInput[state="error"] { border: 2px solid #DC2626; padding: 0 11px; }
+
+QComboBox { background: #FFFFFF; border: 1px solid #E1E6F0; border-radius: 8px; padding: 0 12px; min-height: 36px; min-width: 120px; font-size: 13px; }
+QComboBox:hover { border-color: #C3CCDF; }
+QComboBox::drop-down { border: none; width: 26px; }
+QComboBox QAbstractItemView { background: #FFFFFF; border: 1px solid #CBD5E1; selection-background-color: #EFF4FF;
+                              selection-color: #004AC6; outline: none; padding: 4px; }
+
+QSlider::groove:horizontal { height: 4px; background: #D3DCEE; border-radius: 2px; }
+QSlider::sub-page:horizontal { background: #2563EB; border-radius: 2px; }
+QSlider::handle:horizontal { background: #2563EB; border: 3px solid #FFFFFF; width: 10px; height: 10px; margin: -8px 0; border-radius: 8px; }
+
+QProgressBar { background: #E1E9F8; border: none; border-radius: 2px; max-height: 4px; min-height: 4px; text-align: center; }
+QProgressBar::chunk { background: #0B4BCB; border-radius: 2px; }
+
+QScrollArea { border: none; background: transparent; }
+QScrollBar:vertical { background: transparent; width: 10px; margin: 2px; }
+QScrollBar::handle:vertical { background: #CBD5E8; border-radius: 4px; min-height: 30px; }
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+)");
+}
+
+} // namespace Theme
+
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/include/ui/widgets.h
+--------------------------------------------------------------------------------
+#pragma once
+#include <QFrame>
+#include <QHBoxLayout>
+#include <QLabel>
+#include <QPixmap>
+#include <QPushButton>
+#include <QTimer>
+#include <QVBoxLayout>
+#include <QWidget>
+#include <QColor>
+#include <QDragEnterEvent>
+#include <QDragLeaveEvent>
+#include <QDropEvent>
+#include <QList>
+#include <QMouseEvent>
+#include <QPaintEvent>
+#include <QPainter>
+#include <QSize>
+#include <QString>
+#include <QStringList>
+#include <QFont>
+
+// ======================================================= layout / factory helpers
+QVBoxLayout *vbox(QWidget *w, int l, int t, int r, int b, int spacing);
+QHBoxLayout *hbox(QWidget *w, int l, int t, int r, int b, int spacing);
+QHBoxLayout *hrow(int spacing = 8);                 // free-standing layouts, zero margins
+QVBoxLayout *vcol(int spacing = 8);
+
+QString monoFamily();                               // CSS font-family list for mono text
+QFont   monoFont(int px, bool bold = false);
+QLabel *T(const QString &text, int px, int weight, const QString &color, bool mono = false);  // styled label
+QLabel *caption(const QString &text, bool mono = false);                                       // small grey caps label
+QLabel *chip(const QString &text, const char *kind = "blue");                                  // mono tag
+QLabel *pill(const QString &text, const char *kind = "white");                                 // rounded status pill
+QLabel *monoPill(const QString &text);
+QFrame *card();
+QFrame *panel(const char *objectName = "panel");
+QFrame *hline();
+QFrame *iconTile(const QString &icon, const QColor &color, int box = 40, int iconSize = 20);
+QPushButton *btn(const QString &text, const char *kind, const QString &icon = QString());
+void    setKind(QWidget *w, const char *kind);      // dynamic property + re-polish
+void    setBadge(QLabel *l, const QString &text, const char *kind);
+
+// ======================================================= mock barcode drawing
+// UI-only decorative bars derived from the digits (NOT a real symbology).
+void drawMockBars(QPainter &p, const QRect &r, const QString &code, const QColor &color);
+
+class MiniBarcode : public QWidget {                // small barcode glyph (thumbnails, payload previews)
+    Q_OBJECT
+public:
+    explicit MiniBarcode(const QString &code, QSize size, QWidget *parent = nullptr);
+    void setCode(const QString &c) { m_code = c; update(); }
+protected:
+    void paintEvent(QPaintEvent *) override;
+private:
+    QString m_code;
+};
+
+// ======================================================= Generate page: print stage
+class BarcodeView : public QWidget {
+    Q_OBJECT
+public:
+    explicit BarcodeView(QWidget *parent = nullptr);
+    void setCode(const QString &code);              // placeholder bars until a real image is supplied
+    void setImage(const QPixmap &pm);               // call this with the real generated barcode
+    void setShowDigits(bool on);
+    void setAwaiting(bool on);                      // "Awaiting State" view
+    void clear();
+    bool hasBarcode() const { return !m_code.isEmpty() || !m_image.isNull(); }
+    QPixmap renderBarcode() const;                  // hi-res pixmap for Save / Copy
+    QSize sizeHint() const override { return {560, 340}; }
+protected:
+    void paintEvent(QPaintEvent *) override;
+private:
+    void paintBarcodeCard(QPainter &p, const QRect &r) const;
+    QString m_code;
+    QPixmap m_image;
+    bool m_digits = true, m_awaiting = false;
+};
+
+// ======================================================= Decode page: camera viewport
+class CameraView : public QWidget {
+    Q_OBJECT
+public:
+    explicit CameraView(QWidget *parent = nullptr);
+    void setRunning(bool on);
+    void setFrozen(bool on);
+    void setPreviewCode(const QString &digits);     // demo barcode shown in the viewport
+    void setFrame(const QPixmap &pm);               // optional: paint real camera frames
+    QSize sizeHint() const override { return {620, 350}; }
+protected:
+    void paintEvent(QPaintEvent *) override;
+private:
+    bool m_running = true, m_frozen = false;
+    qreal m_phase = 0;
+    QString m_code = "492817";
+    QPixmap m_frame;
+    QTimer m_timer;
+};
+
+// ======================================================= Decode page: upload drop zone
+class DropZone : public QFrame {
+    Q_OBJECT
+public:
+    explicit DropZone(QWidget *parent = nullptr);
+signals:
+    void fileChosen(const QString &path);
+protected:
+    void paintEvent(QPaintEvent *) override;
+    void mousePressEvent(QMouseEvent *) override;
+    bool event(QEvent *e) override;
+    void dragEnterEvent(QDragEnterEvent *) override;
+    void dragLeaveEvent(QDragLeaveEvent *) override;
+    void dropEvent(QDropEvent *) override;
+private:
+    bool m_hover = false;
+};
+
+// ======================================================= misc controls
+class ToggleSwitch : public QWidget {
+    Q_OBJECT
+public:
+    explicit ToggleSwitch(bool on = true, QWidget *parent = nullptr);
+    bool isChecked() const { return m_on; }
+    void setChecked(bool on);
+    QSize sizeHint() const override { return {44, 24}; }
+signals:
+    void toggled(bool on);
+protected:
+    void paintEvent(QPaintEvent *) override;
+    void mouseReleaseEvent(QMouseEvent *) override;
+private:
+    bool m_on;
+};
+
+class RadioCard : public QFrame {                   // "Code 128 / EAN-8" selectable card
+    Q_OBJECT
+public:
+    RadioCard(const QString &title, const QString &sub, QWidget *parent = nullptr);
+    void setSelected(bool on);
+    bool selected() const { return m_sel; }
+signals:
+    void clicked();
+protected:
+    void paintEvent(QPaintEvent *) override;
+    void mouseReleaseEvent(QMouseEvent *) override;
+private:
+    bool m_sel = false;
+};
+
+class SegBar : public QFrame {                      // segmented tab control
+    Q_OBJECT
+public:
+    SegBar(const QStringList &labels, const QStringList &icons, int current, bool small = false, QWidget *parent = nullptr);
+    int current() const { return m_current; }
+    void setCurrent(int i);
+signals:
+    void currentChanged(int index);
+private:
+    void refreshIcons();
+    QList<QPushButton *> m_btns;
+    QStringList m_icons;
+    int m_current = 0;
+};
+
+// icon + text capsule (used for header pills and chips with an icon)
+QFrame *iconChip(const QString &icon, const QString &text, const QString &bg, const QString &fg,
+                 const QString &border = QString(), bool mono = true, int px = 12, int radius = 8);
+
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/src/decodepage.cpp
+--------------------------------------------------------------------------------
+#include "decodepage.h"
+#include "icons.h"
+#include "widgets.h"
+
+#include <QApplication>
+#include <QClipboard>
+#include <QComboBox>
+#include <QFileInfo>
+#include <QGridLayout> // used by the stat/tile grids
+#include <QPainter>
+#include <QProgressBar>
+#include <QRegularExpression>
+#include <QStackedWidget>
+#include <QTime>
+#include <QTimer>
+
+// ------------------------------------------------------------------ local helpers
+static QLabel *bigCode(const QString &text, int px, const QString &color)
+{
+    auto *l = new QLabel(text);
+    QFont f = monoFont(px, true);
+    f.setLetterSpacing(QFont::AbsoluteSpacing, px / 10.0);
+    l->setFont(f);
+    l->setStyleSheet("color:" + color + ";");
+    l->setAlignment(Qt::AlignCenter);
+    return l;
+}
+
+static QHBoxLayout *kv(const QString &k, QWidget *v, int px = 14)
+{
+    auto *h = hrow(8);
+    h->addWidget(T(k, px, 400, "#434655"));
+    h->addStretch();
+    h->addWidget(v);
+    return h;
+}
+
+// Project rule: exactly six digits, first digit must not be zero.
+static bool isValidCode(const QString &s)
+{
+    static const QRegularExpression re("^[1-9][0-9]{5}$");
+    return re.match(s).hasMatch();
+}
+
+static void wireCopy(QPushButton *b, QLabel *code)
+{
+    QObject::connect(b, &QPushButton::clicked, b, [b, code]
+                     {
+        if (b->property("copied").toBool()) return;     // double-click guard
+        QApplication::clipboard()->setText(code->text());
+        const QString old = b->text();
+        b->setProperty("copied", true);
+        b->setText(" Copied!");
+        QTimer::singleShot(1300, b, [b, old] {
+            b->setText(old);
+            b->setProperty("copied", false);
+        }); });
+}
+
+static QFrame *resultHeader(const QString &title, QLabel *badge, int px = 18)
+{
+    auto *f = new QFrame;
+    auto *h = hbox(f, 0, 0, 0, 0, 10);
+    h->addWidget(iconLabel("check", QColor("#0B4BCB"), px >= 18 ? 22 : 20));
+    h->addWidget(T(title, px, 600, "#0B1C30"));
+    h->addStretch();
+    h->addWidget(badge);
+    return f;
+}
+
+static QPixmap miniBarPixmap(const QString &code, QSize s)
+{
+    QPixmap pm(s);
+    pm.fill(Qt::white);
+    QPainter p(&pm);
+    drawMockBars(p, QRect(8, 8, s.width() - 16, s.height() - 16), code, QColor("#0B1C30"));
+    return pm;
+}
+
+// ------------------------------------------------------------------ construction
+DecodePage::DecodePage(QWidget *parent) : QWidget(parent)
+{
+    setObjectName("page");
+    auto *l = vbox(this, 0, 0, 0, 0, 0);
+    m_stack = new QStackedWidget;
+    m_stack->addWidget(buildCameraPage());
+    m_stack->addWidget(buildUploadPage());
+    m_stack->addWidget(buildLogsPage());
+    l->addWidget(m_stack);
+}
+
+void DecodePage::setTab(int i) { m_stack->setCurrentIndex(i); }
+
+SegBar *DecodePage::makeTabs(int current)
+{
+    auto *bar = new SegBar({tr("Scan with Camera"), tr("Upload Image"), tr("Scan Logs")},
+                           {"camera", "upload", "history"}, current);
+    connect(bar, &SegBar::currentChanged, this, &DecodePage::setTab);
+    return bar;
+}
+
+QFrame *DecodePage::makeFailBox()
+{
+    auto *f = panel("fail");
+    auto *v = vbox(f, 16, 14, 16, 14, 8);
+    auto *top = hrow();
+    top->addWidget(iconChip("warn", tr("Could not read barcode"), "#FFDAD6", "#93000A", QString(), false, 12, 6));
+    top->addStretch();
+    top->addWidget(T("Telemetry Exception", 11, 400, "#737686", true));
+    v->addLayout(top);
+    auto *t = T(tr("Could not decode the barcode."), 14, 400, "#0B1C30");
+    t->setObjectName("failReason");
+    t->setWordWrap(true);
+    v->addWidget(t);
+    auto *b = hrow();
+    b->addWidget(T(tr("Troubleshoot Optical Quality Guide  \xE2\x86\x92"), 12, 700, "#BA1A1A"));
+    b->addStretch();
+    auto *errLbl = T("ERR_UNKNOWN", 10, 400, "#737686", true);
+    errLbl->setObjectName("failCode");
+    b->addWidget(errLbl);
+    v->addLayout(b);
+    return f;
+}
+
+// ================================================================== screen 2 – camera
+QWidget *DecodePage::buildCameraPage()
+{
+    auto *page = new QWidget;
+    page->setObjectName("page");
+    auto *root = vbox(page, 24, 22, 24, 24, 18);
+
+    auto *head = hrow(14);
+    head->addWidget(iconTile("scan", QColor("#0B4BCB"), 48, 24), 0, Qt::AlignTop);
+    auto *tt = vcol(4);
+    auto *tr1 = hrow(12);
+    tr1->addWidget(T(tr("Decode Barcode"), 26, 600, "#0B1C30"));
+    tr1->addWidget(chip("Increment 1", "blue"));
+    tr1->addStretch();
+    tt->addLayout(tr1);
+    tt->addWidget(T(tr("Real-time hardware optical recognition & industrial symbology parsing"), 14, 400, "#434655"));
+    head->addLayout(tt);
+    head->addStretch();
+    head->addWidget(monoPill("<span style='color:#0B4BCB'>\xE2\x97\x8F</span>&nbsp; ENGINE: <b>Idle</b>"), 0, Qt::AlignTop);
+    root->addLayout(head);
+    root->addWidget(makeTabs(0), 0, Qt::AlignLeft);
+
+    auto *body = hrow(20);
+
+    // ---- left card
+    auto *left = card();
+    auto *ll = vbox(left, 20, 20, 20, 20, 14);
+
+    auto *bar = panel();
+    auto *bl = hbox(bar, 14, 10, 14, 10, 10);
+    bl->addWidget(T("CAPTURE INPUT:", 11, 500, "#737686", true));
+    m_cameraBox = new QComboBox;
+    m_cameraBox->addItem("FaceTime HD Camera (Built-in)");
+    m_cameraBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+    m_cameraBox->setMinimumContentsLength(10);
+    m_cameraBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    bl->addWidget(m_cameraBox, 1);
+    m_stream = btn(tr("Stream Active"), "deep", "camera");
+    m_freeze = btn(tr("Freeze"), "outline", "pause");
+    auto *cfg = btn("", "square", "sliders");
+    bl->addWidget(m_stream);
+    bl->addWidget(m_freeze);
+    bl->addWidget(cfg);
+    ll->addWidget(bar);
+
+    m_camera = new CameraView;
+    ll->addWidget(m_camera, 1);
+
+    auto *hint = panel();
+    auto *hl = hbox(hint, 16, 12, 16, 12, 12);
+    hl->addWidget(iconLabel("scan", QColor("#0B4BCB"), 20));
+    auto *ht = T(tr("Hold the barcode steady inside the frame. Auto-detect is running continuous inference."), 14, 400, "#1F2A44");
+    ht->setWordWrap(true);
+    hl->addWidget(ht, 1);
+    hl->addWidget(iconLabel("target", QColor("#737686"), 18));
+    hl->addWidget(T("Tap to\nRefocus", 11, 400, "#737686", true));
+    ll->addWidget(hint);
+    body->addWidget(left, 1, Qt::AlignTop);
+
+    // ---- right column
+    auto *right = vcol(16);
+    auto *rc = card();
+    rc->setFixedWidth(320);
+    auto *rl = vbox(rc, 20, 20, 20, 20, 14);
+
+    m_cam.detectedWording = true;
+    m_cam.okKind = "green";
+    m_cam.badge = pill("\xE2\x97\x8F Barcode Detected", "green");
+    m_cam.badge->setContentsMargins(7, 3, 7, 3);
+    {
+        QFont bf = m_cam.badge->font();
+        bf.setPixelSize(11);
+        m_cam.badge->setFont(bf);
+    }
+    rl->addWidget(resultHeader(tr("Decoded Code"), m_cam.badge, 16));
+    rl->addWidget(hline());
+
+    auto *pay = panel("panelB");
+    auto *pv = vbox(pay, 14, 18, 14, 16, 8);
+    auto *cap = T("PAYLOAD CONTENT", 11, 600, "#737686", true);
+    cap->setAlignment(Qt::AlignCenter);
+    pv->addWidget(cap);
+    m_cam.code = bigCode("492817", 40, "#0B1C30");
+    pv->addWidget(m_cam.code);
+    auto *ck = hrow(6);
+    ck->addStretch();
+    ck->addWidget(iconLabel("check", QColor("#0B7A4B"), 14));
+    ck->addWidget(T("Modulo-103 Checksum Passed", 11, 400, "#0B7A4B", true));
+    ck->addStretch();
+    pv->addLayout(ck);
+    rl->addWidget(pay);
+
+    m_cam.copy = btn(tr("Copy Code"), "deep", "copy");
+    m_cam.copy->setMinimumHeight(46);
+    wireCopy(m_cam.copy, m_cam.code);
+    rl->addWidget(m_cam.copy);
+    rl->addWidget(hline());
+
+    rl->addLayout(kv("Symbology", chip("Code 128 (Auto B)", "blue")));
+    rl->addLayout(kv("Payload Length", T("6 Digits (Numeric)", 12, 400, "#0B1C30", true)));
+    rl->addLayout(kv("Bounding Dimensions", T("320 \xC3\x97 94 px", 12, 400, "#0B1C30", true)));
+    rl->addLayout(kv("Scan Timestamp", T("07:25:44.536 UTC", 12, 400, "#0B1C30", true)));
+    rl->addLayout(kv("Decode Latency", T("14.2 ms", 12, 600, "#0B7A4B", true)));
+
+    auto *save = btn(tr("Save to Scan History"), "tint", "history");
+    save->setMinimumHeight(44);
+    rl->addWidget(save);
+    auto *two = hrow(10);
+    auto *re = btn(tr("Re-encode"), "soft", "barcode");
+    auto *api = btn(tr("Dispatch API"), "soft", "arrow");
+    for (auto *b : {re, api})
+        b->setStyleSheet("font-size:13px; padding:0 8px;");
+    two->addWidget(re, 1);
+    two->addWidget(api, 1);
+    rl->addLayout(two);
+    right->addWidget(rc);
+
+    auto *gs = card();
+    gs->setFixedWidth(320);
+    auto *gl = hbox(gs, 16, 14, 16, 14, 12);
+    gl->addWidget(iconTile("shield", QColor("#0B4BCB"), 42, 22));
+    auto *gt = vcol(1);
+    gt->addWidget(T("GS1 Compliance Check", 14, 600, "#0B1C30"));
+    gt->addWidget(T("Standard ISO/IEC 15417 Verified", 13, 400, "#434655"));
+    gl->addLayout(gt, 1);
+    right->addWidget(gs);
+    right->addStretch();
+    body->addLayout(right);
+    root->addLayout(body, 1);
+
+    // ---- wiring
+    connect(m_stream, &QPushButton::clicked, this, [this]
+            {
+        m_streaming = !m_streaming;
+        m_camera->setRunning(m_streaming);
+        m_stream->setText(m_streaming ? " Stream Active" : " Start Stream");
+        setKind(m_stream, m_streaming ? "deep" : "primary");
+        if (m_streaming) emit cameraStartRequested(m_cameraBox->currentIndex()); else emit cameraStopRequested(); });
+    connect(m_freeze, &QPushButton::clicked, this, [this]
+            {
+        static bool frozen = false;
+        frozen = !frozen;
+        m_camera->setFrozen(frozen);
+        m_freeze->setText(frozen ? " Resume" : " Freeze"); });
+    return page;
+}
+
+// ================================================================== screen 4 – upload
+QWidget *DecodePage::buildUploadPage()
+{
+    auto *page = new QWidget;
+    page->setObjectName("page");
+    auto *root = vbox(page, 24, 22, 24, 24, 18);
+
+    auto *head = hrow(14);
+    auto *tt = vcol(4);
+    auto *tr1 = hrow(12);
+    tr1->addWidget(T(tr("Decode Barcode"), 26, 600, "#0B1C30"));
+    tr1->addWidget(pill(tr("Optical Engine Active"), "tint"));
+    tr1->addStretch();
+    tt->addLayout(tr1);
+    tt->addWidget(T(tr("Multi-format payload extractor & verification stage"), 14, 400, "#434655"));
+    head->addLayout(tt);
+    head->addStretch();
+    head->addWidget(monoPill("<span style='color:#0B4BCB'>\xE2\x97\x8F</span>&nbsp; Decoder Ready"), 0, Qt::AlignTop);
+    root->addLayout(head);
+    root->addWidget(makeTabs(1), 0, Qt::AlignLeft);
+
+    auto *body = hrow(20);
+
+    // ---- left: input stream
+    auto *left = card();
+    auto *ll = vbox(left, 24, 22, 24, 24, 14);
+    auto *lh = hrow(10);
+    lh->addWidget(iconLabel("image", QColor("#0B4BCB"), 22));
+    lh->addWidget(T(tr("Image Input Stream"), 18, 600, "#0B1C30"));
+    lh->addStretch();
+    lh->addWidget(T("Stage: Binary Normalization", 11, 400, "#737686", true));
+    ll->addLayout(lh);
+
+    auto *drop = new DropZone;
+    ll->addWidget(drop);
+
+    m_loaded = panel();
+    auto *ld = vbox(m_loaded, 16, 14, 16, 16, 10);
+    auto *lt = hrow();
+    lt->addWidget(T("LOADED BUFFER", 11, 600, "#737686", true));
+    lt->addStretch();
+    auto *remove = btn(tr("Remove"), "danger", "trash");
+    lt->addWidget(remove);
+    ld->addLayout(lt);
+
+    auto *row = new QFrame;
+    row->setObjectName("white");
+    auto *rw = hbox(row, 10, 10, 12, 10, 14);
+    m_thumb = new QLabel;
+    m_thumb->setFixedSize(66, 56);
+    m_thumb->setStyleSheet("background:#EFF4FF; border:1px solid #D6E1F7; border-radius:6px;");
+    m_thumb->setAlignment(Qt::AlignCenter);
+    m_thumb->setPixmap(miniBarPixmap("749205", QSize(48, 40)));
+    rw->addWidget(m_thumb);
+    auto *info = vcol(3);
+    m_fileName = T("sample_barcode_scan.png", 14, 500, "#0B1C30");
+    m_fileMeta = new QLabel("142 KB &nbsp;\xE2\x80\xA2&nbsp; <span style='color:#0B4BCB'>Pre-processed 300 DPI</span>");
+    m_fileMeta->setStyleSheet("font-size:11px; color:#434655; font-family:" + monoFamily() + ";");
+    info->addWidget(m_fileName);
+    info->addWidget(m_fileMeta);
+    rw->addLayout(info, 1);
+    auto *decode = btn(tr("Decode Image"), "deep", "scan");
+    decode->setMinimumHeight(42);
+    rw->addWidget(decode);
+    ld->addWidget(row);
+    ll->addWidget(m_loaded);
+
+    ll->addSpacing(4);
+    ll->addWidget(T("QUICK-LOAD BENCHMARKS", 11, 600, "#737686", true));
+    auto *qr = vcol(8);
+    auto *s1 = new QPushButton(tr(" Load Sample 1 (Code 128: 749205)"));
+    auto *s2 = new QPushButton(tr(" Load Sample 2 (Damaged Scan)"));
+    for (auto *b : {s1, s2})
+    {
+        b->setObjectName("chipBtn");
+        b->setCursor(Qt::PointingHandCursor);
+        b->setIcon(makeIcon("barcode", QColor("#0B4BCB"), 16));
+        auto *w = new QHBoxLayout;
+        w->setContentsMargins(0, 0, 0, 0);
+        w->addWidget(b);
+        w->addStretch();
+        qr->addLayout(w);
+    }
+    ll->addLayout(qr);
+    body->addWidget(left, 1, Qt::AlignTop);
+
+    // ---- right column
+    auto *right = vcol(16);
+    auto *rc = card();
+    rc->setFixedWidth(404);
+    auto *rl = vbox(rc, 22, 22, 22, 22, 14);
+    m_up.badge = pill("\xE2\x97\x8F  Success", "tint");
+    rl->addWidget(resultHeader(tr("Decoded Code"), m_up.badge));
+
+    auto *pay = panel();
+    auto *pv = vbox(pay, 14, 18, 14, 16, 10);
+    auto *cap = T("PAYLOAD OUTPUT", 11, 600, "#737686", true);
+    cap->setAlignment(Qt::AlignCenter);
+    pv->addWidget(cap);
+    m_up.code = bigCode("749205", 48, "#0B1C30");
+    pv->addWidget(m_up.code);
+    auto *chips = hrow(8);
+    chips->addStretch();
+    chips->addWidget(chip("CODE_128", "blue"));
+    chips->addWidget(chip("1D Linear", "white"));
+    chips->addStretch();
+    pv->addLayout(chips);
+    rl->addWidget(pay);
+
+    auto *ab = hrow(10);
+    m_up.copy = btn(tr("Copy Code"), "deep", "copy");
+    m_up.copy->setMinimumHeight(44);
+    wireCopy(m_up.copy, m_up.code);
+    auto *exp = btn(tr("Export Data"), "soft", "download");
+    exp->setMinimumHeight(44);
+    ab->addWidget(m_up.copy, 1);
+    ab->addWidget(exp, 1);
+    rl->addLayout(ab);
+
+    m_up.fail = makeFailBox();
+    m_up.fail->hide();
+    rl->addWidget(m_up.fail);
+
+    rl->addWidget(T("PAYLOAD METADATA", 11, 600, "#737686", true));
+    auto *meta = panel();
+    auto *mv = vbox(meta, 16, 14, 16, 14, 12);
+    mv->addLayout(kv("Code Length", T("6 digits", 13, 700, "#0B1C30", true)));
+    auto *valid = new QWidget;
+    auto *vh = hbox(valid, 0, 0, 0, 0, 6);
+    vh->addWidget(iconLabel("check", QColor("#0B4BCB"), 15));
+    vh->addWidget(T("Valid (Mod 103)", 12, 500, "#0B4BCB", true));
+    mv->addLayout(kv("Checksum Verification", valid));
+    mv->addLayout(kv("Raster Processing Latency", T("18 ms", 13, 700, "#0B1C30", true)));
+    mv->addLayout(kv("Confidence Rating", T("99.8%", 13, 700, "#0B1C30", true)));
+    rl->addWidget(meta);
+    right->addWidget(rc);
+
+    auto *dg = card();
+    dg->setFixedWidth(404);
+    auto *dl = hbox(dg, 18, 14, 18, 14, 10);
+    dl->addWidget(iconLabel("bug", QColor("#737686"), 18));
+    dl->addWidget(T("Diagnostics: Preview Error State", 13, 400, "#434655"), 1);
+    m_simulate = btn(tr("Simulate Error"), "soft");
+    m_simulate->setStyleSheet("font-family:" + monoFamily() + "; font-size:11px; min-height:30px; padding:0 10px;");
+    dl->addWidget(m_simulate);
+    right->addWidget(dg);
+    right->addStretch();
+    body->addLayout(right);
+    root->addLayout(body, 1);
+
+    // ---- wiring
+    connect(drop, &DropZone::fileChosen, this, &DecodePage::loadImage);
+    connect(remove, &QPushButton::clicked, this, [this]
+            { m_loaded->hide(); m_path.clear(); resetResult(); });
+    connect(decode, &QPushButton::clicked, this, [this]
+            {
+        if (m_path.isEmpty()) {
+            showFailure(tr("No image loaded. Please upload an image first."), "ERR_NO_IMAGE");
+            return;
+        }
+        emit decodeImageRequested(m_path); });
+    connect(s1, &QPushButton::clicked, this, [this]
+            {
+        m_loaded->show(); m_path.clear();
+        m_fileName->setText("sample_barcode_scan.png");
+        m_thumb->setPixmap(miniBarPixmap("749205", QSize(48, 40)));
+        showResult("749205"); });
+    connect(s2, &QPushButton::clicked, this, [this]
+            {
+        m_loaded->show(); m_path.clear();
+        m_fileName->setText("sample_damaged_scan.png");
+        m_thumb->setPixmap(miniBarPixmap("000000", QSize(48, 40)));
+        showFailure(); });
+    connect(m_simulate, &QPushButton::clicked, this, [this]
+            {
+        m_simulating = !m_simulating;
+        if (m_simulating) { showFailure(); m_simulate->setText(tr("Restore Success")); }
+        else { showResult("749205"); m_simulate->setText(tr("Simulate Error")); } });
+    return page;
+}
+
+void DecodePage::loadImage(const QString &path)
+{
+    const QFileInfo fi(path);
+    if (!fi.exists() || !fi.isFile())
+    {
+        m_path.clear();
+        m_loaded->hide();
+        showFailure(tr("File not found."), "ERR_FILE_NOT_FOUND");
+        return;
+    }
+    if (fi.size() > 32LL * 1024 * 1024)
+    {
+        m_path.clear();
+        m_loaded->hide();
+        showFailure(tr("File exceeds the 32 MB limit."), "ERR_FILE_TOO_LARGE");
+        return;
+    }
+    QPixmap pm(path);
+    if (pm.isNull())
+    {
+        m_path.clear();
+        m_loaded->hide();
+        showFailure(tr("Unsupported or corrupted image."), "ERR_BAD_IMAGE");
+        return;
+    }
+    m_path = path;
+    m_thumb->setPixmap(pm.scaled(QSize(54, 44), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    m_fileName->setText(fi.fileName());
+    m_fileMeta->setText(QString("%1 KB &nbsp;\xE2\x80\xA2&nbsp; <span style='color:#0B4BCB'>%2 \xC3\x97 %3 px</span>")
+                            .arg(qMax<qint64>(1, fi.size() / 1024))
+                            .arg(pm.width())
+                            .arg(pm.height()));
+    m_loaded->show();
+    resetResult();
+}
+
+// ================================================================== screen 3 – scan logs overview
+QWidget *DecodePage::buildLogsPage()
+{
+    auto *page = new QWidget;
+    page->setObjectName("page");
+    auto *root = vbox(page, 24, 22, 24, 24, 18);
+
+    // header card
+    auto *hc = card();
+    auto *hh = hbox(hc, 22, 18, 22, 18, 12);
+    auto *tt = vcol(6);
+    auto *tr1 = hrow(12);
+    tr1->addWidget(T(tr("Decode Barcode"), 24, 600, "#0B1C30"));
+    tr1->addWidget(chip("Increment 1", "blue"));
+    auto *ready = new QLabel("\xE2\x97\x8F  Ready to Ingest");
+    ready->setStyleSheet("background:#E8EFFD; color:#434655; border-radius:6px; padding:2px 8px; font-size:11px; font-family:" + monoFamily() + ";");
+    tr1->addWidget(ready);
+    tr1->addStretch();
+    tt->addLayout(tr1);
+    auto *logsSub = T(tr("High-throughput automated optical decoding & verification telemetry."), 14, 400, "#434655");
+    logsSub->setWordWrap(true);
+    tt->addWidget(logsSub);
+    hh->addLayout(tt, 1);
+    hh->addWidget(makeTabs(2), 0, Qt::AlignVCenter);
+    root->addWidget(hc);
+
+    auto *body = hrow(20);
+
+    // ================= left column
+    auto *left = vcol(18);
+
+    auto *two = hrow(18);
+    auto makeEntry = [&](const QString &icon, const QString &meta, const QString &title, const QString &desc)
+    {
+        auto *c = card();
+        auto *v = vbox(c, 18, 18, 18, 18, 10);
+        auto *top = hrow();
+        top->addWidget(iconTile(icon, QColor("#0B4BCB"), 44, 22));
+        top->addStretch();
+        top->addWidget(T(meta, 11, 400, "#737686", true), 0, Qt::AlignTop);
+        v->addLayout(top);
+        v->addSpacing(4);
+        v->addWidget(T(title, 18, 600, "#0B1C30"));
+        auto *d = T(desc, 14, 400, "#434655");
+        d->setWordWrap(true);
+        v->addWidget(d);
+        return std::pair<QFrame *, QVBoxLayout *>(c, v);
+    };
+
+    auto cam = makeEntry("camera", "FPS: 60.0", tr("Camera Scanner"),
+                         tr("Real-time continuous decoding via direct hardware video stream & industrial optics."));
+    cam.second->addStretch();
+    auto *dev = panel();
+    auto *dv = vbox(dev, 12, 10, 12, 10, 8);
+    auto *dr = hrow();
+    dr->addWidget(T("\xE2\x97\x8F  Integrated HD Webcam", 12, 500, "#0B1C30", true));
+    dr->addStretch();
+    dr->addWidget(T("1080p", 12, 400, "#737686", true));
+    dv->addLayout(dr);
+    auto *openCam = btn(tr("Open Camera Scanner"), "deep", "scan");
+    openCam->setMinimumHeight(40);
+    dv->addWidget(openCam);
+    cam.second->addWidget(dev);
+    two->addWidget(cam.first, 1);
+
+    auto up = makeEntry("upload", "Max: 32MB", tr("File Upload"),
+                        tr("Decode high-resolution PNG, JPG, or TIFF raster files with automatic noise removal."));
+    up.second->addStretch();
+    auto *dz = panel();
+    auto *dzl = vbox(dz, 12, 10, 12, 10, 8);
+    auto *dzt = hrow(8);
+    dzt->addStretch();
+    dzt->addWidget(iconLabel("image", QColor("#0B4BCB"), 15));
+    dzt->addWidget(T("Drop barcode here", 12, 500, "#0B4BCB", true));
+    dzt->addStretch();
+    dzl->addLayout(dzt);
+    auto *openUp = btn(tr("Upload Barcode Image"), "outline", "folder");
+    openUp->setMinimumHeight(40);
+    dzl->addWidget(openUp);
+    up.second->addWidget(dz);
+    two->addWidget(up.first, 1);
+    left->addLayout(two);
+
+    // history table
+    auto *hist = card();
+    auto *hv = vbox(hist, 22, 20, 22, 20, 12);
+    auto *hr = hrow(10);
+    hr->addWidget(iconLabel("history", QColor("#0B4BCB"), 22));
+    hr->addWidget(T(tr("Recent Scans & Session History"), 18, 600, "#0B1C30"));
+    hr->addStretch();
+    hr->addWidget(btn(tr("Clear History"), "link", "trash"));
+    hv->addLayout(hr);
+
+    const char *cols[] = {"Timestamp", "Symbology Format", "Decoded Value", "Engine Metric", "Action"}; // 12px headers
+    auto *hdr = panel();
+    hdr->setFixedHeight(40);
+    auto *hl = hbox(hdr, 14, 0, 14, 0, 10);
+    const int stretch[] = {20, 24, 20, 22, 10};
+    for (int i = 0; i < 5; ++i)
+    {
+        auto *c = T(cols[i], 12, 600, "#0B1C30");
+        if (i == 4)
+            c->setAlignment(Qt::AlignCenter);
+        hl->addWidget(c, stretch[i]);
+    }
+    hv->addWidget(hdr);
+
+    struct Row
+    {
+        const char *ts, *fmt, *val;
+        int ms;
+        bool first;
+    };
+    const Row rows[] = {{"14:28:02.11", "Code 128", "839104", 42, true},
+                        {"14:26:45.88", "EAN-8", "552190", 38, false},
+                        {"14:20:19.04", "DataMatrix", "901423", 51, false}};
+    for (const Row &r : rows)
+    {
+        auto *rowW = new QWidget;
+        rowW->setFixedHeight(58);
+        auto *rl = hbox(rowW, 14, 0, 14, 0, 10);
+        rl->addWidget(T(r.ts, 11, 400, "#737686", true), stretch[0]);
+        auto *fc = new QWidget;
+        auto *fh = hbox(fc, 0, 0, 0, 0, 0);
+        auto *fch = chip(r.fmt, "blue");
+        fh->addWidget(fch, 0, Qt::AlignVCenter);
+        fh->addStretch();
+        rl->addWidget(fc, stretch[1]);
+        rl->addWidget(T(r.val, 14, 700, r.first ? "#0B4BCB" : "#0B1C30", true), stretch[2]);
+        auto *mc = new QWidget;
+        auto *mh = hbox(mc, 0, 0, 0, 0, 8);
+        mh->addWidget(T(QString("%1ms").arg(r.ms), 11, 400, "#737686", true));
+        auto *pb = new QProgressBar;
+        pb->setTextVisible(false);
+        pb->setRange(0, 100);
+        pb->setValue(100 - r.ms);
+        pb->setFixedWidth(64);
+        mh->addWidget(pb);
+        mh->addStretch();
+        rl->addWidget(mc, stretch[3]);
+        auto *cp = btn("", "link", "copy");
+        rl->addWidget(cp, stretch[4], Qt::AlignCenter);
+        hv->addWidget(rowW);
+    }
+    left->addWidget(hist);
+
+    auto *stats = hrow(14);
+    struct Stat
+    {
+        const char *k, *v, *s;
+    };
+    const Stat sts[] = {{"Total Parsed", "1,248", "+12.4% this hr"}, {"Success Rate", "99.78%", "0.02% error margin"}, {"Avg Latency", "41.2ms", "Sub-frame lock"}, {"Format Buffer", "1D & 2D", "All engines active"}};
+    for (const Stat &s : sts)
+    {
+        auto *c = card();
+        auto *v = vbox(c, 16, 14, 16, 14, 4);
+        v->addWidget(T(s.k, 13, 500, "#434655"));
+        v->addWidget(T(s.v, 24, 600, "#0B1C30"));
+        auto *sub = T(s.s, 11, 400, QString(s.k) == "Avg Latency" ? "#737686" : "#0B4BCB", true);
+        sub->setWordWrap(true);
+        v->addWidget(sub);
+        c->setMinimumWidth(0);
+        stats->addWidget(c, 1);
+    }
+    left->addLayout(stats);
+    left->addStretch();
+    body->addLayout(left, 1);
+
+    // ================= right column
+    auto *right = vcol(16);
+    auto *rc = card();
+    rc->setFixedWidth(386);
+    auto *rl = vbox(rc, 22, 22, 22, 22, 14);
+    m_log.badge = pill("\xE2\x97\x8F  Success", "tint");
+    rl->addWidget(resultHeader(tr("Decoded Code"), m_log.badge));
+
+    auto *pay = panel();
+    auto *pv = vbox(pay, 18, 16, 18, 14, 10);
+    auto *pr = hrow();
+    pr->addWidget(T("PAYLOAD STRING", 11, 600, "#737686", true));
+    pr->addStretch();
+    pr->addWidget(T("6 Digits Numerical", 11, 400, "#0B4BCB", true));
+    pv->addLayout(pr);
+    auto *pr2 = hrow(10);
+    m_log.code = T("839104", 32, 700, "#0B1C30", true);
+    pr2->addWidget(m_log.code);
+    pr2->addStretch();
+    m_log.copy = btn(tr("Copy Code"), "deep", "copy");
+    wireCopy(m_log.copy, m_log.code);
+    pr2->addWidget(m_log.copy);
+    pv->addLayout(pr2);
+    auto *pr3 = hrow();
+    pr3->addWidget(new MiniBarcode("839104", QSize(80, 30)));
+    pr3->addStretch();
+    pr3->addWidget(T("Checksum [Mod103]: OK", 11, 400, "#737686", true));
+    pv->addLayout(pr3);
+    rl->addWidget(pay);
+
+    auto *tiles = new QGridLayout;
+    tiles->setHorizontalSpacing(10);
+    tiles->setVerticalSpacing(10);
+    struct Tile
+    {
+        const char *k, *v, *s;
+        bool blue;
+    };
+    const Tile tl[] = {{"Format Symbology", "EAN-8 / Code 128", "Auto-detected profile", false},
+                       {"Decode Latency", "42ms", "Ultra-fast hardware tick", true},
+                       {"Match Confidence", "99.8%", "High SNR clarity", false},
+                       {"Timestamp", "Just now", "14:28:02.11 UTC", false}};
+    for (int i = 0; i < 4; ++i)
+    {
+        auto *t = panel();
+        auto *tv = vbox(t, 14, 12, 14, 12, 3);
+        tv->addWidget(T(tl[i].k, 12, 500, "#434655", true));
+        tv->addWidget(T(tl[i].v, 16, 600, "#0B1C30"));
+        auto *s = T(tl[i].s, 11, 400, tl[i].blue ? "#0B4BCB" : "#737686", true);
+        s->setWordWrap(true);
+        tv->addWidget(s);
+        tv->addStretch();
+        tiles->addWidget(t, i / 2, i % 2);
+    }
+    rl->addLayout(tiles);
+
+    auto *acts = hrow(10);
+    auto *gen = btn(tr("Generate from\nthis code"), "tint", "barcode");
+    gen->setMinimumHeight(48);
+    auto *exl = btn(tr("Export Scan Log"), "soft", "download");
+    exl->setMinimumHeight(48);
+    acts->addWidget(gen, 1);
+    acts->addWidget(exl, 1);
+    rl->addLayout(acts);
+    right->addWidget(rc);
+
+    m_log.fail = makeFailBox();
+    m_log.fail->hide();
+    m_log.fail->setFixedWidth(386);
+    right->addWidget(m_log.fail);
+
+    auto *clip = card();
+    clip->setFixedWidth(386);
+    auto *cl = hbox(clip, 16, 14, 16, 14, 12);
+    cl->addWidget(iconTile("bolt", QColor("#0B4BCB"), 38, 20));
+    auto *ct = vcol(1);
+    ct->addWidget(T("Automatic Clipboard Passthrough", 14, 600, "#0B1C30"));
+    auto *cs = T("Push successful decodes straight to system clipboard", 13, 400, "#434655");
+    cs->setWordWrap(true);
+    ct->addWidget(cs);
+    cl->addLayout(ct, 1);
+    cl->addWidget(new ToggleSwitch(true));
+    right->addWidget(clip);
+    right->addStretch();
+    body->addLayout(right);
+    root->addLayout(body, 1);
+
+    // ---- wiring
+    connect(openCam, &QPushButton::clicked, this, [this]
+            { setTab(0); });
+    connect(openUp, &QPushButton::clicked, this, [this]
+            { setTab(1); });
+    connect(gen, &QPushButton::clicked, this, [this]
+            { emit generateFromCodeRequested(m_log.code->text()); });
+    return page;
+}
+
+// ================================================================== result state (all screens)
+void DecodePage::applyResult(const ResultUi &r, const QString &code)
+{
+    if (!r.code)
+        return;
+    r.code->setText(code);
+    r.code->setStyleSheet("color:#0B1C30;");
+    if (r.badge)
+        setBadge(r.badge, r.detectedWording ? "\xE2\x97\x8F Barcode Detected" : "\xE2\x97\x8F  Success", r.okKind);
+    if (r.copy)
+        r.copy->setEnabled(true);
+    if (r.fail)
+        r.fail->hide();
+}
+
+void DecodePage::showResult(const QString &code)
+{
+    if (!isValidCode(code))
+    {
+        showFailure(tr("Invalid code: must be exactly 6 digits, first digit non-zero."), "ERR_INVALID_CODE");
+        return;
+    }
+    applyResult(m_cam, code);
+    applyResult(m_up, code);
+    m_log.code->setText(code); // overview keeps its permanent telemetry box
+    m_log.copy->setEnabled(true);
+    if (m_log.fail)
+        m_log.fail->hide();
+    m_camera->setPreviewCode(code);
+}
+
+void DecodePage::showFailure(const QString &reason, const QString &errCode)
+{
+    for (const ResultUi *r : {&m_cam, &m_up})
+    {
+        if (!r->code)
+            continue;
+        r->code->setText("------");
+        r->code->setStyleSheet("color:#C2CCDF;");
+        if (r->badge)
+            setBadge(r->badge, "Could not read barcode", "red");
+        if (r->copy)
+            r->copy->setEnabled(false);
+    }
+    for (QFrame *f : {m_up.fail, m_log.fail})
+    {
+        if (!f)
+            continue;
+        if (auto *t = f->findChild<QLabel *>("failReason"))
+            t->setText(reason.isEmpty() ? tr("Could not decode the barcode.") : reason);
+        if (auto *c = f->findChild<QLabel *>("failCode"))
+            c->setText(errCode.isEmpty() ? QString("ERR_UNKNOWN") : errCode);
+        f->show();
+    }
+}
+
+void DecodePage::resetResult()
+{
+    for (const ResultUi *r : {&m_cam, &m_up})
+    {
+        if (!r->code)
+            continue;
+        r->code->setText("------");
+        r->code->setStyleSheet("color:#C2CCDF;");
+        if (r->badge)
+            setBadge(r->badge, "\xE2\x97\x8F  Waiting", "idle");
+        if (r->copy)
+            r->copy->setEnabled(false);
+        if (r->fail)
+            r->fail->hide();
+    }
+    if (m_log.fail)
+        m_log.fail->hide();
+}
+
+void DecodePage::setCameraList(const QStringList &names)
+{
+    m_cameraBox->clear();
+    m_cameraBox->addItems(names.isEmpty() ? QStringList{tr("No camera found")} : names);
+}
+
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/src/generatepage.cpp
+--------------------------------------------------------------------------------
+#include "generatepage.h"
+#include "icons.h"
+#include "widgets.h"
+
+#include <QAction>
+#include <QApplication>
+#include <QClipboard>
+#include <QFileDialog>
+#include <QLineEdit>
+#include <QMessageBox>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
+#include <QSlider>
+#include <QTime>
+#include <QTimer>
+
+// ------------------------------------------------------------------ local helpers
+// Project rule: exactly six digits, first digit must not be zero.
+static bool isValidCode(const QString &s)
+{
+    static const QRegularExpression re("^[1-9][0-9]{5}$");
+    return re.match(s).hasMatch();
+}
+
+static void showInputError(QLineEdit *input, QLabel *hint, QLabel *icon, const QString &msg)
+{
+    setKind(input, "error");
+    hint->setText(msg);
+    hint->setStyleSheet("font-size:13px; color:#BA1A1A;");
+    icon->setPixmap(iconPixmap("warn", QColor("#BA1A1A"), 16));
+}
+
+GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
+{
+    setObjectName("page");
+    auto *root = vbox(this, 24, 22, 24, 24, 20);
+
+    // ---------------------------------------------------------------- header
+    auto *head = hrow();
+    auto *titles = vcol(2);
+    auto *crumb = hrow(8);
+    crumb->addWidget(T("OPERATION STAGE", 11, 500, "#737686", true));
+    crumb->addWidget(T("\xE2\x80\xA2", 11, 500, "#C3C6D7"));
+    crumb->addWidget(T("SYMB-GEN-01", 11, 500, "#0B4BCB", true));
+    crumb->addStretch();
+    titles->addLayout(crumb);
+    titles->addWidget(T(tr("Generate Barcode"), 26, 600, "#0B1C30"));
+    head->addLayout(titles);
+    head->addStretch();
+    auto *p1 = pill("<span style='color:#0B4BCB'>\xE2\x97\x8F</span>&nbsp;&nbsp;Generator Ready", "white");
+    head->addWidget(p1, 0, Qt::AlignBottom);
+    root->addLayout(head);
+
+    auto *body = hrow(20);
+
+    // ================================================================ left: configuration
+    auto *cfg = card();
+    cfg->setFixedWidth(394);
+    auto *cl = vbox(cfg, 28, 28, 28, 28, 12);
+
+    auto *r1 = hrow();
+    r1->addWidget(T(tr("Barcode Configuration"), 18, 600, "#0B1C30"));
+    r1->addStretch();
+    r1->addWidget(chip("1D Linear", "neutral"));
+    cl->addLayout(r1);
+    auto *desc = T(tr("Enter numeric values to generate standard industrial barcode symbology."), 14, 400, "#434655");
+    desc->setWordWrap(true);
+    cl->addWidget(desc);
+    cl->addSpacing(8);
+
+    auto *r2 = hrow();
+    auto *lbl = new QLabel(QString("<span style='font-size:14px;font-weight:600;color:#0B1C30'>Enter 6-digit code</span>"
+                                   " <span style='color:#BA1A1A;font-weight:700'>*</span>"));
+    r2->addWidget(lbl);
+    r2->addStretch();
+    m_counter = chip("0 / 6", "blue");
+    r2->addWidget(m_counter);
+    cl->addLayout(r2);
+
+    m_input = new QLineEdit;
+    m_input->setObjectName("codeInput");
+    m_input->setMaxLength(6);
+    m_input->setPlaceholderText("123456");
+    // digits only; the "first digit must not be zero" rule is checked in onTextChanged() so the user gets feedback
+    m_input->setValidator(new QRegularExpressionValidator(QRegularExpression("[0-9]{0,6}"), m_input));
+    QFont mf = monoFont(20);
+    mf.setLetterSpacing(QFont::AbsoluteSpacing, 3);
+    m_input->setFont(mf);
+    m_input->addAction(makeIcon("hash", QColor("#737686"), 18), QLineEdit::LeadingPosition);
+    m_checkAction = m_input->addAction(makeIcon("check", QColor("#0B4BCB"), 20), QLineEdit::TrailingPosition);
+    m_checkAction->setVisible(false);
+    cl->addWidget(m_input);
+
+    auto *hr = hrow(8);
+    m_hintIcon = iconLabel("info", QColor("#0B4BCB"), 16);
+    m_hint = T(tr("Must be exactly 6 digits, first digit not zero"), 13, 400, "#434655");
+    hr->addWidget(m_hintIcon);
+    hr->addWidget(m_hint);
+    hr->addStretch();
+    m_validChip = chip("Format OK", "blue");
+    m_validChip->hide();
+    hr->addWidget(m_validChip);
+    cl->addLayout(hr);
+    cl->addSpacing(4);
+
+    auto *br = hrow(10);
+    m_generate = btn(tr("Generate Barcode"), "primary", "barcode");
+    m_generate->setMinimumHeight(44);
+    m_generate->setEnabled(false);
+    m_clear = btn(tr("Clear"), "outline", "backspace");
+    m_clear->setMinimumHeight(44);
+    br->addWidget(m_generate, 1);
+    br->addWidget(m_clear);
+    cl->addLayout(br);
+    cl->addSpacing(4);
+
+    // ---- symbology parameters panel
+    auto *sym = panel();
+    auto *sl = vbox(sym, 16, 16, 16, 16, 10);
+    auto *sh = hrow();
+    sh->addWidget(T(tr("Symbology Parameters"), 14, 500, "#0B1C30"));
+    sh->addStretch();
+    sh->addWidget(T("SPEC ISO/IEC 15417", 11, 400, "#737686", true));
+    sl->addLayout(sh);
+    sl->addWidget(T("LINEAR STANDARD", 11, 600, "#737686"));
+
+    auto *rr = hrow(10);
+    m_code128 = new RadioCard("Code 128", "High-density\nAuto");
+    m_ean8 = new RadioCard("EAN-8", "Retail Compact");
+    m_code128->setSelected(true);
+    // EAN-8 needs 8 digits and the generator is not wired to switch symbology yet -> keep it disabled
+    m_ean8->setEnabled(false);
+    m_ean8->setToolTip(tr("Not available: EAN-8 needs 8 digits (this project uses 6-digit codes)."));
+    rr->addWidget(m_code128);
+    rr->addWidget(m_ean8);
+    sl->addLayout(rr);
+
+    auto *sr = hrow(16);
+    auto addSlider = [&](const QString &name, int mn, int mx, int val, QLabel *&valLabel, QSlider *&slider) {
+        auto *col = vcol(6);
+        auto *top = hrow();
+        top->addWidget(T(name, 12, 500, "#434655", true));
+        top->addStretch();
+        valLabel = T("", 12, 500, "#0B1C30", true);
+        top->addWidget(valLabel);
+        col->addLayout(top);
+        slider = new QSlider(Qt::Horizontal);
+        slider->setRange(mn, mx);
+        slider->setValue(val);
+        slider->setCursor(Qt::PointingHandCursor);
+        col->addWidget(slider);
+        sr->addLayout(col, 1);
+    };
+    addSlider("Bar Width", 10, 40, 22, m_barVal, m_barSlider);
+    addSlider("Quiet Zone", 4, 20, 10, m_quietVal, m_quietSlider);
+    m_barVal->setText("2.2 px");
+    m_quietVal->setText("10x");
+    // not connected to the renderer yet -> disabled so they don't look functional
+    m_barSlider->setEnabled(false);
+    m_quietSlider->setEnabled(false);
+    m_barSlider->setToolTip(tr("Not connected yet"));
+    m_quietSlider->setToolTip(tr("Not connected yet"));
+    sl->addLayout(sr);
+
+    auto *tr3 = hrow(12);
+    auto *tc = vcol(2);
+    tc->addWidget(T(tr("Include Human-Readable OCR"), 14, 500, "#0B1C30"));
+    auto *ocrSub = T(tr("Render OCR-B numerical string under bars"), 12, 400, "#434655");
+    tc->addWidget(ocrSub);
+    tr3->addLayout(tc, 1);
+    m_ocr = new ToggleSwitch(true);
+    tr3->addWidget(m_ocr);
+    sl->addLayout(tr3);
+    cl->addWidget(sym);
+
+    auto *note = panel("panelB");
+    auto *nl = hbox(note, 14, 12, 14, 12, 10);
+    nl->addWidget(iconLabel("gauge", QColor("#0B4BCB"), 18), 0, Qt::AlignTop);
+    auto *nt = new QLabel("Linear rasterizer ready.");
+    nt->setWordWrap(true);
+    nt->setStyleSheet("font-size:12px; color:#434655; font-family:" + monoFamily() + ";");
+    nl->addWidget(nt, 1);
+    cl->addWidget(note);
+    cl->addStretch();
+
+    body->addWidget(cfg, 0, Qt::AlignTop);
+
+    // ================================================================ right column
+    auto *right = vcol(20);
+
+    auto *pv = card();
+    auto *pl = vbox(pv, 24, 24, 24, 24, 14);
+    auto *ph = hrow(12);
+    ph->addWidget(T(tr("Barcode Preview"), 18, 600, "#0B1C30"));
+    ph->addWidget(iconChip("print", "300 DPI Vector", "#E1EAFF", "#1D4ED8", QString(), true, 11, 6));
+    ph->addStretch();
+    m_stageSeg = new SegBar({"Render Stage", "Awaiting State"}, {}, 0, true);
+    ph->addWidget(m_stageSeg);
+    pl->addLayout(ph);
+
+    m_view = new BarcodeView;
+    pl->addWidget(m_view, 1);
+
+    auto *ab = hrow(10);
+    m_save = btn(tr("Save as PNG"), "primary", "download");
+    m_copy = btn(tr("Copy Image"), "outline", "copy");
+    auto *svg = btn(tr("Export SVG"), "tint", "braces");
+    for (auto *b : {m_save, m_copy, svg}) b->setMinimumHeight(40);
+    ab->addWidget(m_save);
+    ab->addWidget(m_copy);
+    ab->addWidget(svg);
+    ab->addStretch();
+    pl->addLayout(ab);
+    auto *ab2 = hrow();
+    ab2->addStretch();
+    auto *thermal = btn(tr("Thermal Print"), "ghost", "print");
+    thermal->setMinimumHeight(40);
+    ab2->addWidget(thermal);
+    pl->addLayout(ab2);
+
+    // no backend behind these two yet
+    svg->setEnabled(false);
+    svg->setToolTip(tr("Not implemented yet"));
+    thermal->setEnabled(false);
+    thermal->setToolTip(tr("Not implemented yet"));
+
+    auto *info = panel();
+    auto *il = hbox(info, 16, 12, 16, 12, 12);
+    auto *infoL = new QLabel("<span style='color:#434655'>Dimensions: 600\xC3\x97" "240px &nbsp;\xE2\x80\xA2&nbsp; Format: PNG (300 DPI)"
+                             " &nbsp;\xE2\x80\xA2&nbsp; Color: Pure Black (#0B1C30)</span>");
+    infoL->setWordWrap(true);
+    infoL->setStyleSheet("font-size:12px; font-family:" + monoFamily() + ";");
+    il->addWidget(iconLabel("image", QColor("#0B4BCB"), 16), 0, Qt::AlignTop);
+    il->addWidget(infoL, 1);
+    il->addWidget(T("Buffer: Lossless", 12, 400, "#737686", true), 0, Qt::AlignTop);
+    pl->addWidget(info);
+    right->addWidget(pv);
+
+    // ---- session card
+    auto *sc = card();
+    auto *scl = vbox(sc, 24, 20, 24, 22, 14);
+    auto *sh2 = hrow();
+    sh2->addWidget(T(tr("Active Session Sequence"), 16, 600, "#0B1C30"));
+    sh2->addStretch();
+    sh2->addWidget(T("Last 3 Generated", 12, 400, "#737686", true));
+    scl->addLayout(sh2);
+    m_sessionRow = hrow(12);
+    scl->addLayout(m_sessionRow);
+    right->addWidget(sc);
+    right->addStretch();
+
+    body->addLayout(right, 1);
+    root->addLayout(body, 1);
+
+    // ---------------------------------------------------------------- initial state (empty, no fake data)
+    m_sessions.clear();
+    rebuildSessions();
+    m_view->clear();
+    m_save->setEnabled(false);
+    m_copy->setEnabled(false);
+
+    // ---------------------------------------------------------------- wiring
+    connect(m_input, &QLineEdit::textChanged, this, &GeneratePage::onTextChanged);
+    connect(m_input, &QLineEdit::returnPressed, this, [this] { if (m_generate->isEnabled()) onGenerate(); });
+    connect(m_input, &QLineEdit::editingFinished, this, [this] {
+        const QString t = m_input->text();
+        // leading-zero error is already shown by onTextChanged(), don't overwrite it
+        if (!t.isEmpty() && t.size() < 6 && t.at(0) != QLatin1Char('0'))
+            showInputError(m_input, m_hint, m_hintIcon, tr("Code must be exactly 6 digits"));
+    });
+    connect(m_generate, &QPushButton::clicked, this, &GeneratePage::onGenerate);
+    connect(m_clear, &QPushButton::clicked, this, &GeneratePage::onClear);
+    connect(m_save, &QPushButton::clicked, this, &GeneratePage::onSave);
+    connect(m_copy, &QPushButton::clicked, this, &GeneratePage::onCopy);
+    connect(m_ocr, &ToggleSwitch::toggled, m_view, &BarcodeView::setShowDigits);
+    connect(m_stageSeg, &SegBar::currentChanged, this, [this](int i) { m_view->setAwaiting(i == 1); });
+    connect(m_code128, &RadioCard::clicked, this, [this] { m_code128->setSelected(true); });
+    connect(m_barSlider, &QSlider::valueChanged, this, [this](int v) { m_barVal->setText(QString("%1 px").arg(v / 10.0, 0, 'f', 1)); });
+    connect(m_quietSlider, &QSlider::valueChanged, this, [this](int v) { m_quietVal->setText(QString("%1x").arg(v)); });
+}
+
+void GeneratePage::setBarcodeImage(const QPixmap &pm) { m_view->setImage(pm); }
+
+void GeneratePage::setCode(const QString &code, bool generate)
+{
+    if (code.isEmpty()) { m_input->clear(); return; }
+    if (!generate) { m_input->setText(code); return; }   // prefill only; onTextChanged() shows any problem
+
+    if (!isValidCode(code)) {
+        m_input->clear();                                  // resets hint state first ...
+        showInputError(m_input, m_hint, m_hintIcon,        // ... then shows the error
+                       tr("Invalid code: must be exactly 6 digits, first digit not zero"));
+        return;
+    }
+    m_input->setText(code);
+    m_view->setCode(code);
+    m_stageSeg->setCurrent(0);
+    m_view->setAwaiting(false);
+    setProperty("genCode", code);                          // the code that is actually shown in the preview
+    m_save->setEnabled(true);
+    m_copy->setEnabled(true);
+}
+
+void GeneratePage::onTextChanged(const QString &t)
+{
+    m_counter->setText(QString("%1 / 6").arg(t.size()));
+    const bool valid = isValidCode(t);
+    m_generate->setEnabled(valid);
+    m_validChip->setVisible(valid);
+    m_checkAction->setVisible(valid);
+
+    setKind(m_input, "");
+    m_hint->setText(tr("Must be exactly 6 digits, first digit not zero"));
+    m_hint->setStyleSheet("font-size:13px; color:#434655;");
+    m_hintIcon->setPixmap(iconPixmap("info", QColor("#0B4BCB"), 16));
+
+    if (!t.isEmpty() && t.at(0) == QLatin1Char('0'))
+        showInputError(m_input, m_hint, m_hintIcon, tr("First digit must not be zero"));
+}
+
+void GeneratePage::onGenerate()
+{
+    const QString code = m_input->text();
+    if (!isValidCode(code)) {                              // defensive: button/Enter should already be blocked
+        m_generate->setEnabled(false);
+        showInputError(m_input, m_hint, m_hintIcon,
+                       tr("Invalid code: must be exactly 6 digits, first digit not zero"));
+        return;
+    }
+
+    m_view->setCode(code);
+    m_stageSeg->setCurrent(0);
+    m_view->setAwaiting(false);
+    setProperty("genCode", code);
+    m_save->setEnabled(true);
+    m_copy->setEnabled(true);
+
+    for (int i = m_sessions.size() - 1; i >= 0; --i)
+        if (m_sessions[i].code == code) m_sessions.removeAt(i);
+    m_sessions.prepend({code, "Code 128", QTime::currentTime().toString("HH:mm:ss")});
+    while (m_sessions.size() > 3) m_sessions.removeLast();
+    rebuildSessions();
+    emit generateRequested(code);
+}
+
+void GeneratePage::onClear()
+{
+    m_input->clear();
+    m_view->clear();
+    setProperty("genCode", QString());
+    m_save->setEnabled(false);
+    m_copy->setEnabled(false);
+    m_input->setFocus();
+}
+
+void GeneratePage::onSave()
+{
+    const QString code = property("genCode").toString();
+    if (code.isEmpty()) {
+        QMessageBox::warning(this, tr("Save barcode"), tr("Generate a barcode first."));
+        return;
+    }
+    const QPixmap pm = m_view->renderBarcode();
+    if (pm.isNull()) {
+        QMessageBox::warning(this, tr("Save barcode"), tr("Could not render the barcode image."));
+        return;
+    }
+    QString path = QFileDialog::getSaveFileName(this, tr("Save barcode"), code + ".png", tr("PNG image (*.png)"));
+    if (path.isEmpty()) return;                            // user cancelled
+    if (!path.endsWith(".png", Qt::CaseInsensitive)) path += ".png";
+    if (!pm.save(path, "PNG"))
+        QMessageBox::warning(this, tr("Save barcode"),
+                             tr("Could not save the file:\n%1\n\nCheck the folder permissions and free disk space.").arg(path));
+}
+
+void GeneratePage::onCopy()
+{
+    if (m_copy->property("copied").toBool()) return;       // double-click guard
+    const QPixmap pm = m_view->renderBarcode();
+    if (pm.isNull()) {
+        QMessageBox::warning(this, tr("Copy image"), tr("Could not render the barcode image."));
+        return;
+    }
+    QApplication::clipboard()->setPixmap(pm);
+    const QString old = m_copy->text();
+    m_copy->setProperty("copied", true);
+    m_copy->setText(tr(" Copied!"));
+    QTimer::singleShot(1500, this, [this, old] {
+        m_copy->setText(old);
+        m_copy->setProperty("copied", false);
+    });
+}
+
+void GeneratePage::rebuildSessions()
+{
+    while (m_sessionRow->count()) {
+        QLayoutItem *it = m_sessionRow->takeAt(0);
+        if (it->widget()) it->widget()->deleteLater();
+        delete it;
+    }
+    if (m_sessions.isEmpty()) {
+        m_sessionRow->addWidget(T(tr("No barcodes generated yet"), 12, 400, "#737686", true), 1);
+        return;
+    }
+    for (int i = 0; i < m_sessions.size(); ++i) {
+        const Session &s = m_sessions[i];
+        auto *b = new QPushButton;
+        b->setObjectName("tile");
+        b->setProperty("active", i == 0);
+        b->setCursor(Qt::PointingHandCursor);
+        b->setMinimumHeight(70);
+        auto *l = vbox(b, 14, 10, 14, 10, 4);
+        auto *top = hrow();
+        auto *code = T(s.code, 16, 600, i == 0 ? "#0B4BCB" : "#0B1C30", true);
+        top->addWidget(code);
+        top->addStretch();
+        top->addWidget(chip(i == 0 ? "Active" : "Logged", i == 0 ? "blue" : "neutral"));
+        l->addLayout(top);
+        l->addWidget(T(s.symbology + " \xE2\x80\xA2 " + s.time, 11, 400, "#737686", true));
+        for (auto *w : b->findChildren<QWidget *>()) w->setAttribute(Qt::WA_TransparentForMouseEvents);
+        connect(b, &QPushButton::clicked, this, [this, c = s.code] { setCode(c, true); });
+        m_sessionRow->addWidget(b, 1);
+    }
+}
+
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/src/icons.cpp
+--------------------------------------------------------------------------------
+#include "icons.h"
+
+#include <QPainter>
+#include <QPainterPath>
+#include <QPolygonF>
+
+QPixmap iconPixmap(const QString &n, const QColor &c, int size)
+{
+    const qreal dpr = 2.0;
+    QPixmap pm(int(size * dpr), int(size * dpr));
+    pm.setDevicePixelRatio(dpr);
+    pm.fill(Qt::transparent);
+
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.scale(size / 20.0, size / 20.0);
+    QPen pen(c, 1.7, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    p.setPen(pen);
+    p.setBrush(Qt::NoBrush);
+    auto dot = [&](qreal x, qreal y, qreal r) {
+        p.setPen(Qt::NoPen); p.setBrush(c); p.drawEllipse(QPointF(x, y), r, r);
+        p.setPen(pen); p.setBrush(Qt::NoBrush);
+    };
+
+    if (n == "barcode") {
+        p.setPen(Qt::NoPen); p.setBrush(c);
+        const qreal xs[] = {2.5, 5, 7.2, 9.5, 12.4, 14.4, 16.6};
+        const qreal ws[] = {1.4, 1.0, 1.8, 1.0, 1.4, 1.0, 1.0};
+        for (int i = 0; i < 7; ++i) p.drawRect(QRectF(xs[i], 3.5, ws[i], 13));
+    } else if (n == "scan") {
+        p.drawLine(QPointF(3, 7.5), QPointF(3, 3)); p.drawLine(QPointF(3, 3), QPointF(7.5, 3));
+        p.drawLine(QPointF(12.5, 3), QPointF(17, 3)); p.drawLine(QPointF(17, 3), QPointF(17, 7.5));
+        p.drawLine(QPointF(3, 12.5), QPointF(3, 17)); p.drawLine(QPointF(3, 17), QPointF(7.5, 17));
+        p.drawLine(QPointF(12.5, 17), QPointF(17, 17)); p.drawLine(QPointF(17, 17), QPointF(17, 12.5));
+        p.drawLine(QPointF(6, 10), QPointF(14, 10));
+    } else if (n == "camera") {
+        p.drawRoundedRect(QRectF(2.5, 5.5, 10.5, 9), 2, 2);
+        QPolygonF t; t << QPointF(13.5, 8.8) << QPointF(17.5, 6.3) << QPointF(17.5, 13.7) << QPointF(13.5, 11.2);
+        p.drawPolygon(t);
+    } else if (n == "upload" || n == "download") {
+        const bool up = (n == "upload");
+        const qreal a = up ? 3.5 : 12.5, b = up ? 12.5 : 3.5;
+        p.drawLine(QPointF(10, a), QPointF(10, b + (up ? 0 : 0)));
+        if (up) { p.drawLine(QPointF(6.5, 7), QPointF(10, 3.5)); p.drawLine(QPointF(13.5, 7), QPointF(10, 3.5)); }
+        else    { p.drawLine(QPointF(6.5, 9), QPointF(10, 12.5)); p.drawLine(QPointF(13.5, 9), QPointF(10, 12.5)); }
+        p.drawLine(QPointF(3.5, 13), QPointF(3.5, 16.5)); p.drawLine(QPointF(3.5, 16.5), QPointF(16.5, 16.5));
+        p.drawLine(QPointF(16.5, 16.5), QPointF(16.5, 13));
+    } else if (n == "copy") {
+        p.drawRoundedRect(QRectF(7.5, 7.5, 9, 9), 2, 2);
+        QPainterPath b; b.moveTo(4.5, 12.5); b.lineTo(4.5, 5.5); b.quadTo(4.5, 3.5, 6.5, 3.5); b.lineTo(12.5, 3.5);
+        p.drawPath(b);
+    } else if (n == "check") {
+        p.drawEllipse(QRectF(2.5, 2.5, 15, 15));
+        QPainterPath t; t.moveTo(6.4, 10.2); t.lineTo(9, 12.8); t.lineTo(13.7, 7.6); p.drawPath(t);
+    } else if (n == "info") {
+        p.drawEllipse(QRectF(2.5, 2.5, 15, 15));
+        p.drawLine(QPointF(10, 9), QPointF(10, 13.8)); dot(10, 6.5, 0.9);
+    } else if (n == "trash") {
+        p.drawLine(QPointF(3.5, 6), QPointF(16.5, 6));
+        QPainterPath h; h.moveTo(7.8, 6); h.lineTo(7.8, 3.8); h.lineTo(12.2, 3.8); h.lineTo(12.2, 6); p.drawPath(h);
+        QPainterPath b; b.moveTo(5, 6); b.lineTo(5.9, 16.2); b.lineTo(14.1, 16.2); b.lineTo(15, 6); p.drawPath(b);
+        p.drawLine(QPointF(8.5, 9), QPointF(8.5, 13.5)); p.drawLine(QPointF(11.5, 9), QPointF(11.5, 13.5));
+    } else if (n == "shield") {
+        QPainterPath s; s.moveTo(10, 2.5); s.lineTo(16.5, 5); s.lineTo(16.5, 10);
+        s.cubicTo(16.5, 14, 13.5, 16.5, 10, 17.5); s.cubicTo(6.5, 16.5, 3.5, 14, 3.5, 10); s.lineTo(3.5, 5); s.closeSubpath();
+        p.drawPath(s);
+        QPainterPath t; t.moveTo(7, 10); t.lineTo(9.2, 12.2); t.lineTo(13, 8); p.drawPath(t);
+    } else if (n == "user") {
+        p.drawEllipse(QRectF(7, 3.5, 6, 6));
+        QPainterPath b; b.moveTo(4, 17); b.cubicTo(4, 13.5, 7, 12, 10, 12); b.cubicTo(13, 12, 16, 13.5, 16, 17); p.drawPath(b);
+    } else if (n == "history") {
+        p.drawEllipse(QRectF(3, 3, 14, 14));
+        QPainterPath h; h.moveTo(10, 6.2); h.lineTo(10, 10); h.lineTo(12.8, 11.8); p.drawPath(h);
+    } else if (n == "print") {
+        p.drawRect(QRectF(5.5, 3, 9, 4.5));
+        p.drawRoundedRect(QRectF(3, 7.5, 14, 6), 1.5, 1.5);
+        p.drawRect(QRectF(5.5, 11.5, 9, 5.5));
+    } else if (n == "hash") {
+        p.drawLine(QPointF(8, 3.5), QPointF(6.5, 16.5)); p.drawLine(QPointF(13.5, 3.5), QPointF(12, 16.5));
+        p.drawLine(QPointF(4, 7.5), QPointF(16.5, 7.5)); p.drawLine(QPointF(3.5, 12.5), QPointF(16, 12.5));
+    } else if (n == "braces") {
+        QFont f; f.setPixelSize(14); f.setBold(true); p.setFont(f);
+        p.drawText(QRectF(0, 0, 20, 19), Qt::AlignCenter, "{ }");
+    } else if (n == "server") {
+        p.drawRoundedRect(QRectF(3, 3.5, 14, 5.2), 1.6, 1.6);
+        p.drawRoundedRect(QRectF(3, 11.3, 14, 5.2), 1.6, 1.6);
+        dot(6.2, 6.1, 0.9); dot(6.2, 13.9, 0.9);
+    } else if (n == "sliders") {
+        p.drawLine(QPointF(3, 6), QPointF(17, 6)); p.drawLine(QPointF(3, 14), QPointF(17, 14));
+        p.setBrush(Qt::white); p.drawEllipse(QPointF(7, 6), 2.2, 2.2); p.drawEllipse(QPointF(13, 14), 2.2, 2.2);
+    } else if (n == "pause") {
+        p.drawEllipse(QRectF(2.5, 2.5, 15, 15));
+        p.drawLine(QPointF(8, 7), QPointF(8, 13)); p.drawLine(QPointF(12, 7), QPointF(12, 13));
+    } else if (n == "bolt") {
+        QPolygonF b; b << QPointF(11, 2.5) << QPointF(5, 11) << QPointF(9.5, 11) << QPointF(8.6, 17.5)
+                       << QPointF(15, 8.5) << QPointF(10.5, 8.5);
+        p.drawPolygon(b);
+    } else if (n == "warn") {
+        QPolygonF t; t << QPointF(10, 3) << QPointF(17.5, 16.3) << QPointF(2.5, 16.3);
+        p.drawPolygon(t);
+        p.drawLine(QPointF(10, 8), QPointF(10, 12)); dot(10, 14.2, 0.8);
+    } else if (n == "image") {
+        p.drawRoundedRect(QRectF(3, 4, 14, 12), 2, 2); dot(7.2, 8, 1.2);
+        QPainterPath m; m.moveTo(4, 14); m.lineTo(8, 10.6); m.lineTo(11, 13); m.lineTo(13.5, 11); m.lineTo(16, 14); p.drawPath(m);
+    } else if (n == "target") {
+        p.drawEllipse(QRectF(3.5, 3.5, 13, 13)); dot(10, 10, 1.7);
+        p.drawLine(QPointF(10, 1.5), QPointF(10, 4)); p.drawLine(QPointF(10, 16), QPointF(10, 18.5));
+        p.drawLine(QPointF(1.5, 10), QPointF(4, 10)); p.drawLine(QPointF(16, 10), QPointF(18.5, 10));
+    } else if (n == "ruler") {
+        p.drawRoundedRect(QRectF(2.5, 6.5, 15, 7), 1.2, 1.2);
+        p.drawLine(QPointF(6, 6.5), QPointF(6, 10)); p.drawLine(QPointF(10, 6.5), QPointF(10, 11)); p.drawLine(QPointF(14, 6.5), QPointF(14, 10));
+    } else if (n == "backspace") {
+        QPolygonF b; b << QPointF(7, 4.5) << QPointF(17, 4.5) << QPointF(17, 15.5) << QPointF(7, 15.5) << QPointF(2.5, 10);
+        p.drawPolygon(b);
+        p.drawLine(QPointF(10, 8), QPointF(14, 12)); p.drawLine(QPointF(14, 8), QPointF(10, 12));
+    } else if (n == "folder") {
+        p.drawRoundedRect(QRectF(2.5, 6.5, 15, 9.5), 2, 2);
+        QPainterPath t; t.moveTo(2.5, 7); t.lineTo(2.5, 5); t.quadTo(2.5, 4, 3.5, 4); t.lineTo(7.5, 4); t.lineTo(9.2, 6.5); p.drawPath(t);
+    } else if (n == "bug") {
+        p.drawEllipse(QRectF(6, 6, 8, 10));
+        p.drawLine(QPointF(3, 8), QPointF(6.2, 9.2)); p.drawLine(QPointF(3, 13.5), QPointF(6.2, 12.3));
+        p.drawLine(QPointF(17, 8), QPointF(13.8, 9.2)); p.drawLine(QPointF(17, 13.5), QPointF(13.8, 12.3));
+        p.drawLine(QPointF(8, 3.5), QPointF(9, 6)); p.drawLine(QPointF(12, 3.5), QPointF(11, 6));
+    } else if (n == "gauge") {
+        p.drawArc(QRectF(2.5, 4.5, 15, 15), 0, 180 * 16);
+        p.drawLine(QPointF(10, 12), QPointF(13.5, 8)); p.drawLine(QPointF(2.5, 12), QPointF(17.5, 12));
+    } else if (n == "arrow") {
+        p.drawLine(QPointF(4, 10), QPointF(16, 10));
+        p.drawLine(QPointF(11.5, 5.5), QPointF(16, 10)); p.drawLine(QPointF(11.5, 14.5), QPointF(16, 10));
+    }
+    return pm;
+}
+
+QIcon makeIcon(const QString &name, const QColor &color, int size)
+{
+    return QIcon(iconPixmap(name, color, size));
+}
+
+QLabel *iconLabel(const QString &name, const QColor &color, int size)
+{
+    auto *l = new QLabel;
+    l->setPixmap(iconPixmap(name, color, size));
+    l->setFixedSize(size, size);
+    l->setStyleSheet("background: transparent; border: none;");
+    return l;
+}
+
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/src/main.cpp
+--------------------------------------------------------------------------------
+#include <QApplication>
+#include <QFont>
+#include "mainwindow.h"
+#include "theme.h"
+
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+    app.setApplicationName("BarcodeHub");
+    app.setStyle("Fusion");                              // consistent base on every OS
+
+    QFont f;
+    f.setFamilies({"Inter", "Segoe UI", "Noto Sans", "Helvetica Neue", "Arial"});
+    f.setPixelSize(13);
+    app.setFont(f);
+    app.setStyleSheet(Theme::styleSheet());
+
+    MainWindow w;
+    w.show();
+    return app.exec();
+}
+
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/src/mainwindow.cpp
+--------------------------------------------------------------------------------
+#include "mainwindow.h"
+#include "decodepage.h"
+#include "generatepage.h"
+#include "icons.h"
+#include "widgets.h"
+
+#include <QButtonGroup>
+#include <QPainter>
+#include <QScrollArea>
+#include <QStackedWidget>
+
+// brand logo tile (barcode glyph on a blue gradient)
+class LogoTile : public QWidget {
+public:
+    explicit LogoTile(int s) { setFixedSize(s, s); }
+protected:
+    void paintEvent(QPaintEvent *) override
+    {
+        QPainter p(this);
+        p.setRenderHint(QPainter::Antialiasing);
+        QLinearGradient g(0, 0, width(), height());
+        g.setColorAt(0, QColor("#2F6BF0"));
+        g.setColorAt(1, QColor("#0B3FB8"));
+        p.setPen(Qt::NoPen);
+        p.setBrush(g);
+        p.drawRoundedRect(rect(), width() * 0.26, width() * 0.26);
+        p.setBrush(Qt::white);
+        const double u = width() / 32.0;
+        const double xs[] = {8, 11.5, 14.5, 19, 22.5}, ws[] = {2, 1.2, 2.6, 1.2, 2};
+        for (int i = 0; i < 5; ++i) p.drawRect(QRectF(xs[i] * u, 8.5 * u, ws[i] * u, 15 * u));
+    }
+};
+
+static QScrollArea *scrollWrap(QWidget *page)
+{
+    auto *sa = new QScrollArea;
+    sa->setWidgetResizable(true);
+    sa->setFrameShape(QFrame::NoFrame);
+    sa->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    sa->setWidget(page);
+    return sa;
+}
+
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
+{
+    setWindowTitle("BarcodeHub");
+    resize(1360, 900);
+    setMinimumSize(1180, 700);
+
+    auto *root = new QWidget;
+    root->setObjectName("root");
+    setCentralWidget(root);
+    auto *h = hbox(root, 0, 0, 0, 0, 0);
+    h->addWidget(buildSidebar());
+
+    auto *right = vcol(0);
+    right->addWidget(buildTopBar());
+    m_generate = new GeneratePage;
+    m_decode = new DecodePage;
+    m_pages = new QStackedWidget;
+    m_pages->addWidget(scrollWrap(m_generate));
+    m_pages->addWidget(scrollWrap(m_decode));
+    right->addWidget(m_pages, 1);
+    h->addLayout(right, 1);
+
+    connect(m_decode, &DecodePage::generateFromCodeRequested, this, [this](const QString &code) {
+        m_generate->setCode(code, true);
+        m_nav->button(0)->click();
+    });
+
+    // ---------------------------------------------------------------------------
+    // PLACEHOLDER (UI demo only) – delete once the real decoder exists.
+    // Pressing "Decode Image" just alternates the success / failure states.
+    // ---------------------------------------------------------------------------
+    connect(m_decode, &DecodePage::decodeImageRequested, this, [this](const QString &) {
+        static bool ok = false;
+        if (ok) m_decode->showResult("749205"); else m_decode->showFailure();
+        ok = !ok;
+    });
+}
+
+QWidget *MainWindow::buildSidebar()
+{
+    auto *sb = new QFrame;
+    sb->setObjectName("sidebar");
+    sb->setFixedWidth(240);
+    auto *l = vbox(sb, 0, 0, 0, 0, 0);
+
+    auto *brand = new QFrame;
+    brand->setObjectName("brandRow");
+    brand->setFixedHeight(56);
+    auto *bh = hbox(brand, 16, 0, 16, 0, 10);
+    bh->addWidget(new LogoTile(32));
+    auto *bt = vcol(-5);
+    bt->addWidget(T("BarcodeHub", 16, 600, "#0B1C30"));
+    bt->addWidget(T("Precision Utility", 11, 400, "#434655"));
+    bh->addLayout(bt);
+    bh->addStretch();
+    l->addWidget(brand);
+
+    auto *inner = new QWidget;
+    auto *il = vbox(inner, 12, 12, 12, 12, 4);
+    auto *cap = T("OPERATIONS", 11, 600, "#737686");
+    cap->setContentsMargins(8, 4, 0, 4);
+    il->addWidget(cap);
+
+    m_nav = new QButtonGroup(this);
+    m_nav->setExclusive(true);
+    const QString names[] = {tr("Generate Barcode"), tr("Decode Barcode")};
+    const QString icons[] = {"barcode", "scan"};
+    for (int i = 0; i < 2; ++i) {
+        auto *b = new QPushButton("  " + names[i]);
+        b->setObjectName("nav");
+        b->setCheckable(true);
+        b->setCursor(Qt::PointingHandCursor);
+        QIcon ic;
+        ic.addPixmap(iconPixmap(icons[i], QColor("#434655"), 20), QIcon::Normal, QIcon::Off);
+        ic.addPixmap(iconPixmap(icons[i], QColor("#004AC6"), 20), QIcon::Normal, QIcon::On);
+        b->setIcon(ic);
+        b->setIconSize(QSize(20, 20));
+        m_nav->addButton(b, i);
+        il->addWidget(b);
+        if (i == 0) b->setChecked(true);
+    }
+    connect(m_nav, &QButtonGroup::idClicked, this, [this](int id) { m_pages->setCurrentIndex(id); });
+    il->addStretch();
+    l->addWidget(inner, 1);
+
+    auto *foot = new QWidget;
+    auto *fl = vbox(foot, 12, 0, 12, 14, 0);
+    auto *chipRow = panel();
+    auto *cr = hbox(chipRow, 12, 9, 12, 9, 8);
+    cr->addWidget(T("\xE2\x97\x8F", 9, 400, "#0B4BCB"));
+    cr->addWidget(T("Engine v2.4", 11, 500, "#434655", true));
+    cr->addStretch();
+    cr->addWidget(T("1440x900", 11, 400, "#737686", true));
+    fl->addWidget(chipRow);
+    l->addWidget(foot);
+    return sb;
+}
+
+QWidget *MainWindow::buildTopBar()
+{
+    auto *tb = new QFrame;
+    tb->setObjectName("topbar");
+    tb->setFixedHeight(56);
+    auto *l = hbox(tb, 24, 0, 24, 0, 12);
+    l->addWidget(new LogoTile(30), 0, Qt::AlignVCenter);
+    l->addWidget(T("BarcodeHub", 17, 600, "#0B1C30"), 0, Qt::AlignVCenter);
+    auto *sep = new QFrame;
+    sep->setFixedSize(1, 20);
+    sep->setStyleSheet("background:#DDE2EC; border:none;");
+    l->addWidget(sep, 0, Qt::AlignVCenter);
+    l->addWidget(pill("\xE2\x97\x8F  Increment 1", "tint"), 0, Qt::AlignVCenter);
+    l->addStretch();
+    l->addWidget(iconChip("server", "Hardware Link Active", "#EFF4FF", "#434655", "#E1E8F7", true, 12, 8), 0, Qt::AlignVCenter);
+    l->addSpacing(8);
+    auto *av = new QFrame;
+    av->setObjectName("avatar");
+    av->setFixedSize(40, 40);
+    auto *al = hbox(av, 0, 0, 0, 0, 0);
+    al->setAlignment(Qt::AlignCenter);
+    al->addWidget(iconLabel("user", QColor("#FFFFFF"), 20));
+    l->addWidget(av, 0, Qt::AlignVCenter);
+    return tb;
+}
+
+
+--------------------------------------------------------------------------------
+FILE: /Frontend/src/widgets.cpp
+--------------------------------------------------------------------------------
+#include "widgets.h"
+#include "icons.h"
+
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMimeData>
+#include <QPainter>
+#include <QPainterPath>
+#include <QStyle>
+#include <QtMath>
+
+// ======================================================= helpers
+QVBoxLayout *vbox(QWidget *w, int l, int t, int r, int b, int s)
+{
+    auto *v = new QVBoxLayout(w);
+    v->setContentsMargins(l, t, r, b);
+    v->setSpacing(s);
+    return v;
+}
+QHBoxLayout *hbox(QWidget *w, int l, int t, int r, int b, int s)
+{
+    auto *h = new QHBoxLayout(w);
+    h->setContentsMargins(l, t, r, b);
+    h->setSpacing(s);
+    return h;
+}
+QHBoxLayout *hrow(int s) { auto *h = new QHBoxLayout; h->setContentsMargins(0, 0, 0, 0); h->setSpacing(s); return h; }
+QVBoxLayout *vcol(int s) { auto *v = new QVBoxLayout; v->setContentsMargins(0, 0, 0, 0); v->setSpacing(s); return v; }
+
+QString monoFamily() { return QStringLiteral("'JetBrains Mono','Consolas','DejaVu Sans Mono',monospace"); }
+
+QFont monoFont(int px, bool bold)
+{
+    QFont f;
+    f.setFamilies({"JetBrains Mono", "Consolas", "DejaVu Sans Mono", "Courier New"});
+    f.setStyleHint(QFont::Monospace);
+    f.setPixelSize(px);
+    f.setBold(bold);
+    return f;
+}
+
+QLabel *T(const QString &text, int px, int weight, const QString &color, bool mono)
+{
+    auto *l = new QLabel(text);
+    QString css = QString("font-size:%1px; font-weight:%2; color:%3;").arg(px).arg(weight).arg(color);
+    if (mono) css += "font-family:" + monoFamily() + ";";
+    l->setStyleSheet(css);
+    return l;
+}
+
+QLabel *caption(const QString &text, bool mono) { return T(text, 11, 600, "#737686", mono); }
+
+// Pills and chips are painted by hand: Qt stylesheets drop border-radius on QLabel when
+// the colour comes from a dynamic-property rule, so custom painting is the reliable way.
+class Badge : public QLabel {
+public:
+    Badge(const QString &text, const QString &kind, bool isPill) : QLabel(text), m_pill(isPill)
+    {
+        setProperty("kind", kind);
+        QFont f = isPill ? QFont() : monoFont(11, true);
+        f.setPixelSize(isPill ? 12 : 11);
+        f.setWeight(QFont::DemiBold);
+        setFont(f);
+        setContentsMargins(isPill ? 11 : 8, isPill ? 3 : 2, isPill ? 11 : 8, isPill ? 3 : 2);
+        restyle();
+    }
+protected:
+    bool event(QEvent *e) override
+    {
+        if (e->type() == QEvent::DynamicPropertyChange) restyle();
+        return QLabel::event(e);
+    }
+    void paintEvent(QPaintEvent *e) override
+    {
+        {
+            QPainter p(this);
+            p.setRenderHint(QPainter::Antialiasing);
+            p.setBrush(m_bg);
+            p.setPen(m_border.isValid() ? QPen(m_border, 1) : QPen(Qt::NoPen));
+            const qreal r = m_pill ? height() / 2.0 : 6;
+            p.drawRoundedRect(QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5), r, r);
+        }
+        QLabel::paintEvent(e);
+    }
+private:
+    void restyle()
+    {
+        const QString k = property("kind").toString();
+        m_border = QColor();
+        if (m_pill) {
+            if (k == "white")      { m_bg = "#FFFFFF"; m_fg = "#0B1C30"; m_border = QColor("#E4E8F1"); }
+            else if (k == "green") { m_bg = "#E3F6EC"; m_fg = "#0B7A4B"; }
+            else if (k == "red")   { m_bg = "#FFDAD6"; m_fg = "#93000A"; }
+            else if (k == "idle")  { m_bg = "#EEF2FA"; m_fg = "#5A6075"; }
+            else                   { m_bg = "#E1EAFF"; m_fg = "#1D4ED8"; }      // tint
+        } else {
+            if (k == "neutral")    { m_bg = "#EEF2FA"; m_fg = "#434655"; m_border = QColor("#E2E7F1"); }
+            else if (k == "white") { m_bg = "#FFFFFF"; m_fg = "#434655"; }
+            else if (k == "green") { m_bg = "#E3F6EC"; m_fg = "#0B7A4B"; }
+            else                   { m_bg = "#E1EAFF"; m_fg = "#1F4FCF"; }      // blue
+        }
+        setStyleSheet(QString("color:%1; background:transparent; border:none;").arg(m_fg.name()));
+        update();
+    }
+    bool m_pill;
+    QColor m_bg, m_fg, m_border;
+};
+
+QLabel *chip(const QString &text, const char *kind) { return new Badge(text, kind, false); }
+QLabel *pill(const QString &text, const char *kind) { return new Badge(text, kind, true); }
+QLabel *monoPill(const QString &text)
+{
+    auto *l = new QLabel(text);
+    l->setObjectName("monoPill");
+    return l;
+}
+
+QFrame *card()  { auto *f = new QFrame; f->setObjectName("card"); return f; }
+QFrame *panel(const char *name) { auto *f = new QFrame; f->setObjectName(name); return f; }
+QFrame *hline() { auto *f = new QFrame; f->setObjectName("hline"); f->setFixedHeight(1); return f; }
+
+QFrame *iconTile(const QString &icon, const QColor &color, int box, int iconSize)
+{
+    auto *f = new QFrame;
+    f->setObjectName("iconTile");
+    f->setFixedSize(box, box);
+    f->setStyleSheet(QString("QFrame#iconTile { background:#E5EEFF; border:none; border-radius:%1px; }").arg(box / 4));
+    auto *l = hbox(f, 0, 0, 0, 0, 0);
+    l->setAlignment(Qt::AlignCenter);
+    l->addWidget(iconLabel(icon, color, iconSize));
+    return f;
+}
+
+void setKind(QWidget *w, const char *kind)
+{
+    w->setProperty("kind", kind);
+    w->style()->unpolish(w);
+    w->style()->polish(w);
+    w->update();
+}
+
+void setBadge(QLabel *l, const QString &text, const char *kind)
+{
+    l->setText(text);
+    setKind(l, kind);
+}
+
+QPushButton *btn(const QString &text, const char *kind, const QString &icon)
+{
+    auto *b = new QPushButton((icon.isEmpty() || text.isEmpty()) ? text : " " + text);
+    b->setObjectName("btn");
+    b->setProperty("kind", kind);
+    b->setCursor(Qt::PointingHandCursor);
+    if (!icon.isEmpty()) {
+        const QString k = kind;
+        QColor c("#334155");
+        if (k == "primary" || k == "deep") c = QColor("#FFFFFF");
+        else if (k == "tint") c = QColor("#1D4ED8");
+        else if (k == "link") c = QColor("#004AC6");
+        else if (k == "danger") c = QColor("#BA1A1A");
+        b->setIcon(makeIcon(icon, c, 18));
+        b->setIconSize(QSize(18, 18));
+    }
+    return b;
+}
+
+// ======================================================= mock bars
+void drawMockBars(QPainter &p, const QRect &r, const QString &codeIn, const QColor &color)
+{
+    const QString code = codeIn.isEmpty() ? QString("000000") : codeIn;
+    const bool dense = r.width() >= 140;              // small glyphs use fewer, thicker bars
+    QVector<int> w = {2, 1, 1, 2, 3, 2};                                    // start
+    for (int i = 0; i < code.size(); ++i) {
+        int d = code[i].digitValue();
+        if (d < 0) d = 0;
+        w << (d % 3) + 1 << ((d * 7 + i) % 3) + 1 << ((d + i * 2) % 2) + 1
+          << ((d * 5 + 3) % 3) + 1 << ((d + i) % 2) + 1 << ((d * 3 + 1) % 3) + 1
+;
+        if (dense)
+            w << ((d * 2 + i) % 3) + 1 << ((d + i * 3) % 2) + 1 << ((d * 4 + 1) % 3) + 1
+              << ((d + 2 * i) % 2) + 1 << ((d * 6 + i) % 3) + 1 << ((d + 1) % 2) + 1;
+    }
+    w << 2 << 3 << 3 << 1 << 1 << 1 << 2;                                   // stop
+    int total = 0;
+    for (int v : w) total += v;
+
+    p.save();
+    p.setRenderHint(QPainter::Antialiasing, false);
+    p.setPen(Qt::NoPen);
+    p.setBrush(color);
+    const double unit = double(r.width()) / total;
+    double x = r.left();
+    for (int i = 0; i < w.size(); ++i) {
+        const double bw = w[i] * unit;
+        if (i % 2 == 0)
+            p.drawRect(QRect(qRound(x), r.top(), qMax(1, qRound(x + bw) - qRound(x)), r.height()));
+        x += bw;
+    }
+    p.restore();
+}
+
+static QString spaced(const QString &s)
+{
+    QStringList parts;
+    for (QChar c : s) parts << QString(c);
+    return parts.join("  ");
+}
+
+MiniBarcode::MiniBarcode(const QString &code, QSize size, QWidget *parent) : QWidget(parent), m_code(code)
+{
+    setFixedSize(size);
+}
+void MiniBarcode::paintEvent(QPaintEvent *)
+{
+    QPainter p(this);
+    drawMockBars(p, rect(), m_code, QColor("#0B1C30"));
+}
+
+// ======================================================= BarcodeView (Generate stage)
+BarcodeView::BarcodeView(QWidget *parent) : QWidget(parent)
+{
+    setMinimumHeight(330);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+}
+void BarcodeView::setCode(const QString &c)  { m_code = c; m_image = QPixmap(); update(); }
+void BarcodeView::setImage(const QPixmap &p) { m_image = p; update(); }
+void BarcodeView::setShowDigits(bool on)     { m_digits = on; update(); }
+void BarcodeView::setAwaiting(bool on)       { m_awaiting = on; update(); }
+void BarcodeView::clear()                    { m_code.clear(); m_image = QPixmap(); update(); }
+
+void BarcodeView::paintBarcodeCard(QPainter &p, const QRect &r) const
+{
+    p.fillRect(r, Qt::white);
+    if (!m_image.isNull()) {
+        const QPixmap s = m_image.scaled(r.size() - QSize(40, 24), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        p.drawPixmap(r.center().x() - s.width() / 2, r.center().y() - s.height() / 2, s);
+        return;
+    }
+    const int mx = qRound(r.width() * 0.10);
+    const int barH = m_digits ? r.height() - 90 : r.height() - 56;
+    drawMockBars(p, QRect(r.left() + mx, r.top() + 28, r.width() - 2 * mx, barH), m_code, QColor("#0B1C30"));
+    if (m_digits) {
+        QFont f = monoFont(22, true);
+        f.setLetterSpacing(QFont::AbsoluteSpacing, 0);
+        p.setFont(f);
+        p.setPen(QColor("#0B1C30"));
+        p.drawText(QRect(r.left(), r.top() + 28 + barH + 8, r.width(), 36), Qt::AlignCenter, spaced(m_code));
+    }
+}
+
+QPixmap BarcodeView::renderBarcode() const
+{
+    const QRect base(0, 0, 450, 180);
+    QPixmap pm(base.size() * 2);
+    pm.fill(Qt::white);
+    QPainter p(&pm);
+    p.setRenderHint(QPainter::TextAntialiasing);
+    p.scale(2, 2);
+    paintBarcodeCard(p, base);
+    return pm;
+}
+
+void BarcodeView::paintEvent(QPaintEvent *)
+{
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing);
+
+    // stage + dot grid
+    QPainterPath stage;
+    stage.addRoundedRect(QRectF(rect()), 10, 10);
+    p.fillPath(stage, QColor("#EEF3FF"));
+    p.setClipPath(stage);
+    p.setPen(QPen(QColor("#C9D6EE"), 1.5, Qt::SolidLine, Qt::RoundCap));
+    for (int y = 12; y < height(); y += 16)
+        for (int x = 12; x < width(); x += 16) p.drawPoint(x, y);
+    p.setClipping(false);
+
+    const QColor muted("#737686");
+    QFont mf = monoFont(11);
+    p.setFont(mf);
+
+    // ruler row (top)
+    p.drawPixmap(14, 16, iconPixmap("ruler", muted, 14));
+    p.setPen(muted);
+    p.drawText(QRect(32, 12, 150, 22), Qt::AlignVCenter | Qt::AlignLeft, "600 px width");
+    p.drawText(QRect(width() - 182, 12, 150, 22), Qt::AlignVCenter | Qt::AlignRight, "240 px height");
+    p.drawPixmap(width() - 28, 16, iconPixmap("ruler", muted, 14));
+
+    const QString sym = "Active Symbology: CODE 128";
+    const int sw = QFontMetrics(mf).horizontalAdvance(sym) + 22;
+    const QRect symR((width() - sw) / 2, 11, sw, 24);
+    p.setPen(Qt::NoPen);
+    p.setBrush(QColor("#E3EAF8"));
+    p.drawRoundedRect(symR, 6, 6);
+    p.setPen(QColor("#434655"));
+    p.drawText(symR, Qt::AlignCenter, sym);
+
+    // bottom row
+    p.setBrush(QColor("#0B4BCB"));
+    p.setPen(Qt::NoPen);
+    p.drawEllipse(QPoint(20, height() - 22), 3, 3);
+    p.setPen(muted);
+    p.drawText(QRect(30, height() - 34, 220, 22), Qt::AlignVCenter | Qt::AlignLeft, "Optical Density: 99.4%");
+    p.drawText(QRect(width() - 262, height() - 34, 246, 22), Qt::AlignVCenter | Qt::AlignRight, "Standard Bumper: Left/Right 12mm");
+
+    // center card
+    const int cw = qMin(width() - 80, 450), ch = 236;
+    const QRect c((width() - cw) / 2, (height() - ch) / 2, cw, ch);
+
+    if (!hasBarcode() || m_awaiting) {
+        p.setPen(QPen(QColor("#9DB4E0"), 1.6, Qt::DashLine));
+        p.setBrush(QColor(255, 255, 255, 170));
+        p.drawRoundedRect(c, 10, 10);
+        QFont f; f.setPixelSize(15); f.setWeight(QFont::DemiBold);
+        p.setFont(f);
+        p.setPen(QColor("#434655"));
+        p.drawText(c.adjusted(0, 0, 0, -22), Qt::AlignCenter, tr("Your barcode will appear here"));
+        f.setPixelSize(12); f.setWeight(QFont::Normal);
+        p.setFont(f);
+        p.setPen(QColor("#737686"));
+        p.drawText(c.adjusted(0, 34, 0, 0), Qt::AlignCenter, tr("Enter a 6-digit code and press Generate"));
+        return;
+    }
+
+    for (int i = 5; i >= 1; --i) {                                          // soft shadow
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor(15, 23, 42, 6));
+        p.drawRoundedRect(c.adjusted(-i, -i + 4, i, i + 4), 8 + i, 8 + i);
+    }
+    p.setBrush(Qt::white);
+    p.setPen(QPen(QColor("#E4E8F1"), 1));
+    p.drawRoundedRect(c, 8, 8);
+    p.save();
+    p.setRenderHint(QPainter::Antialiasing, false);
+    paintBarcodeCard(p, QRect(c.left() + 1, c.top() + 1, c.width() - 2, 180));
+    p.restore();
+
+    // footer inside card
+    p.setFont(monoFont(11));
+    const QString t1 = "Hardware Decodable", t2 = "PAYLOAD: " + m_code;
+    const QFontMetrics fm(p.font());
+    const int w1 = fm.horizontalAdvance(t1), w2 = fm.horizontalAdvance(t2);
+    const int total = 18 + w1 + 22 + w2;
+    int x = c.left() + (c.width() - total) / 2;
+    const int y = c.top() + 196;
+    p.drawPixmap(x, y + 2, iconPixmap("scan", QColor("#0B4BCB"), 14));
+    p.setPen(QColor("#0B4BCB"));
+    p.drawText(QRect(x + 18, y, w1 + 4, 20), Qt::AlignVCenter, t1);
+    p.setBrush(QColor("#C3C6D7")); p.setPen(Qt::NoPen);
+    p.drawEllipse(QPoint(x + 18 + w1 + 12, y + 10), 2, 2);
+    p.setPen(QColor("#0B1C30"));
+    p.drawText(QRect(x + 18 + w1 + 22, y, w2 + 4, 20), Qt::AlignVCenter, t2);
+}
+
+// ======================================================= CameraView
+CameraView::CameraView(QWidget *parent) : QWidget(parent)
+{
+    setFixedHeight(352);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    m_timer.setInterval(16);
+    connect(&m_timer, &QTimer::timeout, this, [this] { m_phase += 0.03; update(); });
+    m_timer.start();
+}
+void CameraView::setRunning(bool on) { m_running = on; if (on && !m_frozen) m_timer.start(); else m_timer.stop(); update(); }
+void CameraView::setFrozen(bool on)  { m_frozen = on; if (on) m_timer.stop(); else if (m_running) m_timer.start(); update(); }
+void CameraView::setPreviewCode(const QString &d) { m_code = d; update(); }
+void CameraView::setFrame(const QPixmap &pm) { m_frame = pm; update(); }
+
+static void drawChip(QPainter &p, const QRect &r, const QString &text, const QColor &bg, const QColor &fg,
+                     const QColor &dot = QColor(), const QString &icon = QString())
+{
+    p.setPen(Qt::NoPen);
+    p.setBrush(bg);
+    p.drawRoundedRect(r, 6, 6);
+    int x = r.left() + 10;
+    if (dot.isValid()) { p.setBrush(dot); p.drawEllipse(QPoint(x + 3, r.center().y()), 4, 4); x += 14; }
+    if (!icon.isEmpty()) { p.drawPixmap(x, r.center().y() - 7, iconPixmap(icon, fg, 14)); x += 20; }
+    p.setPen(fg);
+    p.drawText(QRect(x, r.top(), r.right() - x, r.height()), Qt::AlignVCenter | Qt::AlignLeft, text);
+}
+
+void CameraView::paintEvent(QPaintEvent *)
+{
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing);
+    QPainterPath clip;
+    clip.addRoundedRect(QRectF(rect()), 10, 10);
+    p.setClipPath(clip);
+
+    QRadialGradient bg(width() / 2.0, height() / 2.0, qMax(width(), height()) * 0.7);
+    bg.setColorAt(0, QColor("#10243F"));
+    bg.setColorAt(1, QColor("#070F1C"));
+    p.fillRect(rect(), bg);
+    if (!m_frame.isNull())
+        p.drawPixmap(rect(), m_frame.scaled(size(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+
+    p.setPen(QPen(QColor(255, 255, 255, 14), 1.5, Qt::SolidLine, Qt::RoundCap));
+    for (int y = 14; y < height(); y += 18)
+        for (int x = 14; x < width(); x += 18) p.drawPoint(x, y);
+
+    // scan frame (corner brackets)
+    const int fw = int(width() * 0.74), fh = int(height() * 0.64);
+    const QRect f((width() - fw) / 2, (height() - fh) / 2, fw, fh);
+    p.setBrush(Qt::NoBrush);
+    p.setPen(QPen(QColor("#1B52D6"), 4, Qt::SolidLine, Qt::FlatCap, Qt::MiterJoin));
+    const int L = 30;
+    auto corner = [&](QPoint c, int dx, int dy) {
+        p.drawLine(c, c + QPoint(dx * L, 0));
+        p.drawLine(c, c + QPoint(0, dy * L));
+    };
+    corner(f.topLeft() + QPoint(2, 2), 1, 1);
+    corner(f.topRight() + QPoint(-2, 2), -1, 1);
+    corner(f.bottomLeft() + QPoint(2, -2), 1, -1);
+    corner(f.bottomRight() + QPoint(-2, -2), -1, -1);
+
+    // sample barcode card
+    const int cw = int(width() * 0.62), ch = int(height() * 0.47);
+    const QRect bc((width() - cw) / 2, (height() - ch) / 2, cw, ch);
+    p.setPen(Qt::NoPen);
+    p.setBrush(Qt::white);
+    p.drawRoundedRect(bc, 10, 10);
+    const int mx = int(bc.width() * 0.09);
+    drawMockBars(p, QRect(bc.left() + mx, bc.top() + 22, bc.width() - 2 * mx, bc.height() - 70), m_code, QColor("#0B1C30"));
+    QFont df = monoFont(15, true);
+    p.setFont(df);
+    p.setPen(QColor("#0B1C30"));
+    p.drawText(QRect(bc.left(), bc.bottom() - 40, bc.width(), 30), Qt::AlignCenter, spaced(m_code));
+
+    // scan line
+    const qreal t = m_frozen ? 0.5 : (qSin(m_phase) + 1) / 2;
+    const int y = f.top() + 14 + int(t * (f.height() - 28));
+    QLinearGradient glow(0, y - 26, 0, y + 26);
+    glow.setColorAt(0, QColor(34, 211, 238, 0));
+    glow.setColorAt(0.5, QColor(34, 211, 238, 55));
+    glow.setColorAt(1, QColor(34, 211, 238, 0));
+    p.fillRect(QRect(f.left(), y - 26, f.width(), 52), glow);
+    QLinearGradient ln(f.left(), 0, f.right(), 0);
+    ln.setColorAt(0, QColor(34, 211, 238, 0));
+    ln.setColorAt(0.5, QColor(103, 232, 249, 255));
+    ln.setColorAt(1, QColor(34, 211, 238, 0));
+    p.setPen(QPen(QBrush(ln), 2));
+    p.drawLine(f.left(), y, f.right(), y);
+
+    // HUD chips
+    p.setFont(monoFont(11));
+    drawChip(p, QRect(14, 14, 252, 26), "LIVE SENSOR: 1920x1080@60Hz", QColor(0, 0, 0, 110), QColor("#E2E8F0"),
+             m_running ? QColor("#34D399") : QColor("#94A3B8"));
+    drawChip(p, QRect(width() - 202, 14, 188, 26), "ROI: ACTIVE [460x220]", QColor(0, 0, 0, 110), QColor("#CFE0FF"),
+             QColor(), "target");
+    drawChip(p, QRect(width() - 224, height() - 40, 210, 26), "AGC: +2.4dB | EXP: 1/120s", QColor(0, 0, 0, 120), QColor("#CBD5E1"));
+}
+
+// ======================================================= DropZone
+DropZone::DropZone(QWidget *parent) : QFrame(parent)
+{
+    setAcceptDrops(true);
+    setCursor(Qt::PointingHandCursor);
+    setFixedHeight(216);
+    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    auto *lay = vbox(this, 20, 16, 20, 16, 6);
+    lay->setAlignment(Qt::AlignCenter);
+
+    auto *tile = iconTile("upload", QColor("#0B4BCB"), 56, 26);
+    tile->setStyleSheet("QFrame#iconTile { background:#DCE8FF; border:none; border-radius:14px; }");
+    lay->addWidget(tile, 0, Qt::AlignHCenter);
+    lay->addSpacing(8);
+
+    auto *t = T(tr("Drag & drop a barcode image here or click to browse"), 18, 500, "#0B1C30");
+    t->setAlignment(Qt::AlignCenter);
+    t->setWordWrap(true);
+    lay->addWidget(t);
+    auto *s = T(tr("High-contrast raster images yield optimal decoding accuracy"), 14, 400, "#434655");
+    s->setAlignment(Qt::AlignCenter);
+    s->setWordWrap(true);
+    lay->addWidget(s);
+    lay->addSpacing(8);
+
+    auto *row = hrow(8);
+    row->addStretch();
+    for (const char *f : {"PNG", "JPG", "JPEG", "BMP"}) row->addWidget(chip(f, "white"));
+    row->addWidget(T("(Up to 10MB)", 11, 400, "#737686", true));
+    row->addStretch();
+    lay->addLayout(row);
+}
+
+void DropZone::paintEvent(QPaintEvent *)
+{
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setBrush(m_hover ? QColor("#E6EEFF") : QColor("#EFF4FF"));
+    p.setPen(QPen(m_hover ? QColor("#0B4BCB") : QColor("#CBDAF7"), 1.5, Qt::DashLine));
+    p.drawRoundedRect(QRectF(rect()).adjusted(1, 1, -1, -1), 12, 12);
+}
+
+bool DropZone::event(QEvent *e)
+{
+    if (e->type() == QEvent::Enter) { m_hover = true; update(); }
+    else if (e->type() == QEvent::Leave) { m_hover = false; update(); }
+    return QFrame::event(e);
+}
+
+void DropZone::mousePressEvent(QMouseEvent *)
+{
+    const QString path = QFileDialog::getOpenFileName(this, tr("Select barcode image"), QString(),
+                                                      tr("Images (*.png *.jpg *.jpeg *.bmp)"));
+    if (!path.isEmpty()) emit fileChosen(path);
+}
+void DropZone::dragEnterEvent(QDragEnterEvent *e)
+{
+    if (e->mimeData()->hasUrls()) { m_hover = true; update(); e->acceptProposedAction(); }
+}
+void DropZone::dragLeaveEvent(QDragLeaveEvent *) { m_hover = false; update(); }
+void DropZone::dropEvent(QDropEvent *e)
+{
+    m_hover = false; update();
+    for (const QUrl &u : e->mimeData()->urls()) {
+        const QString suf = QFileInfo(u.toLocalFile()).suffix().toLower();
+        if (u.isLocalFile() && (suf == "png" || suf == "jpg" || suf == "jpeg" || suf == "bmp")) {
+            emit fileChosen(u.toLocalFile());
+            return;
+        }
+    }
+}
+
+// ======================================================= ToggleSwitch
+ToggleSwitch::ToggleSwitch(bool on, QWidget *parent) : QWidget(parent), m_on(on)
+{
+    setFixedSize(44, 24);
+    setCursor(Qt::PointingHandCursor);
+}
+void ToggleSwitch::setChecked(bool on) { if (on != m_on) { m_on = on; update(); emit toggled(on); } }
+void ToggleSwitch::mouseReleaseEvent(QMouseEvent *) { setChecked(!m_on); }
+void ToggleSwitch::paintEvent(QPaintEvent *)
+{
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setPen(Qt::NoPen);
+    p.setBrush(m_on ? QColor("#2563EB") : QColor("#C3CBDB"));
+    p.drawRoundedRect(rect(), 12, 12);
+    p.setBrush(Qt::white);
+    p.drawEllipse(QPoint(m_on ? width() - 12 : 12, height() / 2), 9, 9);
+}
+
+// ======================================================= RadioCard
+RadioCard::RadioCard(const QString &title, const QString &sub, QWidget *parent) : QFrame(parent)
+{
+    setCursor(Qt::PointingHandCursor);
+    setMinimumHeight(80);
+    auto *v = vbox(this, 14, 12, 40, 12, 3);
+    v->addWidget(T(title, 14, 600, "#0B1C30"));
+    v->addWidget(T(sub, 11, 400, "#737686", true));
+    v->addStretch();
+}
+void RadioCard::setSelected(bool on) { m_sel = on; update(); }
+void RadioCard::mouseReleaseEvent(QMouseEvent *) { emit clicked(); }
+void RadioCard::paintEvent(QPaintEvent *)
+{
+    QPainter p(this);
+    p.setRenderHint(QPainter::Antialiasing);
+    p.setBrush(m_sel ? QColor("#FFFFFF") : QColor("#E3EBFA"));
+    p.setPen(m_sel ? QPen(QColor("#DDE5F5"), 1) : Qt::NoPen);
+    p.drawRoundedRect(QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5), 8, 8);
+    const QPoint c(width() - 22, 26);
+    p.setBrush(Qt::NoBrush);
+    p.setPen(QPen(m_sel ? QColor("#0B4BCB") : QColor("#8A93A8"), 1.8));
+    p.drawEllipse(c, 8, 8);
+    if (m_sel) { p.setPen(Qt::NoPen); p.setBrush(QColor("#0B4BCB")); p.drawEllipse(c, 4, 4); }
+}
+
+// ======================================================= SegBar
+SegBar::SegBar(const QStringList &labels, const QStringList &icons, int current, bool small, QWidget *parent)
+    : QFrame(parent), m_icons(icons), m_current(current)
+{
+    setObjectName("segBar");
+    setProperty("small", small);
+    auto *l = hbox(this, 4, 4, 4, 4, 4);
+    for (int i = 0; i < labels.size(); ++i) {
+        auto *b = new QPushButton(icons.value(i).isEmpty() ? labels[i] : "  " + labels[i]);
+        b->setObjectName("seg");
+        b->setCheckable(true);
+        b->setCursor(Qt::PointingHandCursor);
+        b->setIconSize(QSize(18, 18));
+        connect(b, &QPushButton::clicked, this, [this, i] { setCurrent(i); emit currentChanged(i); });
+        l->addWidget(b);
+        m_btns << b;
+    }
+    setCurrent(current);
+}
+
+void SegBar::setCurrent(int i)
+{
+    m_current = i;
+    for (int k = 0; k < m_btns.size(); ++k) m_btns[k]->setChecked(k == i);
+    refreshIcons();
+}
+
+void SegBar::refreshIcons()
+{
+    for (int k = 0; k < m_btns.size(); ++k) {
+        if (m_icons.value(k).isEmpty()) continue;
+        m_btns[k]->setIcon(makeIcon(m_icons[k], k == m_current ? QColor("#004AC6") : QColor("#434655"), 18));
+    }
+}
+
+QFrame *iconChip(const QString &icon, const QString &text, const QString &bg, const QString &fg,
+                 const QString &border, bool mono, int px, int radius)
+{
+    auto *f = new QFrame;
+    f->setObjectName("iconChip");
+    QString css = QString("QFrame#iconChip { background:%1; ").arg(bg);
+    css += border.isEmpty() ? "border:none; " : QString("border:1px solid %1; ").arg(border);
+    css += QString("border-radius:%1px; }").arg(radius);        // radius last: a later border shorthand would reset it
+    f->setStyleSheet(css);
+    auto *l = hbox(f, 10, 5, 12, 5, 7);
+    l->addWidget(iconLabel(icon, QColor(fg), 15));
+    l->addWidget(T(text, px, 600, fg, mono));
+    return f;
+}
+
+
+--------------------------------------------------------------------------------
+FILE: /Project Planning/Increment-1.md
+--------------------------------------------------------------------------------
+# Increment 1 — Barcode Generator and Reader
+
+---
+
+## Overview
+
+The first increment focuses on developing a working version of the C++ desktop application with barcode generation and reading capabilities.
+
+The application must be able to generate a barcode from a six-digit number, display it on the screen, save it as an image, and read the generated barcode through either an uploaded image or a laptop camera.
+
+---
+
+## Requirements
+
+### 1. Barcode Generation
+
+The application must:
+
+- Accept a six-digit numeric input from the user.
+- Ensure that the first digit is non-zero.
+- Generate a barcode corresponding to the provided number.
+- Display the generated barcode on the application screen.
+- Save the generated barcode to disk as an image.
+
+### 2. Barcode Reading
+
+The application must be able to read a barcode generated through the application.
+
+**A. Image Upload**
+
+- Allow the user to select and upload a barcode image.
+- Read and decode the barcode from the selected image.
+- Display the decoded six-digit number on the screen.
+
+**B. Laptop Camera**
+
+- Allow the user to scan a barcode using the laptop camera.
+- Detect and decode the barcode from the camera feed.
+- Display the decoded six-digit number on the screen.
+
+---
+
+## Technical Constraints
+
+- Existing non-standard libraries must not be used for barcode generation.
+- Libraries for image processing, file handling, and other supporting operations are permitted.
+- The application must be developed in C++.
+- All submissions must be made through GitHub.
+
+---
+
+## Team Contributions
+
+### Farzam — UI Development & Barcode Reading
+
+- UI Development (with Ali)
+- Barcode Reading (with Shauzab)
+- Barcode Decoding
+- Decoded Value Return Handling
+- Invalid Input Handling
+- File Handling (with Mustafa)
+
+### Ali — UI Development & Barcode Generation
+
+- UI Development (with Farzam)
+- Barcode Generation
+- Image Processing
+- Input Handling
+- Taking 6-Digit Number as Input
+
+### Mustafa — Project Lead, Management & Integration
+
+- Project Management
+- Project Integration
+- Error Handling
+- File Handling (with Farzam)
+- CMake Build Configuration
+- Live Scanner Implementation (with Farzam and Shauzab)
+
+### Shauzab — Camera & Live Scanner Development
+
+- Barcode Reading (with Farzam)
+- Live Scanner Implementation
+- Camera Opening and Initialization
+- Camera Frame Capturing
+- Scanner Functionality
+
+---
+
+## Notes
+
+- The generated barcode must represent the original six-digit input.
+- Both image upload and laptop camera scanning are required reading methods.
+- Further details about the products, files, and their formats will be provided after Increment 1.
+
+
+--------------------------------------------------------------------------------
+FILE: /.gitignore
+--------------------------------------------------------------------------------
+# ==========================================
+# Visual Studio
+# ==========================================
+
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# ==========================================
+# Qt Creator
+# ==========================================
+.qtcreator/
+CMakeUserPresets.json
+
+# ==========================================
+# Visual Studio Code
+# ==========================================
+
+.vscode/*
+!.vscode/extensions.json
+
+# ==========================================
+# CMake Build Files
+# ==========================================
+
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+Makefile
+.ninja_deps
+.ninja_log
+
+# ==========================================
+# Compiled Files
+# ==========================================
+
+*.obj
+*.o
+*.exe
+*.dll
+*.lib
+*.a
+*.pdb
+*.ilk
+*.pch
+*.idb
+*.tlog/
+
+# ==========================================
+# Build Configurations
+# ==========================================
+
+Debug/
+Release/
+x64/
+x86/
+[Bb]in/
+[Oo]bj/
+out/
+
+# ==========================================
+# Temporary Files
+# ==========================================
+
+*.log
+*.tmp
+*.bak
+Thumbs.db
+Desktop.ini
+
+
+--------------------------------------------------------------------------------
+FILE: /CHANGELOG.md
+--------------------------------------------------------------------------------
+
+
+
+--------------------------------------------------------------------------------
+FILE: /CMakeLists.txt
+--------------------------------------------------------------------------------
+cmake_minimum_required(VERSION 3.16)
+
+# Skip Qt Creator's automatic vcpkg package manager injection and background maintenance tool check
+set(QT_CREATOR_SKIP_VCPKG_SETUP ON CACHE BOOL "Skip Qt Creator vcpkg setup" FORCE)
+set(QT_CREATOR_ENABLE_PACKAGE_MANAGER_SETUP OFF CACHE BOOL "Disable Qt Creator package manager setup" FORCE)
+set(QT_CREATOR_ENABLE_MAINTENANCE_TOOL_PROVIDER OFF CACHE BOOL "Disable Qt Creator maintenance tool check" FORCE)
+
+# Disable vcpkg manifest mode by default
+if(NOT DEFINED VCPKG_MANIFEST_MODE)
+    set(VCPKG_MANIFEST_MODE OFF CACHE BOOL "Disable vcpkg manifest mode by default")
+endif()
+
+# Normalize CMAKE_TOOLCHAIN_FILE path if defined
+if(DEFINED CMAKE_TOOLCHAIN_FILE)
+    file(TO_CMAKE_PATH "${CMAKE_TOOLCHAIN_FILE}" CMAKE_TOOLCHAIN_FILE)
+elseif(DEFINED ENV{VCPKG_ROOT})
+    file(TO_CMAKE_PATH "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" _vcpkg_toolchain)
+    set(CMAKE_TOOLCHAIN_FILE "${_vcpkg_toolchain}" CACHE STRING "vcpkg toolchain file")
+endif()
+
+project(BarcodeHub
+    VERSION 0.1.0
+    LANGUAGES CXX
+)
+
+# C++ Configuration
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Qt Configuration (Qt comes from the Qt installer / Qt Creator kit, NOT from vcpkg)
+set(CMAKE_AUTOMOC ON)
+
+# Auto-detect Qt installation if not already provided by IDE or environment
+if(NOT CMAKE_PREFIX_PATH AND NOT DEFINED ENV{QTDIR})
+    file(GLOB _qt_candidates 
+        "C:/Qt/6.*/mingw_64" 
+        "C:/Qt/6.*/msvc2022_64" 
+        "D:/Qt/6.*/mingw_64" 
+        "D:/Qt/6.*/msvc2022_64"
+    )
+    if(_qt_candidates)
+        list(GET _qt_candidates -1 _latest_qt)
+        list(APPEND CMAKE_PREFIX_PATH "${_latest_qt}")
+    endif()
+endif()
+
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+
+# OpenCV Configuration (automatically detects MinGW or MSVC prebuilt packages)
+if(NOT OpenCV_DIR)
+    if(DEFINED ENV{OpenCV_DIR})
+        set(OpenCV_DIR "$ENV{OpenCV_DIR}")
+    elseif(MINGW)
+        file(GLOB _opencv_mingw_candidates "C:/opencv-mingw" "C:/opencv/mingw*" "D:/opencv-mingw")
+        foreach(_cand IN LISTS _opencv_mingw_candidates)
+            if(EXISTS "${_cand}/OpenCVConfig.cmake")
+                set(OpenCV_DIR "${_cand}")
+                break()
+            endif()
+        endforeach()
+    elseif(MSVC)
+        file(GLOB _opencv_msvc_candidates "C:/opencv-msvc" "C:/opencv/build" "D:/opencv/build" "C:/Users/*/Downloads/opencv/build")
+        foreach(_cand IN LISTS _opencv_msvc_candidates)
+            if(EXISTS "${_cand}/OpenCVConfig.cmake")
+                set(OpenCV_DIR "${_cand}")
+                break()
+            endif()
+        endforeach()
+    endif()
+endif()
+
+find_package(OpenCV QUIET)
+if(OpenCV_FOUND)
+    message(STATUS "OpenCV found: ${OpenCV_VERSION} (${OpenCV_DIR})")
+    add_compile_definitions(HAVE_OPENCV)
+else()
+    message(STATUS "OpenCV not found. Building without OpenCV support (mock camera mode).")
+endif()
+
+# Application Sources
+add_executable(BarcodeHub WIN32
+
+    # Frontend Sources
+    Frontend/src/main.cpp
+    Frontend/src/icons.cpp
+    Frontend/src/widgets.cpp
+    Frontend/src/generatepage.cpp
+    Frontend/src/decodepage.cpp
+    Frontend/src/mainwindow.cpp
+
+    # Frontend Headers
+    Frontend/include/ui/theme.h
+    Frontend/include/ui/icons.h
+    Frontend/include/ui/widgets.h
+    Frontend/include/ui/generatepage.h
+    Frontend/include/ui/decodepage.h
+    Frontend/include/ui/mainwindow.h
+
+    # Backend Sources
+    Backend/src/barcode/BarcodeGenerator.cpp
+    Backend/src/reader/builtin.cpp
+    Backend/src/reader/reader.cpp
+    Backend/src/scanner/CameraScanner.cpp
+    Backend/src/scanner/ImageScanner.cpp
+
+    # Backend Headers
+    Backend/include/barcode/BarcodeGenerator.h
+    Backend/include/reader/builtin.h
+    Backend/include/reader/reader.h
+    Backend/include/scanner/CameraScanner.h
+    Backend/include/scanner/ImageScanner.h
+)
+
+# Include Directories
+# NOTE: Frontend/include/ui is required because the sources use flat includes
+# like #include "mainwindow.h" while the headers live in Frontend/include/ui/.
+target_include_directories(BarcodeHub PRIVATE
+    Frontend/include
+    Frontend/include/ui
+    Backend/include
+)
+
+# Link Libraries
+target_link_libraries(BarcodeHub PRIVATE
+    Qt${QT_VERSION_MAJOR}::Widgets
+)
+
+if(OpenCV_FOUND)
+    target_include_directories(BarcodeHub PRIVATE ${OpenCV_INCLUDE_DIRS})
+    target_link_libraries(BarcodeHub PRIVATE ${OpenCV_LIBS})
+
+    # Automatically copy OpenCV runtime DLLs to output directory on Windows
+    if(WIN32 AND OpenCV_LIB_PATH)
+        add_custom_command(TARGET BarcodeHub POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
+                "${OpenCV_LIB_PATH}/../bin"
+                "$<TARGET_FILE_DIR:BarcodeHub>"
+            COMMENT "Copying OpenCV runtime DLLs to output directory..."
+        )
+    endif()
+endif()
+
+# Windows Configuration
+if(WIN32)
+    set_target_properties(BarcodeHub PROPERTIES
+        WIN32_EXECUTABLE TRUE
+    )
+endif()
+
+
+--------------------------------------------------------------------------------
+FILE: /CMakePresets.json
+--------------------------------------------------------------------------------
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 20,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "qt-mingw",
+            "displayName": "Qt 6 MinGW 64-bit (Default)",
+            "description": "Configure BarcodeHub using Qt 6 MinGW and Ninja",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/qt-mingw",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "QT_CREATOR_SKIP_VCPKG_SETUP": true,
+                "QT_CREATOR_ENABLE_PACKAGE_MANAGER_SETUP": false,
+                "QT_CREATOR_ENABLE_MAINTENANCE_TOOL_PROVIDER": false
+            }
+        },
+        {
+            "name": "vs2022",
+            "displayName": "Visual Studio 2022 (MSVC)",
+            "description": "Configure BarcodeHub using Visual Studio 2022 and OpenCV MSVC",
+            "generator": "Visual Studio 17 2022",
+            "binaryDir": "${sourceDir}/build/vs2022",
+            "architecture": "x64",
+            "cacheVariables": {
+                "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
+                "QT_CREATOR_SKIP_VCPKG_SETUP": true,
+                "QT_CREATOR_ENABLE_PACKAGE_MANAGER_SETUP": false,
+                "QT_CREATOR_ENABLE_MAINTENANCE_TOOL_PROVIDER": false
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "qt-mingw-debug",
+            "displayName": "Build Qt 6 MinGW - Debug",
+            "configurePreset": "qt-mingw",
+            "configuration": "Debug"
+        },
+        {
+            "name": "qt-mingw-release",
+            "displayName": "Build Qt 6 MinGW - Release",
+            "configurePreset": "qt-mingw",
+            "configuration": "Release"
+        },
+        {
+            "name": "vs2022-debug",
+            "displayName": "Build VS 2022 - Debug",
+            "configurePreset": "vs2022",
+            "configuration": "Debug"
+        },
+        {
+            "name": "vs2022-release",
+            "displayName": "Build VS 2022 - Release",
+            "configurePreset": "vs2022",
+            "configuration": "Release"
+        }
+    ]
+}
+
+
+--------------------------------------------------------------------------------
+FILE: /CMakeUserPresets.json
+--------------------------------------------------------------------------------
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "local-opencv",
+      "displayName": "Local Qt 6.11 + OpenCV (MinGW Release)",
+      "inherits": "qt-mingw",
+      "binaryDir": "${sourceDir}/build/local-opencv",
+      "environment": {
+        "PATH": "D:/Tools/mingw1310_64/bin;D:/Tools/CMake_64/bin;D:/Tools/Ninja;D:/QT Files/6.11.0/mingw_64/bin;D:/opencv-mingw/bin;$penv{PATH}",
+        "TEMP": "D:/Tools/opencv-build/temp",
+        "TMP": "D:/Tools/opencv-build/temp"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_CXX_COMPILER": "D:/Tools/mingw1310_64/bin/g++.exe",
+        "CMAKE_MAKE_PROGRAM": "D:/Tools/Ninja/ninja.exe",
+        "CMAKE_PREFIX_PATH": "D:/QT Files/6.11.0/mingw_64",
+        "CMAKE_TOOLCHAIN_FILE": "",
+        "VCPKG_MANIFEST_MODE": "OFF",
+        "OpenCV_DIR": "D:/opencv-mingw/lib/cmake/opencv4"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "local-opencv",
+      "configurePreset": "local-opencv",
+      "jobs": 4
+    }
+  ]
+}
+
+
+--------------------------------------------------------------------------------
+FILE: /CONTRIBUTING.md
+--------------------------------------------------------------------------------
+# Contributing Guidelines
+
+This document explains how team members can contribute to **Bar-Code-System-CPP**.
+
+## 1. Clone the Repository
+
+Clone the repository and navigate into the project directory:
+
+```bash
+git clone https://github.com/Syntrojex/Bar-Code-System-CPP.git
+cd Bar-Code-System-CPP
+```
+
+## 2. Switch to Your Assigned Branch
+
+Switch to your assigned branch. Replace `your-branch` with your actual branch name.
+
+```bash
+git checkout your-branch
+```
+
+## 3. Synchronize with Main
+
+Before starting a new task, update your assigned branch with the latest changes from `main`.
+
+```bash
+git fetch origin
+git merge origin/main
+```
+
+Resolve any merge conflicts before continuing.
+
+## 4. Make Your Changes
+
+Add or modify the files required for your assigned task.
+
+Follow the existing project structure and coding conventions. Avoid modifying unrelated files.
+
+## 5. Stage and Commit Changes
+
+Check your changes:
+
+```bash
+git status
+```
+
+Stage your files:
+
+```bash
+git add .
+```
+
+Commit your changes with a meaningful message:
+
+```bash
+git commit -m "Add barcode generation"
+```
+
+## 6. Push Your Branch
+
+Push your changes to your assigned branch:
+
+```bash
+git push origin your-branch
+```
+
+## 7. Create a Pull Request
+
+Submit your changes for integration into `main`.
+
+1. Open the project repository on GitHub.
+2. Select **Compare & pull request**.
+3. Set the base branch to `main`.
+4. Select your assigned branch as the compare branch.
+5. Add a meaningful title and description.
+6. Create the Pull Request.
+
+## 8. Review and Merge
+
+The project lead will review and merge Pull Requests into `main`.
+
+Team members should not directly push changes to `main`.
+
+## 9. Start Your Next Task
+
+After your Pull Request has been merged, synchronize your assigned branch with the latest `main` before starting another task.
+
+Repeat the synchronization commands from Section 3, then continue with the same workflow.
+
+## General Guidelines
+
+- Always work on your assigned branch.
+- Keep commits meaningful and focused.
+- Follow the existing C++ coding conventions.
+- Test your changes before submitting a Pull Request.
+- Keep Pull Requests limited to the assigned task.
+- Coordinate with the project lead when necessary.
+
+Thank you for contributing to the project.
+
+
+--------------------------------------------------------------------------------
+FILE: /CONTRIBUTORS.md
+--------------------------------------------------------------------------------
+# Contributors
+
+**Bar-Code-System-CPP** is a collaborative academic project developed as part of the Introduction to Software Engineering course.
+
+## Team Members
+
+| Name | Roll Number | Role | GitHub Profile |
+|---|---|---|---|
+| Muhammad Mustafa Amir | 25L-3107 | Project Lead & Developer | [@Syntrojex](https://github.com/Syntrojex) |
+| Farzam Zeeshan | 25L-3049 | Developer | [@farzamzeeshan1](https://github.com/farzamzeeshan1) |
+| Ali Abdullah | 25L-3022 | Developer | [@aliabdullah-se](https://github.com/aliabdullah-se) |
+| Shauzab Mukhtar | 25L-3084 | Developer | [@shauzab-72](https://github.com/shauzab-72) |
+
+---
+
+**Project:** Barcode System
+
+**Course:** Introduction to Software Engineering
+
+**Institution:** FAST-NUCES
+
+**Development Language:** C++
+
+
+--------------------------------------------------------------------------------
+FILE: /LICENSE
+--------------------------------------------------------------------------------
+MIT License
+
+Copyright (c) 2026 Muhammad Mustafa Amir
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+--------------------------------------------------------------------------------
+FILE: /project.json
+--------------------------------------------------------------------------------
+{
+  "project": {
+    "name": "Bar-Code-Generator-CPP",
+    "title": "Barcode Generator",
+    "course": "Introduction to Software Engineering",
+    "language": "C++",
+    "version": "1.0.0",
+    "current_increment": 1,
+    "status": "In Development"
+  },
+  "development": {
+    "methodology": "Incremental Development",
+    "repository": "Syntrojex/Bar-Code-System-CPP",
+    "default_branch": "main"
+  },
+  "increments": [
+    {
+      "increment": 1,
+      "version": "1.0.0",
+      "status": "In Progress"
+    }
+  ]
+}
+
+
+--------------------------------------------------------------------------------
+FILE: /README.md
+--------------------------------------------------------------------------------
+# Bar-Code-System-CPP
+
+A C++ desktop application designed to simplify inventory management and sales operations for small retail stores, supermarkets, and corner shops.
+
+---
+
+## Project Overview
+
+Bar-Code-System-CPP is an academic term project developed for the **Introduction to Software Engineering (ISE)** course at FAST-NUCES.
+
+The application aims to provide a simple and efficient system through which store employees can manage inventory and record sales with minimal manual input.
+
+Cashiers will be able to scan product barcodes, retrieve product information, add items to orders, and generate bills. Managers will also be able to generate barcodes for products in the store.
+
+The project is being developed incrementally, with a focus on building a reliable, user-friendly, and maintainable desktop application.
+
+---
+
+## Key Features
+
+- **Barcode Generation** — Generate barcodes for products.
+- **Barcode Scanning** — Read barcodes using a laptop camera.
+- **Image-Based Reading** — Upload barcode images for decoding.
+
+---
+
+## Technology Stack
+
+- **C++** — Core application logic.
+- **Qt** — Desktop graphical user interface.
+- **CMake** — Build system and project configuration.
+- **vcpkg** — C++ dependency management.
+- **OpenCV** — Image processing and camera capture.
+
+---
+
+## Project Structure
+
+```text
+Bar-Code-System-CPP/
+│
+├── Frontend/             # Desktop user interface
+├── Backend/              # Core application logic
+├── Project-Planning/     # Increment-wise project documentation
+│
+├── CMakeLists.txt        # Build configuration
+├── CMakePresets.json     # CMake build presets
+├── vcpkg.json            # Dependency manifest
+├── .gitignore
+└── README.md
+```
+
+---
+
+## Development Workflow
+
+The project follows a collaborative GitHub workflow:
+
+1. Each team member works on an assigned branch.
+2. Changes are committed and pushed to GitHub.
+3. A Pull Request is opened against the `main` branch.
+4. Changes are reviewed before being merged into the main project.
+
+---
+
+## Academic Information
+
+| Detail | Information |
+|---|---|
+| Project | Bar-Code-System-CPP |
+| Course | Introduction to Software Engineering (ISE) |
+| University | FAST-NUCES |
+| Semester | 3rd Semester |
+| Instructor | Professor Rana Zeeshan |
+| Language | C++ |
+| Submission Platform | GitHub |
+
+---
+
+**Bar-Code-System-CPP** — Building a practical retail management solution, one increment at a time.
+
+
+--------------------------------------------------------------------------------
+FILE: /vcpkg.json.disabled
+--------------------------------------------------------------------------------
+{
+    "name": "barcode-hub",
+    "version-string": "0.1.0",
+    "description": "A C++ barcode generation and scanning desktop application",
+    "dependencies": [
+        "opencv"
+    ]
+}
+
+
+================================================================================
+END OF FOLDER: Bar-Code-System-Original
+================================================================================
