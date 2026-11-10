@@ -127,6 +127,25 @@ QPixmap iconPixmap(const QString &n, const QColor &c, int size)
     } else if (n == "arrow") {
         p.drawLine(QPointF(4, 10), QPointF(16, 10));
         p.drawLine(QPointF(11.5, 5.5), QPointF(16, 10)); p.drawLine(QPointF(11.5, 14.5), QPointF(16, 10));
+    } else if (n == "moon") {
+        QPainterPath m;
+        m.moveTo(14.5, 12);
+        m.cubicTo(13.5, 15.5, 9.5, 17, 6.2, 14.5);
+        m.cubicTo(4, 12.2, 4, 8, 6.8, 5.2);
+        m.cubicTo(7.1, 5, 7.5, 5.3, 7.3, 5.7);
+        m.cubicTo(6, 8.8, 7.2, 12.5, 10.5, 13.5);
+        m.cubicTo(12.2, 14, 13.8, 13.2, 14.5, 11.5);
+        p.drawPath(m);
+    } else if (n == "sun") {
+        p.drawEllipse(QRectF(6, 6, 8, 8));
+        p.drawLine(QPointF(10, 2), QPointF(10, 4));
+        p.drawLine(QPointF(10, 16), QPointF(10, 18));
+        p.drawLine(QPointF(2, 10), QPointF(4, 10));
+        p.drawLine(QPointF(16, 10), QPointF(18, 10));
+        p.drawLine(QPointF(4.3, 4.3), QPointF(5.8, 5.8));
+        p.drawLine(QPointF(14.2, 14.2), QPointF(15.7, 15.7));
+        p.drawLine(QPointF(4.3, 15.7), QPointF(5.8, 14.2));
+        p.drawLine(QPointF(14.2, 5.8), QPointF(15.7, 4.3));
     }
     return pm;
 }

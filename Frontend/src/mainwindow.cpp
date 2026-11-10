@@ -3,6 +3,7 @@
 #include "generatepage.h"
 #include "icons.h"
 #include "widgets.h"
+#include "theme.h"
 #include "barcode/BarcodeGenerator.h"
 #include "scanner/CameraScanner.h"
 #include "scanner/ImageScanner.h"
@@ -347,6 +348,16 @@ QWidget *MainWindow::buildTopBar()
     l->addWidget(sep, 0, Qt::AlignVCenter);
     l->addWidget(pill("\xE2\x97\x8F  Increment 1", "tint"), 0, Qt::AlignVCenter);
     l->addStretch();
+    auto *themeBtn = btn("", "square", "moon");
+    themeBtn->setObjectName("themeToggle");
+    themeBtn->setToolTip(tr("Toggle Night Mode"));
+    connect(themeBtn, &QPushButton::clicked, this, [this, themeBtn] {
+        Theme::toggleNightMode(this);
+        themeBtn->setIcon(makeIcon(Theme::isNightMode() ? "sun" : "moon",
+                                   Theme::isNightMode() ? QColor("#FBBF24") : QColor("#334155"), 18));
+    });
+    l->addWidget(themeBtn, 0, Qt::AlignVCenter);
+    l->addSpacing(8);
     l->addWidget(iconChip("server", "OpenCV Ready", "#EFF4FF", "#434655", "#E1E8F7", true, 12, 8), 0, Qt::AlignVCenter);
     l->addSpacing(8);
     auto *av = new QFrame;
