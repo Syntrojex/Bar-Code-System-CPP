@@ -113,6 +113,17 @@ add_executable(BarcodeHub WIN32
     Backend/include/scanner/ImageScanner.h
 )
 
+# Backend decoder (EAN-8 reader + frame scanner) needs OpenCV.
+# NOTE: Backend/src/scanner/Main.cpp is a stand-alone console test with its own main(): never add it here.
+if(OpenCV_FOUND)
+    target_sources(BarcodeHub PRIVATE
+        Backend/src/barcode/Decoder.cpp
+        Backend/src/scanner/Scanner.cpp
+        Backend/include/barcode/Decoder.h
+        Backend/include/scanner/Scanner.h
+    )
+endif()
+
 # Include Directories
 # NOTE: Frontend/include/ui is required because the sources use flat includes
 # like #include "mainwindow.h" while the headers live in Frontend/include/ui/.
@@ -120,6 +131,9 @@ target_include_directories(BarcodeHub PRIVATE
     Frontend/include
     Frontend/include/ui
     Backend/include
+    # Scanner.h / Decoder.h include each other with flat paths ("Decoder.h")
+    Backend/include/barcode
+    Backend/include/scanner
 )
 
 # Link Libraries
