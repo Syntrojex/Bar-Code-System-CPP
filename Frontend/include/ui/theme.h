@@ -240,6 +240,7 @@ QProgressBar { background: #1E293B; border: none; border-radius: 2px; max-height
 QProgressBar::chunk { background: #3B82F6; border-radius: 2px; }
 
 QScrollArea { border: none; background: transparent; }
+QScrollArea > QWidget > QWidget { background: transparent; }
 QScrollBar:vertical { background: transparent; width: 10px; margin: 2px; }
 QScrollBar::handle:vertical { background: #334155; border-radius: 4px; min-height: 30px; }
 QScrollBar::handle:vertical:hover { background: #475569; }
@@ -280,12 +281,50 @@ inline void setNightMode(bool enable, QWidget *window = nullptr)
                 s.replace("#0B4BCB", "#3B82F6");
                 s.replace("#004AC6", "#60A5FA");
                 l->setStyleSheet(s);
+
+                const QString txt = l->text();
+                if (txt.contains("#0B1C30") || txt.contains("#434655") || txt.contains("#1F2A44")) {
+                    if (!l->property("dayText").isValid()) {
+                        l->setProperty("dayText", txt);
+                    }
+                    QString t = l->property("dayText").toString();
+                    t.replace("#0B1C30", "#F8FAFC");
+                    t.replace("#434655", "#94A3B8");
+                    t.replace("#1F2A44", "#E2E8F0");
+                    l->setText(t);
+                }
             } else {
                 if (l->property("dayStyle").isValid()) {
                     l->setStyleSheet(l->property("dayStyle").toString());
                 }
+                if (l->property("dayText").isValid()) {
+                    l->setText(l->property("dayText").toString());
+                }
             }
         }
+
+        const auto frames = window->findChildren<QFrame *>();
+        for (QFrame *f : frames) {
+            if (f->objectName() == "iconChip" || f->objectName() == "iconTile") {
+                if (enable) {
+                    if (!f->property("dayStyle").isValid()) {
+                        f->setProperty("dayStyle", f->styleSheet());
+                    }
+                    QString s = f->property("dayStyle").toString();
+                    s.replace("#EFF4FF", "#1E293B");
+                    s.replace("#E5EEFF", "#1E293B");
+                    s.replace("#E1E8F7", "#334155");
+                    s.replace("#D6E1F7", "#334155");
+                    s.replace("#434655", "#E2E8F0");
+                    f->setStyleSheet(s);
+                } else {
+                    if (f->property("dayStyle").isValid()) {
+                        f->setStyleSheet(f->property("dayStyle").toString());
+                    }
+                }
+            }
+        }
+
         window->update();
     }
 }

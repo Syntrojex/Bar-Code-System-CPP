@@ -198,7 +198,11 @@ void MainWindow::acceptCameraFrame(const CameraFrameResult &r)
         // mirrored for display only (like a mirror / selfie view); the original frame stays unflipped for decoding
         CameraView *view = m_decode->cameraView();
         const bool mirror = m_decode->mirrorCamera();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        view->setFrame(QPixmap::fromImage(mirror ? r.frame.flipped(Qt::Horizontal) : r.frame));
+#else
         view->setFrame(QPixmap::fromImage(mirror ? r.frame.mirrored(true, false) : r.frame));
+#endif
 
         if (!r.decodedText.isEmpty()) {              // Backend/Scanner found and decoded an EAN-8 barcode in this frame
             m_missFrames = 0;
