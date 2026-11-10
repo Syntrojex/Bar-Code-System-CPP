@@ -150,19 +150,19 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
     };
     addSlider("Bar Width", 10, 40, 22, m_barVal, m_barSlider);
     addSlider("Quiet Zone", 4, 20, 10, m_quietVal, m_quietSlider);
-    m_barVal->setText("2.2 px");
-    m_quietVal->setText("10x");
+    m_barVal->setText("7 px");
+    m_quietVal->setText("9x");
     // not connected to the renderer yet -> disabled so they don't look functional
     m_barSlider->setEnabled(false);
     m_quietSlider->setEnabled(false);
-    m_barSlider->setToolTip(tr("Not connected yet"));
-    m_quietSlider->setToolTip(tr("Not connected yet"));
+    m_barSlider->setToolTip(tr("Fixed at 7 pixels per module in this increment"));
+    m_quietSlider->setToolTip(tr("Fixed white margins of at least 9 modules"));
     sl->addLayout(sr);
 
     auto *tr3 = hrow(12);
     auto *tc = vcol(2);
     tc->addWidget(T(tr("Include Human-Readable OCR"), 14, 500, "#0B1C30"));
-    auto *ocrSub = T(tr("Render OCR-B numerical string under bars"), 12, 400, "#434655");
+    auto *ocrSub = T(tr("Render the full EAN-8 digits under the bars"), 12, 400, "#434655");
     tc->addWidget(ocrSub);
     tr3->addLayout(tc, 1);
     m_ocr = new ToggleSwitch(true);
@@ -189,7 +189,7 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
     auto *pl = vbox(pv, 24, 24, 24, 24, 14);
     auto *ph = hrow(12);
     ph->addWidget(T(tr("Barcode Preview"), 18, 600, "#0B1C30"));
-    ph->addWidget(iconChip("print", "300 DPI Vector", "#E1EAFF", "#1D4ED8", QString(), true, 11, 6));
+    ph->addWidget(iconChip("print", "Lossless PNG", "#E1EAFF", "#1D4ED8", QString(), true, 11, 6));
     ph->addStretch();
     m_stageSeg = new SegBar({"Render Stage", "Awaiting State"}, {}, 0, true);
     ph->addWidget(m_stageSeg);
@@ -223,8 +223,8 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
 
     auto *info = panel();
     auto *il = hbox(info, 16, 12, 16, 12, 12);
-    auto *infoL = new QLabel("<span style='color:#434655'>Dimensions: 600\xC3\x97" "240px &nbsp;\xE2\x80\xA2&nbsp; Format: PNG (300 DPI)"
-                             " &nbsp;\xE2\x80\xA2&nbsp; Color: Pure Black (#0B1C30)</span>");
+    auto *infoL = new QLabel("<span style='color:#434655'>Dimensions: 600\xC3\x97" "240px &nbsp;\xE2\x80\xA2&nbsp; Format: PNG"
+                             " &nbsp;\xE2\x80\xA2&nbsp; Color: Black (#000000)</span>");
     infoL->setWordWrap(true);
     infoL->setStyleSheet("font-size:12px; font-family:" + monoFamily() + ";");
     il->addWidget(iconLabel("image", QColor("#0B4BCB"), 16), 0, Qt::AlignTop);

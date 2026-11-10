@@ -15,6 +15,7 @@
 #include <QStackedWidget>
 #include <QTemporaryDir>
 #include <QTimer>
+#include <QThread>
 
 // brand logo tile (barcode glyph on a blue gradient)
 
@@ -44,7 +45,7 @@ static QScrollArea *scrollWrap(QWidget *page)
     auto *sa = new QScrollArea;
     sa->setWidgetResizable(true);
     sa->setFrameShape(QFrame::NoFrame);
-    sa->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    sa->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     sa->setWidget(page);
     return sa;
 }
@@ -53,7 +54,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     setWindowTitle("BarcodeHub");
     resize(1360, 900);
-    setMinimumSize(1180, 700);
+    setMinimumSize(960, 640);
 
     auto *root = new QWidget;
     root->setObjectName("root");
@@ -89,10 +90,28 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     // ---- live camera: Backend CameraScanner -> CameraView in the Decode > Camera tab
     m_scanner = new CameraScanner;
     m_camTimer = new QTimer(this);
-    m_camTimer->setInterval(33);                     // ~30 fps; reads happen on the GUI thread
+    m_cameraThread = new QThread(this);
+    m_cameraWorker = new QObject;
+    m_cameraWorker->moveToThread(m_cameraThread);
+    connect(m_cameraThread, &QThread::finished, m_cameraWorker, &QObject::deleteLater);
+    m_cameraThread->start();
+    m_camTimer->setInterval(33);
     connect(m_camTimer, &QTimer::timeout, this, &MainWindow::pumpCamera);
     connect(m_decode, &DecodePage::cameraStartRequested, this, &MainWindow::startCamera);
     connect(m_decode, &DecodePage::cameraStopRequested, this, &MainWindow::stopCamera);
+    connect(m_decode, &DecodePage::cameraRefreshRequested, this, &MainWindow::refreshCameras);
+    connect(m_decode, &DecodePage::autofocusRequested, this, [this] {
+        const auto generation = m_cameraGeneration;
+        QMetaObject::invokeMethod(m_cameraWorker, [this, generation] {
+            const bool ok = m_scanner->autofocus();
+            QMetaObject::invokeMethod(this, [this, generation, ok] {
+                if (generation != m_cameraGeneration) return;
+                m_decode->setCameraMessage(ok ? tr("Autofocus enabled. Hold the barcode steady.")
+                    : tr("This camera does not support software autofocus. Adjust the distance or focus manually."));
+            }, Qt::QueuedConnection);
+        }, Qt::QueuedConnection);
+    });
+    refreshCameras();
 
 }
 
@@ -101,7 +120,9 @@ MainWindow::~MainWindow()
 
     // release the webcam before the window goes away
     stopCamera();                                  
-    delete m_scanner;
+    QMetaObject::invokeMethod(m_cameraWorker, [this] { delete m_scanner; m_scanner = nullptr; }, Qt::BlockingQueuedConnection);
+    m_cameraThread->quit();
+    m_cameraThread->wait();
 }
 
 void MainWindow::startCamera(int index)
@@ -113,39 +134,75 @@ void MainWindow::startCamera(int index)
                                   "Install OpenCV and reconfigure CMake."), true);
     return;
 #else
-    QString error;
+    const auto generation = ++m_cameraGeneration;
+    const QSize resolution = m_decode->cameraResolution();
     m_failedReads = 0;
     m_missFrames = 0;
     m_lastCode.clear();
-    if (!m_scanner->openCamera(index, &error)) {
-        m_decode->setCameraActive(false);
-        m_decode->setCameraMessage(error.isEmpty() ? tr("Could not open camera %1.").arg(index) : error, true);
-        return;
-    }
-    m_camTimer->start();
+    m_readPending = false;
+    QMetaObject::invokeMethod(m_cameraWorker, [this, index, resolution, generation] {
+        QString error;
+        const bool opened = m_scanner->openCamera(index, &error, resolution);
+        QMetaObject::invokeMethod(this, [this, generation, opened, error] {
+            if (generation != m_cameraGeneration) return;
+            m_decode->setCameraActive(opened);
+            if (opened) m_camTimer->start();
+            else m_decode->setCameraMessage(error, true);
+        }, Qt::QueuedConnection);
+    }, Qt::QueuedConnection);
 #endif
 }
 
 void MainWindow::stopCamera()
 {
     if (m_camTimer) m_camTimer->stop();
-    if (m_scanner) m_scanner->closeCamera();
+    ++m_cameraGeneration;
+    m_readPending = false;
+    m_decode->setCameraActive(false);
+    if (m_cameraWorker) QMetaObject::invokeMethod(m_cameraWorker, [this] { m_scanner->closeCamera(); }, Qt::QueuedConnection);
 }
 
 void MainWindow::pumpCamera()
 {
-    if (!m_scanner->isOpened()) { stopCamera(); return; }
-    const CameraFrameResult r = m_scanner->readFrame();
+    if (m_readPending) return;
+    m_readPending = true;
+    const auto generation = m_cameraGeneration;
+    const bool decode = !m_decode->cameraView()->frozen();
+    QMetaObject::invokeMethod(m_cameraWorker, [this, generation, decode] {
+        const CameraFrameResult result = m_scanner->readFrame(decode);
+        QMetaObject::invokeMethod(this, [this, generation, result] {
+            if (generation != m_cameraGeneration) return;
+            m_readPending = false;
+            acceptCameraFrame(result);
+        }, Qt::QueuedConnection);
+    }, Qt::QueuedConnection);
+}
+
+void MainWindow::refreshCameras()
+{
+    if (m_decode->cameraActive()) return;
+    QMetaObject::invokeMethod(m_cameraWorker, [this] {
+        const QStringList names = CameraScanner::availableCameras();
+        QMetaObject::invokeMethod(this, [this, names] {
+            if (!m_decode->cameraActive()) m_decode->setCameraList(names);
+        }, Qt::QueuedConnection);
+    }, Qt::QueuedConnection);
+}
+
+void MainWindow::acceptCameraFrame(const CameraFrameResult &r)
+{
     if (r.success && !r.frame.isNull()) {
         m_failedReads = 0;
+        if (m_decode->cameraView()->frozen()) return;
         // mirrored for display only (like a mirror / selfie view); the original frame stays unflipped for decoding
         CameraView *view = m_decode->cameraView();
-        view->setFrame(QPixmap::fromImage(r.frame.mirrored(true, false)));
+        const bool mirror = m_decode->mirrorCamera();
+        view->setFrame(QPixmap::fromImage(mirror ? r.frame.mirrored(true, false) : r.frame));
 
         if (!r.decodedText.isEmpty()) {              // Backend/Scanner found and decoded an EAN-8 barcode in this frame
             m_missFrames = 0;
             const QRect b = r.box;
-            view->setDetection(QRect(r.frame.width() - (b.x() + b.width()), b.y(), b.width(), b.height()), r.decodedText);
+            view->setDetection(mirror ? QRect(r.frame.width() - (b.x() + b.width()), b.y(), b.width(), b.height()) : b, r.decodedText);
             if (r.decodedText != m_lastCode) {
                 m_lastCode = r.decodedText;
                 DecodePage::ScanInfo info;
@@ -157,6 +214,7 @@ void MainWindow::pumpCamera()
             }
         } else if (++m_missFrames > 8) {
             view->clearDetection();                  // barcode left the picture
+            m_lastCode.clear();
         }
         return;
     }
@@ -267,9 +325,9 @@ QWidget *MainWindow::buildSidebar()
     auto *chipRow = panel();
     auto *cr = hbox(chipRow, 12, 9, 12, 9, 8);
     cr->addWidget(T("\xE2\x97\x8F", 9, 400, "#0B4BCB"));
-    cr->addWidget(T("Engine v2.4", 11, 500, "#434655", true));
+    cr->addWidget(T("EAN-8 reader", 11, 500, "#434655", true));
     cr->addStretch();
-    cr->addWidget(T("1440x900", 11, 400, "#737686", true));
+    cr->addWidget(T("OpenCV", 11, 400, "#737686", true));
     fl->addWidget(chipRow);
     l->addWidget(foot);
     return sb;
@@ -289,7 +347,7 @@ QWidget *MainWindow::buildTopBar()
     l->addWidget(sep, 0, Qt::AlignVCenter);
     l->addWidget(pill("\xE2\x97\x8F  Increment 1", "tint"), 0, Qt::AlignVCenter);
     l->addStretch();
-    l->addWidget(iconChip("server", "Hardware Link Active", "#EFF4FF", "#434655", "#E1E8F7", true, 12, 8), 0, Qt::AlignVCenter);
+    l->addWidget(iconChip("server", "OpenCV Ready", "#EFF4FF", "#434655", "#E1E8F7", true, 12, 8), 0, Qt::AlignVCenter);
     l->addSpacing(8);
     auto *av = new QFrame;
     av->setObjectName("avatar");

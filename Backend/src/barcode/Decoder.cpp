@@ -1,4 +1,6 @@
 #include <iostream>
+#include <cmath>
+#include <opencv2/imgproc.hpp>
 #include "Decoder.h"
 using namespace std;
 const char *const Decoder::patterns[10] = {"0001101", "0011001", "0010011", "0111101", "0100011",
@@ -100,6 +102,7 @@ bool Decoder::isCheckDigit(const std::string &d) const
 }
 bool Decoder::decodeSix(const std::string &bits, std::string &six) const
 {
+    six.clear();
     badCheckDigit = false;
     for (int a = 0; a < 2; a++)
     {
@@ -124,8 +127,28 @@ bool Decoder::decodeSix(const std::string &bits, std::string &six) const
 bool Decoder::decodeCropping(const cv::Mat &gray, std::string &six) const
 {
     badCheckDigit = false;
-    string bits = runsToModules(scanLineRuns(gray));
-    return !bits.empty() && decodeSix(bits, six);
+    six.clear();
+    if (gray.empty() || gray.type() != CV_8UC1) return false;
+    bool badCheck = false;
+    // Thin bands tolerate tilted bars and avoid text/scratches crossing one row.
+    for (int percent : {50, 40, 60, 30, 70, 20, 80}) {
+        const int y = gray.rows * percent / 100;
+        const int top = std::max(0, y - 3);
+        const int bottom = std::min(gray.rows, y + 4);
+        cv::Mat band;
+        cv::copyMakeBorder(gray.rowRange(top, bottom), band, 3, 3, 12, 12,
+                           cv::BORDER_CONSTANT, cv::Scalar(255));
+        const auto runs = scanLineRuns(band);
+        // A barcode can be surrounded by other dark objects on the scan line.
+        for (size_t start = 0; start + stripes <= runs.size(); start += 2) {
+            const vector<double> candidate(runs.begin() + start, runs.begin() + start + stripes);
+            const string bits = runsToModules(candidate);
+            if (!bits.empty() && decodeSix(bits, six)) return true;
+            badCheck = badCheck || badCheckDigit;
+        }
+    }
+    badCheckDigit = badCheck;
+    return false;
 }
 bool Decoder::isBadCheck() const
 {

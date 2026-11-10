@@ -86,6 +86,7 @@ public:
     void setRunning(bool on);                       // camera on/off (off clears the picture)
     void setFrozen(bool on);                        // keep the camera running but stop updating the picture
     bool frozen() const { return m_frozen; }
+    QPixmap frame() const { return m_frame; }
     void setFrame(const QPixmap &pm);               // live camera frame (ignored while frozen)
     // green box + label around a detected barcode; rect is in the coordinates of the frame shown (already mirrored)
     void setDetection(const QRect &frameRect, const QString &label);

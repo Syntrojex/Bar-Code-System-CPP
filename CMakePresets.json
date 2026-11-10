@@ -1,63 +1,72 @@
 {
-    "version": 3,
-    "cmakeMinimumRequired": {
-        "major": 3,
-        "minor": 20,
-        "patch": 0
+  "version": 3,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 21,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "qt-mingw",
+      "displayName": "Qt 6 MinGW 64-bit (Default)",
+      "description": "Configure BarcodeHub using Qt 6 MinGW and Ninja",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/qt-mingw",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "QT_CREATOR_SKIP_VCPKG_SETUP": true,
+        "QT_CREATOR_ENABLE_PACKAGE_MANAGER_SETUP": false,
+        "QT_CREATOR_ENABLE_MAINTENANCE_TOOL_PROVIDER": false
+      }
     },
-    "configurePresets": [
-        {
-            "name": "qt-mingw",
-            "displayName": "Qt 6 MinGW 64-bit (Default)",
-            "description": "Configure BarcodeHub using Qt 6 MinGW and Ninja",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build/qt-mingw",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "QT_CREATOR_SKIP_VCPKG_SETUP": true,
-                "QT_CREATOR_ENABLE_PACKAGE_MANAGER_SETUP": false,
-                "QT_CREATOR_ENABLE_MAINTENANCE_TOOL_PROVIDER": false
-            }
-        },
-        {
-            "name": "vs2022",
-            "displayName": "Visual Studio 2022 (MSVC)",
-            "description": "Configure BarcodeHub using Visual Studio 2022 and OpenCV MSVC",
-            "generator": "Visual Studio 17 2022",
-            "binaryDir": "${sourceDir}/build/vs2022",
-            "architecture": "x64",
-            "cacheVariables": {
-                "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
-                "QT_CREATOR_SKIP_VCPKG_SETUP": true,
-                "QT_CREATOR_ENABLE_PACKAGE_MANAGER_SETUP": false,
-                "QT_CREATOR_ENABLE_MAINTENANCE_TOOL_PROVIDER": false
-            }
-        }
-    ],
-    "buildPresets": [
-        {
-            "name": "qt-mingw-debug",
-            "displayName": "Build Qt 6 MinGW - Debug",
-            "configurePreset": "qt-mingw",
-            "configuration": "Debug"
-        },
-        {
-            "name": "qt-mingw-release",
-            "displayName": "Build Qt 6 MinGW - Release",
-            "configurePreset": "qt-mingw",
-            "configuration": "Release"
-        },
-        {
-            "name": "vs2022-debug",
-            "displayName": "Build VS 2022 - Debug",
-            "configurePreset": "vs2022",
-            "configuration": "Debug"
-        },
-        {
-            "name": "vs2022-release",
-            "displayName": "Build VS 2022 - Release",
-            "configurePreset": "vs2022",
-            "configuration": "Release"
-        }
-    ]
+    {
+      "name": "vs2022",
+      "displayName": "Visual Studio 2022 (MSVC)",
+      "description": "Configure BarcodeHub using Visual Studio 2022 and OpenCV MSVC",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/vs2022",
+      "architecture": "x64",
+      "cacheVariables": {
+        "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
+        "QT_CREATOR_SKIP_VCPKG_SETUP": true,
+        "QT_CREATOR_ENABLE_PACKAGE_MANAGER_SETUP": false,
+        "QT_CREATOR_ENABLE_MAINTENANCE_TOOL_PROVIDER": false
+      }
+    },
+    {
+      "name": "qt-mingw-release",
+      "displayName": "Qt MinGW Release",
+      "inherits": "qt-mingw",
+      "binaryDir": "${sourceDir}/build/qt-mingw-release",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "qt-mingw-debug",
+      "displayName": "Build Qt 6 MinGW - Debug",
+      "configurePreset": "qt-mingw",
+      "configuration": "Debug"
+    },
+    {
+      "name": "qt-mingw-release",
+      "displayName": "Build Qt 6 MinGW - Release",
+      "configurePreset": "qt-mingw-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "vs2022-debug",
+      "displayName": "Build VS 2022 - Debug",
+      "configurePreset": "vs2022",
+      "configuration": "Debug"
+    },
+    {
+      "name": "vs2022-release",
+      "displayName": "Build VS 2022 - Release",
+      "configurePreset": "vs2022",
+      "configuration": "Release"
+    }
+  ]
 }
