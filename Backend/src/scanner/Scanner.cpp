@@ -1,5 +1,5 @@
 #include "Scanner.h"
-#include <opencv2/geometry.hpp>
+#include <opencv2/imgproc.hpp>
 using namespace std;
 Scanner::Scanner(int idx, int width, int height)
 {

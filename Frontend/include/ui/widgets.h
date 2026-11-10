@@ -87,6 +87,9 @@ public:
     void setFrozen(bool on);                        // keep the camera running but stop updating the picture
     bool frozen() const { return m_frozen; }
     void setFrame(const QPixmap &pm);               // live camera frame (ignored while frozen)
+    // green box + label around a detected barcode; rect is in the coordinates of the frame shown (already mirrored)
+    void setDetection(const QRect &frameRect, const QString &label);
+    void clearDetection();
     QSize sizeHint() const override { return {620, 350}; }
 protected:
     void paintEvent(QPaintEvent *) override;
@@ -94,6 +97,8 @@ private:
     bool m_running = false, m_frozen = false;
     qreal m_phase = 0;
     QPixmap m_frame;
+    QRect m_detRect;
+    QString m_detLabel;
     QTimer m_timer;
 };
 
@@ -132,7 +137,7 @@ private:
     bool m_on;
 };
 
-class RadioCard : public QFrame {                   // "Code 128 / EAN-8" selectable card
+class RadioCard : public QFrame {                   // selectable symbology card
     Q_OBJECT
 public:
     RadioCard(const QString &title, const QString &sub, QWidget *parent = nullptr);

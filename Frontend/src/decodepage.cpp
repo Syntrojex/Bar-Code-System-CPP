@@ -6,7 +6,7 @@
 #include <QClipboard>
 #include <QComboBox>
 #include <QFileInfo>
-#include <QGridLayout> // used by the stat/tile grids
+#include <QGridLayout>   // used by the stat/tile grids
 #include <QPainter>
 #include <QProgressBar>
 #include <QRegularExpression>
@@ -44,8 +44,7 @@ static bool isValidCode(const QString &s)
 
 static void wireCopy(QPushButton *b, QLabel *code)
 {
-    QObject::connect(b, &QPushButton::clicked, b, [b, code]
-                     {
+    QObject::connect(b, &QPushButton::clicked, b, [b, code] {
         if (b->property("copied").toBool()) return;     // double-click guard
         QApplication::clipboard()->setText(code->text());
         const QString old = b->text();
@@ -54,7 +53,8 @@ static void wireCopy(QPushButton *b, QLabel *code)
         QTimer::singleShot(1300, b, [b, old] {
             b->setText(old);
             b->setProperty("copied", false);
-        }); });
+        });
+    });
 }
 
 static QFrame *resultHeader(const QString &title, QLabel *badge, int px = 18)
@@ -87,6 +87,8 @@ DecodePage::DecodePage(QWidget *parent) : QWidget(parent)
     m_stack->addWidget(buildUploadPage());
     m_stack->addWidget(buildLogsPage());
     l->addWidget(m_stack);
+    m_loaded->hide();                                // nothing loaded yet
+    resetResult();                                   // no demo data before the first real scan
 }
 
 void DecodePage::setTab(int i)
@@ -195,11 +197,7 @@ QWidget *DecodePage::buildCameraPage()
     m_cam.okKind = "green";
     m_cam.badge = pill("\xE2\x97\x8F Barcode Detected", "green");
     m_cam.badge->setContentsMargins(7, 3, 7, 3);
-    {
-        QFont bf = m_cam.badge->font();
-        bf.setPixelSize(11);
-        m_cam.badge->setFont(bf);
-    }
+    { QFont bf = m_cam.badge->font(); bf.setPixelSize(11); m_cam.badge->setFont(bf); }
     rl->addWidget(resultHeader(tr("Decoded Code"), m_cam.badge, 16));
     rl->addWidget(hline());
 
@@ -208,14 +206,16 @@ QWidget *DecodePage::buildCameraPage()
     auto *cap = T("PAYLOAD CONTENT", 11, 600, "#737686", true);
     cap->setAlignment(Qt::AlignCenter);
     pv->addWidget(cap);
-    m_cam.code = bigCode("492817", 40, "#0B1C30");
+    m_cam.code = bigCode("------", 40, "#0B1C30");
     pv->addWidget(m_cam.code);
-    auto *ck = hrow(6);
+    auto *ckw = new QWidget;
+    auto *ck = hbox(ckw, 0, 0, 0, 0, 6);
     ck->addStretch();
     ck->addWidget(iconLabel("check", QColor("#0B7A4B"), 14));
-    ck->addWidget(T("Modulo-103 Checksum Passed", 11, 400, "#0B7A4B", true));
+    ck->addWidget(T("Mod-10 Check Digit Passed", 11, 400, "#0B7A4B", true));
     ck->addStretch();
-    pv->addLayout(ck);
+    pv->addWidget(ckw);
+    m_okOnly << ckw;
     rl->addWidget(pay);
 
     m_cam.copy = btn(tr("Copy Code"), "deep", "copy");
@@ -224,11 +224,14 @@ QWidget *DecodePage::buildCameraPage()
     rl->addWidget(m_cam.copy);
     rl->addWidget(hline());
 
-    rl->addLayout(kv("Symbology", chip("Code 128 (Auto B)", "blue")));
+    m_cam.bounds = T("\xE2\x80\x94", 12, 400, "#0B1C30", true);
+    m_cam.stamp = T("\xE2\x80\x94", 12, 400, "#0B1C30", true);
+    m_cam.latency = T("\xE2\x80\x94", 12, 600, "#0B7A4B", true);
+    rl->addLayout(kv("Symbology", chip("EAN-8", "blue")));
     rl->addLayout(kv("Payload Length", T("6 Digits (Numeric)", 12, 400, "#0B1C30", true)));
-    rl->addLayout(kv("Bounding Dimensions", T("320 \xC3\x97 94 px", 12, 400, "#0B1C30", true)));
-    rl->addLayout(kv("Scan Timestamp", T("07:25:44.536 UTC", 12, 400, "#0B1C30", true)));
-    rl->addLayout(kv("Decode Latency", T("14.2 ms", 12, 600, "#0B7A4B", true)));
+    rl->addLayout(kv("Bounding Dimensions", m_cam.bounds));
+    rl->addLayout(kv("Scan Timestamp", m_cam.stamp));
+    rl->addLayout(kv("Decode Latency", m_cam.latency));
 
     auto *save = btn(tr("Save to Scan History"), "tint", "history");
     save->setMinimumHeight(44);
@@ -236,8 +239,7 @@ QWidget *DecodePage::buildCameraPage()
     auto *two = hrow(10);
     auto *re = btn(tr("Re-encode"), "soft", "barcode");
     auto *api = btn(tr("Dispatch API"), "soft", "arrow");
-    for (auto *b : {re, api})
-        b->setStyleSheet("font-size:13px; padding:0 8px;");
+    for (auto *b : {re, api}) b->setStyleSheet("font-size:13px; padding:0 8px;");
     two->addWidget(re, 1);
     two->addWidget(api, 1);
     rl->addLayout(two);
@@ -248,8 +250,8 @@ QWidget *DecodePage::buildCameraPage()
     auto *gl = hbox(gs, 16, 14, 16, 14, 12);
     gl->addWidget(iconTile("shield", QColor("#0B4BCB"), 42, 22));
     auto *gt = vcol(1);
-    gt->addWidget(T("GS1 Compliance Check", 14, 600, "#0B1C30"));
-    gt->addWidget(T("Standard ISO/IEC 15417 Verified", 13, 400, "#434655"));
+    gt->addWidget(T("EAN-8 Check Digit", 14, 600, "#0B1C30"));
+    gt->addWidget(T("GS1 Mod-10 verified on every decode", 13, 400, "#434655"));
     gl->addLayout(gt, 1);
     right->addWidget(gs);
     right->addStretch();
@@ -257,7 +259,6 @@ QWidget *DecodePage::buildCameraPage()
     root->addLayout(body, 1);
 
     // ---- wiring
-<<<<<<< HEAD
     m_freeze->setEnabled(false);
     connect(m_stream, &QPushButton::clicked, this, [this] {
         if (m_streaming) { stopCamera(); return; }
@@ -267,21 +268,9 @@ QWidget *DecodePage::buildCameraPage()
     });
     connect(m_freeze, &QPushButton::clicked, this, [this] {
         const bool frozen = !m_camera->frozen();
-=======
-    connect(m_stream, &QPushButton::clicked, this, [this]
-            {
-        m_streaming = !m_streaming;
-        m_camera->setRunning(m_streaming);
-        m_stream->setText(m_streaming ? " Stream Active" : " Start Stream");
-        setKind(m_stream, m_streaming ? "deep" : "primary");
-        if (m_streaming) emit cameraStartRequested(m_cameraBox->currentIndex()); else emit cameraStopRequested(); });
-    connect(m_freeze, &QPushButton::clicked, this, [this]
-            {
-        static bool frozen = false;
-        frozen = !frozen;
->>>>>>> 9dbc7fbd625c9785052ddb1dd8ebe4b824bb6694
         m_camera->setFrozen(frozen);
-        m_freeze->setText(frozen ? " Resume" : " Freeze"); });
+        m_freeze->setText(frozen ? " Resume" : " Freeze");
+    });
     return page;
 }
 
@@ -299,7 +288,7 @@ QWidget *DecodePage::buildUploadPage()
     tr1->addWidget(pill(tr("Optical Engine Active"), "tint"));
     tr1->addStretch();
     tt->addLayout(tr1);
-    tt->addWidget(T(tr("Multi-format payload extractor & verification stage"), 14, 400, "#434655"));
+    tt->addWidget(T(tr("EAN-8 payload extractor & verification stage"), 14, 400, "#434655"));
     head->addLayout(tt);
     head->addStretch();
     head->addWidget(monoPill("<span style='color:#0B4BCB'>\xE2\x97\x8F</span>&nbsp; Decoder Ready"), 0, Qt::AlignTop);
@@ -355,10 +344,9 @@ QWidget *DecodePage::buildUploadPage()
     ll->addSpacing(4);
     ll->addWidget(T("QUICK-LOAD BENCHMARKS", 11, 600, "#737686", true));
     auto *qr = vcol(8);
-    auto *s1 = new QPushButton(tr(" Load Sample 1 (Code 128: 749205)"));
+    auto *s1 = new QPushButton(tr(" Load Sample 1 (EAN-8: 749205)"));
     auto *s2 = new QPushButton(tr(" Load Sample 2 (Damaged Scan)"));
-    for (auto *b : {s1, s2})
-    {
+    for (auto *b : {s1, s2}) {
         b->setObjectName("chipBtn");
         b->setCursor(Qt::PointingHandCursor);
         b->setIcon(makeIcon("barcode", QColor("#0B4BCB"), 16));
@@ -384,11 +372,11 @@ QWidget *DecodePage::buildUploadPage()
     auto *cap = T("PAYLOAD OUTPUT", 11, 600, "#737686", true);
     cap->setAlignment(Qt::AlignCenter);
     pv->addWidget(cap);
-    m_up.code = bigCode("749205", 48, "#0B1C30");
+    m_up.code = bigCode("------", 48, "#0B1C30");
     pv->addWidget(m_up.code);
     auto *chips = hrow(8);
     chips->addStretch();
-    chips->addWidget(chip("CODE_128", "blue"));
+    chips->addWidget(chip("EAN-8", "blue"));
     chips->addWidget(chip("1D Linear", "white"));
     chips->addStretch();
     pv->addLayout(chips);
@@ -415,10 +403,15 @@ QWidget *DecodePage::buildUploadPage()
     auto *valid = new QWidget;
     auto *vh = hbox(valid, 0, 0, 0, 0, 6);
     vh->addWidget(iconLabel("check", QColor("#0B4BCB"), 15));
-    vh->addWidget(T("Valid (Mod 103)", 12, 500, "#0B4BCB", true));
+    vh->addWidget(T("Valid (Mod 10)", 12, 500, "#0B4BCB", true));
+    m_okOnly << valid;
     mv->addLayout(kv("Checksum Verification", valid));
-    mv->addLayout(kv("Raster Processing Latency", T("18 ms", 13, 700, "#0B1C30", true)));
-    mv->addLayout(kv("Confidence Rating", T("99.8%", 13, 700, "#0B1C30", true)));
+    m_up.latency = T("\xE2\x80\x94", 13, 700, "#0B1C30", true);
+    m_up.payload = T("\xE2\x80\x94", 13, 700, "#0B1C30", true);
+    m_up.bounds = T("\xE2\x80\x94", 13, 700, "#0B1C30", true);
+    mv->addLayout(kv("Raster Processing Latency", m_up.latency));
+    mv->addLayout(kv("Barcode Size", m_up.bounds));
+    mv->addLayout(kv("EAN-8 Payload", m_up.payload));
     rl->addWidget(meta);
     right->addWidget(rc);
 
@@ -437,57 +430,40 @@ QWidget *DecodePage::buildUploadPage()
 
     // ---- wiring
     connect(drop, &DropZone::fileChosen, this, &DecodePage::loadImage);
-    connect(remove, &QPushButton::clicked, this, [this]
-            { m_loaded->hide(); m_path.clear(); resetResult(); });
-    connect(decode, &QPushButton::clicked, this, [this]
-            {
+    connect(remove, &QPushButton::clicked, this, [this] { m_loaded->hide(); m_path.clear(); resetResult(); });
+    connect(decode, &QPushButton::clicked, this, [this] {
         if (m_path.isEmpty()) {
             showFailure(tr("No image loaded. Please upload an image first."), "ERR_NO_IMAGE");
             return;
         }
-        emit decodeImageRequested(m_path); });
-    connect(s1, &QPushButton::clicked, this, [this]
-            {
-        m_loaded->show(); m_path.clear();
-        m_fileName->setText("sample_barcode_scan.png");
-        m_thumb->setPixmap(miniBarPixmap("749205", QSize(48, 40)));
-        showResult("749205"); });
-    connect(s2, &QPushButton::clicked, this, [this]
-            {
-        m_loaded->show(); m_path.clear();
-        m_fileName->setText("sample_damaged_scan.png");
-        m_thumb->setPixmap(miniBarPixmap("000000", QSize(48, 40)));
-        showFailure(); });
-    connect(m_simulate, &QPushButton::clicked, this, [this]
-            {
+        emit decodeImageRequested(m_path);
+    });
+    connect(s1, &QPushButton::clicked, this, [this] { emit sampleRequested("749205", false); });
+    connect(s2, &QPushButton::clicked, this, [this] { emit sampleRequested("749205", true); });
+    connect(m_simulate, &QPushButton::clicked, this, [this] {
         m_simulating = !m_simulating;
-        if (m_simulating) { showFailure(); m_simulate->setText(tr("Restore Success")); }
-        else { showResult("749205"); m_simulate->setText(tr("Simulate Error")); } });
+        if (m_simulating) { showFailure(); m_simulate->setText(tr("Restore")); }
+        else { resetResult(); m_simulate->setText(tr("Simulate Error")); }
+    });
     return page;
 }
 
 void DecodePage::loadImage(const QString &path)
 {
     const QFileInfo fi(path);
-    if (!fi.exists() || !fi.isFile())
-    {
-        m_path.clear();
-        m_loaded->hide();
+    if (!fi.exists() || !fi.isFile()) {
+        m_path.clear(); m_loaded->hide();
         showFailure(tr("File not found."), "ERR_FILE_NOT_FOUND");
         return;
     }
-    if (fi.size() > 32LL * 1024 * 1024)
-    {
-        m_path.clear();
-        m_loaded->hide();
+    if (fi.size() > 32LL * 1024 * 1024) {
+        m_path.clear(); m_loaded->hide();
         showFailure(tr("File exceeds the 32 MB limit."), "ERR_FILE_TOO_LARGE");
         return;
     }
     QPixmap pm(path);
-    if (pm.isNull())
-    {
-        m_path.clear();
-        m_loaded->hide();
+    if (pm.isNull()) {
+        m_path.clear(); m_loaded->hide();
         showFailure(tr("Unsupported or corrupted image."), "ERR_BAD_IMAGE");
         return;
     }
@@ -495,9 +471,7 @@ void DecodePage::loadImage(const QString &path)
     m_thumb->setPixmap(pm.scaled(QSize(54, 44), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     m_fileName->setText(fi.fileName());
     m_fileMeta->setText(QString("%1 KB &nbsp;\xE2\x80\xA2&nbsp; <span style='color:#0B4BCB'>%2 \xC3\x97 %3 px</span>")
-                            .arg(qMax<qint64>(1, fi.size() / 1024))
-                            .arg(pm.width())
-                            .arg(pm.height()));
+                            .arg(qMax<qint64>(1, fi.size() / 1024)).arg(pm.width()).arg(pm.height()));
     m_loaded->show();
     resetResult();
 }
@@ -534,8 +508,7 @@ QWidget *DecodePage::buildLogsPage()
     auto *left = vcol(18);
 
     auto *two = hrow(18);
-    auto makeEntry = [&](const QString &icon, const QString &meta, const QString &title, const QString &desc)
-    {
+    auto makeEntry = [&](const QString &icon, const QString &meta, const QString &title, const QString &desc) {
         auto *c = card();
         auto *v = vbox(c, 18, 18, 18, 18, 10);
         auto *top = hrow();
@@ -595,31 +568,23 @@ QWidget *DecodePage::buildLogsPage()
     hr->addWidget(btn(tr("Clear History"), "link", "trash"));
     hv->addLayout(hr);
 
-    const char *cols[] = {"Timestamp", "Symbology Format", "Decoded Value", "Engine Metric", "Action"}; // 12px headers
+    const char *cols[] = {"Timestamp", "Symbology Format", "Decoded Value", "Engine Metric", "Action"};   // 12px headers
     auto *hdr = panel();
     hdr->setFixedHeight(40);
     auto *hl = hbox(hdr, 14, 0, 14, 0, 10);
     const int stretch[] = {20, 24, 20, 22, 10};
-    for (int i = 0; i < 5; ++i)
-    {
+    for (int i = 0; i < 5; ++i) {
         auto *c = T(cols[i], 12, 600, "#0B1C30");
-        if (i == 4)
-            c->setAlignment(Qt::AlignCenter);
+        if (i == 4) c->setAlignment(Qt::AlignCenter);
         hl->addWidget(c, stretch[i]);
     }
     hv->addWidget(hdr);
 
-    struct Row
-    {
-        const char *ts, *fmt, *val;
-        int ms;
-        bool first;
-    };
-    const Row rows[] = {{"14:28:02.11", "Code 128", "839104", 42, true},
+    struct Row { const char *ts, *fmt, *val; int ms; bool first; };
+    const Row rows[] = {{"14:28:02.11", "EAN-8", "839104", 42, true},
                         {"14:26:45.88", "EAN-8", "552190", 38, false},
                         {"14:20:19.04", "DataMatrix", "901423", 51, false}};
-    for (const Row &r : rows)
-    {
+    for (const Row &r : rows) {
         auto *rowW = new QWidget;
         rowW->setFixedHeight(58);
         auto *rl = hbox(rowW, 14, 0, 14, 0, 10);
@@ -649,13 +614,10 @@ QWidget *DecodePage::buildLogsPage()
     left->addWidget(hist);
 
     auto *stats = hrow(14);
-    struct Stat
-    {
-        const char *k, *v, *s;
-    };
-    const Stat sts[] = {{"Total Parsed", "1,248", "+12.4% this hr"}, {"Success Rate", "99.78%", "0.02% error margin"}, {"Avg Latency", "41.2ms", "Sub-frame lock"}, {"Format Buffer", "1D & 2D", "All engines active"}};
-    for (const Stat &s : sts)
-    {
+    struct Stat { const char *k, *v, *s; };
+    const Stat sts[] = {{"Total Parsed", "1,248", "+12.4% this hr"}, {"Success Rate", "99.78%", "0.02% error margin"},
+                        {"Avg Latency", "41.2ms", "Sub-frame lock"}, {"Format Buffer", "1D & 2D", "All engines active"}};
+    for (const Stat &s : sts) {
         auto *c = card();
         auto *v = vbox(c, 16, 14, 16, 14, 4);
         v->addWidget(T(s.k, 13, 500, "#434655"));
@@ -686,7 +648,7 @@ QWidget *DecodePage::buildLogsPage()
     pr->addWidget(T("6 Digits Numerical", 11, 400, "#0B4BCB", true));
     pv->addLayout(pr);
     auto *pr2 = hrow(10);
-    m_log.code = T("839104", 32, 700, "#0B1C30", true);
+    m_log.code = T("------", 32, 700, "#0B1C30", true);
     pr2->addWidget(m_log.code);
     pr2->addStretch();
     m_log.copy = btn(tr("Copy Code"), "deep", "copy");
@@ -696,28 +658,26 @@ QWidget *DecodePage::buildLogsPage()
     auto *pr3 = hrow();
     pr3->addWidget(new MiniBarcode("839104", QSize(80, 30)));
     pr3->addStretch();
-    pr3->addWidget(T("Checksum [Mod103]: OK", 11, 400, "#737686", true));
+    pr3->addWidget(T("Check digit [Mod10]: OK", 11, 400, "#737686", true));
     pv->addLayout(pr3);
     rl->addWidget(pay);
 
     auto *tiles = new QGridLayout;
     tiles->setHorizontalSpacing(10);
     tiles->setVerticalSpacing(10);
-    struct Tile
-    {
-        const char *k, *v, *s;
-        bool blue;
-    };
-    const Tile tl[] = {{"Format Symbology", "EAN-8 / Code 128", "Auto-detected profile", false},
-                       {"Decode Latency", "42ms", "Ultra-fast hardware tick", true},
-                       {"Match Confidence", "99.8%", "High SNR clarity", false},
-                       {"Timestamp", "Just now", "14:28:02.11 UTC", false}};
-    for (int i = 0; i < 4; ++i)
-    {
+    struct Tile { const char *k, *v, *s; bool blue; };
+    const Tile tl[] = {{"Format Symbology", "EAN-8", "Auto-detected profile", false},
+                       {"Decode Latency", "\xE2\x80\x94", "Measured on the last decode", true},
+                       {"Check Digit", "Mod-10", "Verified on every decode", false},
+                       {"Timestamp", "\xE2\x80\x94", "Time of the last decode", false}};
+    for (int i = 0; i < 4; ++i) {
         auto *t = panel();
         auto *tv = vbox(t, 14, 12, 14, 12, 3);
         tv->addWidget(T(tl[i].k, 12, 500, "#434655", true));
-        tv->addWidget(T(tl[i].v, 16, 600, "#0B1C30"));
+        auto *valLbl = T(tl[i].v, 16, 600, "#0B1C30");
+        if (i == 1) m_log.latency = valLbl;
+        if (i == 3) m_log.stamp = valLbl;
+        tv->addWidget(valLbl);
         auto *s = T(tl[i].s, 11, 400, tl[i].blue ? "#0B4BCB" : "#737686", true);
         s->setWordWrap(true);
         tv->addWidget(s);
@@ -758,67 +718,73 @@ QWidget *DecodePage::buildLogsPage()
     root->addLayout(body, 1);
 
     // ---- wiring
-    connect(openCam, &QPushButton::clicked, this, [this]
-            { setTab(0); });
-    connect(openUp, &QPushButton::clicked, this, [this]
-            { setTab(1); });
-    connect(gen, &QPushButton::clicked, this, [this]
-            { emit generateFromCodeRequested(m_log.code->text()); });
+    connect(openCam, &QPushButton::clicked, this, [this] { setTab(0); });
+    connect(openUp, &QPushButton::clicked, this, [this] { setTab(1); });
+    connect(gen, &QPushButton::clicked, this, [this] {
+        if (isValidCode(m_log.code->text())) emit generateFromCodeRequested(m_log.code->text());
+    });
     return page;
 }
 
 // ================================================================== result state (all screens)
+static const QString kDash = QString::fromUtf8("\xE2\x80\x94");
+
 void DecodePage::applyResult(const ResultUi &r, const QString &code)
 {
-    if (!r.code)
-        return;
+    if (!r.code) return;
     r.code->setText(code);
     r.code->setStyleSheet("color:#0B1C30;");
-    if (r.badge)
-        setBadge(r.badge, r.detectedWording ? "\xE2\x97\x8F Barcode Detected" : "\xE2\x97\x8F  Success", r.okKind);
-    if (r.copy)
-        r.copy->setEnabled(true);
-    if (r.fail)
-        r.fail->hide();
+    if (r.badge) setBadge(r.badge, r.detectedWording ? "\xE2\x97\x8F Barcode Detected" : "\xE2\x97\x8F  Success", r.okKind);
+    if (r.copy) r.copy->setEnabled(true);
+    if (r.fail) r.fail->hide();
 }
 
-void DecodePage::showResult(const QString &code)
+void DecodePage::clearDetails(const ResultUi &r)
 {
-    if (!isValidCode(code))
-    {
+    for (QLabel *l : {r.bounds, r.stamp, r.latency, r.payload})
+        if (l) l->setText(kDash);
+}
+
+void DecodePage::showResult(const QString &code, const ScanInfo &info)
+{
+    if (!isValidCode(code)) {
         showFailure(tr("Invalid code: must be exactly 6 digits, first digit non-zero."), "ERR_INVALID_CODE");
         return;
     }
     applyResult(m_cam, code);
     applyResult(m_up, code);
-    m_log.code->setText(code); // overview keeps its permanent telemetry box
+    m_log.code->setText(code);                       // overview keeps its permanent telemetry box
     m_log.copy->setEnabled(true);
-<<<<<<< HEAD
     if (m_log.fail) m_log.fail->hide();
-=======
-    if (m_log.fail)
-        m_log.fail->hide();
-    m_camera->setPreviewCode(code);
->>>>>>> 9dbc7fbd625c9785052ddb1dd8ebe4b824bb6694
+    for (QWidget *w : m_okOnly) w->show();
+
+    const QString stamp = QTime::currentTime().toString("HH:mm:ss.zzz");
+    const QString latency = info.latencyMs >= 0 ? QString("%1 ms").arg(info.latencyMs) : kDash;
+    const QString box = info.box.isEmpty() ? kDash : QString("%1 \xC3\x97 %2 px").arg(info.box.width()).arg(info.box.height());
+    const QString payload = info.payload.isEmpty() ? kDash : info.payload;
+    if (m_cam.bounds) m_cam.bounds->setText(box);
+    if (m_cam.stamp) m_cam.stamp->setText(stamp);
+    if (m_cam.latency) m_cam.latency->setText(latency);
+    if (m_up.bounds) m_up.bounds->setText(box);
+    if (m_up.latency) m_up.latency->setText(latency);
+    if (m_up.payload) m_up.payload->setText(payload);
+    if (m_log.latency) m_log.latency->setText(latency);
+    if (m_log.stamp) m_log.stamp->setText(stamp);
 }
 
 void DecodePage::showFailure(const QString &reason, const QString &errCode)
 {
-    for (const ResultUi *r : {&m_cam, &m_up})
-    {
-        if (!r->code)
-            continue;
+    for (const ResultUi *r : {&m_cam, &m_up}) {
+        if (!r->code) continue;
         r->code->setText("------");
         r->code->setStyleSheet("color:#C2CCDF;");
-        if (r->badge)
-            setBadge(r->badge, "Could not read barcode", "red");
-        if (r->copy)
-            r->copy->setEnabled(false);
+        if (r->badge) setBadge(r->badge, "Could not read barcode", "red");
+        if (r->copy) r->copy->setEnabled(false);
+        clearDetails(*r);
     }
-    for (QFrame *f : {m_up.fail, m_log.fail})
-    {
-        if (!f)
-            continue;
+    for (QWidget *w : m_okOnly) w->hide();
+    for (QFrame *f : {m_up.fail, m_log.fail}) {
+        if (!f) continue;
         if (auto *t = f->findChild<QLabel *>("failReason"))
             t->setText(reason.isEmpty() ? tr("Could not decode the barcode.") : reason);
         if (auto *c = f->findChild<QLabel *>("failCode"))
@@ -829,20 +795,21 @@ void DecodePage::showFailure(const QString &reason, const QString &errCode)
 
 void DecodePage::resetResult()
 {
-    for (const ResultUi *r : {&m_cam, &m_up})
-    {
-        if (!r->code)
-            continue;
+    for (const ResultUi *r : {&m_cam, &m_up}) {
+        if (!r->code) continue;
         r->code->setText("------");
         r->code->setStyleSheet("color:#C2CCDF;");
-        if (r->badge)
-            setBadge(r->badge, "\xE2\x97\x8F  Waiting", "idle");
-        if (r->copy)
-            r->copy->setEnabled(false);
-        if (r->fail)
-            r->fail->hide();
+        if (r->badge) setBadge(r->badge, "\xE2\x97\x8F  Waiting", "idle");
+        if (r->copy) r->copy->setEnabled(false);
+        if (r->fail) r->fail->hide();
+        clearDetails(*r);
     }
+    for (QWidget *w : m_okOnly) w->hide();
     if (m_log.fail) m_log.fail->hide();
+    if (m_log.code) m_log.code->setText("------");
+    if (m_log.copy) m_log.copy->setEnabled(false);
+    if (m_log.latency) m_log.latency->setText(kDash);
+    if (m_log.stamp) m_log.stamp->setText(kDash);
 }
 
 void DecodePage::setCameraActive(bool on)

@@ -252,6 +252,7 @@ void BarcodeView::paintBarcodeCard(QPainter &p, const QRect &r) const
 
 QPixmap BarcodeView::renderBarcode() const
 {
+    if (!m_image.isNull()) return m_image;          // the backend image, full size and unscaled (so it can be scanned again)
     const QRect base(0, 0, 450, 180);
     QPixmap pm(base.size() * 2);
     pm.fill(Qt::white);
@@ -288,7 +289,7 @@ void BarcodeView::paintEvent(QPaintEvent *)
     p.drawText(QRect(width() - 182, 12, 150, 22), Qt::AlignVCenter | Qt::AlignRight, "240 px height");
     p.drawPixmap(width() - 28, 16, iconPixmap("ruler", muted, 14));
 
-    const QString sym = "Active Symbology: CODE 128";
+    const QString sym = "Active Symbology: EAN-8";
     const int sw = QFontMetrics(mf).horizontalAdvance(sym) + 22;
     const QRect symR((width() - sw) / 2, 11, sw, 24);
     p.setPen(Qt::NoPen);
@@ -365,7 +366,7 @@ CameraView::CameraView(QWidget *parent) : QWidget(parent)
 void CameraView::setRunning(bool on)
 {
     m_running = on;
-    if (!on) { m_frame = QPixmap(); m_frozen = false; }
+    if (!on) { m_frame = QPixmap(); m_frozen = false; clearDetection(); }
     if (on && !m_frozen) m_timer.start(); else m_timer.stop();
     update();
 }
@@ -380,6 +381,17 @@ void CameraView::setFrame(const QPixmap &pm)
     if (m_frozen) return;
     m_frame = pm;
     update();
+}
+void CameraView::setDetection(const QRect &frameRect, const QString &label)
+{
+    if (m_frozen) return;
+    m_detRect = frameRect;
+    m_detLabel = label;
+}
+void CameraView::clearDetection()
+{
+    m_detRect = QRect();
+    m_detLabel.clear();
 }
 
 static int chipWidth(const QFontMetrics &fm, const QString &text, bool dot, bool icon)
@@ -422,6 +434,28 @@ void CameraView::paintEvent(QPaintEvent *)
         p.drawPixmap(QRectF((width() - sz.width()) / 2, (height() - sz.height()) / 2, sz.width(), sz.height()),
                      m_frame, QRectF(m_frame.rect()));
         p.fillRect(rect(), QColor(5, 12, 24, 40));                        // slight dim so the HUD stays readable
+
+        if (!m_detRect.isEmpty()) {                                       // detected barcode
+            const QSizeF fsz(m_frame.width() * scale, m_frame.height() * scale);
+            const QPointF org((width() - fsz.width()) / 2, (height() - fsz.height()) / 2);
+            const QRectF d(org.x() + m_detRect.x() * scale, org.y() + m_detRect.y() * scale,
+                           m_detRect.width() * scale, m_detRect.height() * scale);
+            p.setBrush(QColor(52, 211, 153, 28));
+            p.setPen(QPen(QColor("#34D399"), 3));
+            p.drawRoundedRect(d, 4, 4);
+            if (!m_detLabel.isEmpty()) {
+                QFont lf = monoFont(14, true);
+                p.setFont(lf);
+                const QFontMetrics lfm(lf);
+                const int lw = lfm.horizontalAdvance(m_detLabel) + 20;
+                const QRect lr(int(d.left()), int(d.top()) - 30 < 6 ? int(d.bottom()) + 6 : int(d.top()) - 30, lw, 26);
+                p.setPen(Qt::NoPen);
+                p.setBrush(QColor("#34D399"));
+                p.drawRoundedRect(lr, 6, 6);
+                p.setPen(QColor("#052E1C"));
+                p.drawText(lr, Qt::AlignCenter, m_detLabel);
+            }
+        }
     } else {
         p.setPen(QPen(QColor(255, 255, 255, 14), 1.5, Qt::SolidLine, Qt::RoundCap));
         for (int y = 14; y < height(); y += 18)

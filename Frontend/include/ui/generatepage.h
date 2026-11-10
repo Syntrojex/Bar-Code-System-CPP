@@ -24,6 +24,8 @@ public:
 
     void setCode(const QString &code, bool generate = true);   // e.g. from the Decode page
     void setBarcodeImage(const QPixmap &pm);                   // hook: show the real barcode
+    bool showDigits() const;                                   // "Include Human-Readable" switch
+    QString currentCode() const { return property("genCode").toString(); }   // code shown in the preview ("" if none)
 
 signals:
     void generateRequested(const QString &code);               // hook: user pressed Generate
@@ -44,7 +46,7 @@ private:
     QLabel *m_counter, *m_hint, *m_hintIcon, *m_barVal, *m_quietVal;
     QWidget *m_validChip;
     QPushButton *m_generate, *m_clear, *m_save, *m_copy;
-    RadioCard *m_code128, *m_ean8;
+    RadioCard *m_ean8;
     QSlider *m_barSlider, *m_quietSlider;
     ToggleSwitch *m_ocr;
     BarcodeView *m_view;

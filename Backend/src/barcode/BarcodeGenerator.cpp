@@ -1,114 +1,93 @@
 ﻿#include "barcode/BarcodeGenerator.h"
-
 #include <QFont>
 #include <QPainter>
 #include <QRegularExpression>
-#include <QString>
 
-namespace
+namespace {
+// EAN-8 left-hand ("L") digit patterns; right-hand digits use the bitwise complement.
+const char *const kLeft[10] = {"0001101", "0011001", "0010011", "0111101", "0100011",
+                               "0110001", "0101111", "0111011", "0110111", "0001011"};
+
+bool validSix(const QString &s)
 {
+    static const QRegularExpression re("^[1-9][0-9]{5}$");
+    return re.match(s).hasMatch();
+}
 
-    // EAN-8 digit patterns: each digit occupies exactly seven modules.
-    // Left four digits use the L (A) set; right four use the R (C) set.
-    constexpr const char *kLeftPatterns[10] = {
-        "0001101", "0011001", "0010011", "0111101", "0100011",
-        "0110001", "0101111", "0111011", "0110111", "0001011"};
-
-    constexpr const char *kRightPatterns[10] = {
-        "1110010", "1100110", "1101100", "1000010", "1011100",
-        "1001110", "1010000", "1000100", "1001000", "1110100"};
-
-    int ean8CheckDigit(const QString &sevenDigits)
-    {
-        int weightedSum = 0;
-        for (int i = 0; i < sevenDigits.size(); ++i)
-        {
-            const int digit = sevenDigits.at(i).digitValue();
-            weightedSum += digit * ((i % 2 == 0) ? 3 : 1);
-        }
-        return (10 - (weightedSum % 10)) % 10;
+QString modulesFor(const QString &eight)
+{
+    QString bits = "101";
+    for (int i = 0; i < 4; ++i)
+        bits += QLatin1String(kLeft[eight.at(i).digitValue()]);
+    bits += "01010";
+    for (int i = 4; i < 8; ++i) {
+        QString p = QLatin1String(kLeft[eight.at(i).digitValue()]);
+        for (QChar &c : p) c = (c == QLatin1Char('1')) ? QLatin1Char('0') : QLatin1Char('1');
+        bits += p;
     }
-
-    QString ean8Modules(const QString &eightDigits)
-    {
-        QString bits;
-        bits.reserve(67);
-        bits += QStringLiteral("101"); // Left guard
-
-        for (int i = 0; i < 4; ++i)
-            bits += QString::fromLatin1(kLeftPatterns[eightDigits.at(i).digitValue()]);
-
-        bits += QStringLiteral("01010"); // Centre guard
-
-        for (int i = 4; i < 8; ++i)
-            bits += QString::fromLatin1(kRightPatterns[eightDigits.at(i).digitValue()]);
-
-        bits += QStringLiteral("101"); // Right guard
-        return bits;
-    }
-
+    bits += "101";
+    return bits;                                    // 3 + 28 + 5 + 28 + 3 = 67 modules
+}
 } // namespace
 
-BarcodeResult BarcodeGenerator::generate(const QString &number) const
+QString BarcodeGenerator::ean8Payload(const QString &six)
 {
-    BarcodeResult result;
+    if (!validSix(six)) return QString();
+    const QString d = "0" + six;                    // 7 digits
+    int sum = 0;
+    for (int i = 0; i < 7; ++i)
+        sum += d.at(i).digitValue() * ((i % 2 == 0) ? 3 : 1);
+    return d + QChar('0' + (10 - sum % 10) % 10);
+}
 
-    // Preserve the project's six-digit, nonzero-leading-digit input requirement.
-    static const QRegularExpression validCode(QStringLiteral("^[1-9][0-9]{5}$"));
-    if (!validCode.match(number).hasMatch())
-    {
-        result.error = QStringLiteral("Input must be exactly 6 digits, with the first digit non-zero.");
-        return result;
+BarcodeResult BarcodeGenerator::generate(const QString &number, bool humanReadable) const
+{
+    BarcodeResult res;
+    if (!validSix(number)) {
+        res.success = false;
+        res.error = "Input must be exactly 6 digits, with the first digit non-zero.";
+        return res;
     }
 
-    // EAN-8 encodes seven data digits + one check digit. We add a zero to the
-    // six-digit project payload, then calculate the official modulo-10 check.
-    // Example: 123456 -> 0123456 -> check 5 -> EAN-8 01234565.
-    const QString sevenDigits = QStringLiteral("0") + number;
-    const QString fullCode = sevenDigits + QString::number(ean8CheckDigit(sevenDigits));
-    const QString bits = ean8Modules(fullCode); // Exactly 67 narrow modules.
+    const QString eight = ean8Payload(number);
+    const QString bits = modulesFor(eight);
 
-    constexpr int kModulePx = 4;
-    constexpr int kQuietModules = 10; // Generous white quiet zones on both sides.
-    constexpr int kBarTop = 14;
-    constexpr int kBarHeight = 124;
-    constexpr int kGuardExtra = 10;
-    constexpr int kImageHeight = 190;
-    constexpr int kTotalModules = 67 + 2 * kQuietModules;
+    const int w = 600;
+    const int h = 240;
+    const int module = 7;                           // px per module -> 469 px of bars, ~9 modules of quiet zone each side
+    const int x0 = (w - bits.size() * module) / 2;
+    const int barTop = 26;
+    const int barHeight = humanReadable ? 150 : 188;
 
-    QImage image(kTotalModules * kModulePx, kImageHeight, QImage::Format_RGB32);
-    if (image.isNull())
-    {
-        result.error = QStringLiteral("Could not allocate barcode image.");
-        return result;
-    }
-    image.fill(Qt::white);
+    QImage img(w, h, QImage::Format_RGB32);
+    img.fill(Qt::white);
 
-    QPainter painter(&image);
+    QPainter painter(&img);
     painter.setRenderHint(QPainter::Antialiasing, false);
     painter.setPen(Qt::NoPen);
     painter.setBrush(Qt::black);
-
-    for (int i = 0; i < bits.size(); ++i)
-    {
-        if (bits.at(i) != QLatin1Char('1'))
-            continue;
-
-        // EAN-8 guard bars visually extend below the data bars.
-        const bool isGuard = (i < 3) || (i >= 31 && i < 36) || (i >= 64);
-        const int height = kBarHeight + (isGuard ? kGuardExtra : 0);
-        painter.fillRect((kQuietModules + i) * kModulePx,
-                         kBarTop, kModulePx, height, Qt::black);
+    for (int i = 0; i < bits.size(); ++i) {
+        if (bits.at(i) == QLatin1Char('1'))
+            painter.drawRect(x0 + i * module, barTop, module, barHeight);
     }
 
-    painter.setPen(Qt::black);
-    QFont font(QStringLiteral("Consolas"), 16, QFont::Bold);
-    painter.setFont(font);
-    painter.drawText(QRect(0, 151, image.width(), 30),
-                     Qt::AlignCenter, fullCode);
+    if (humanReadable) {
+        painter.setRenderHint(QPainter::TextAntialiasing, true);
+        QFont font("Consolas");
+        font.setStyleHint(QFont::Monospace);
+        font.setPixelSize(28);
+        font.setBold(true);
+        painter.setFont(font);
+        painter.setPen(Qt::black);
+        const int textTop = barTop + barHeight + 8;
+        for (int i = 0; i < 8; ++i) {
+            const int cell = (i < 4) ? (3 + 7 * i) : (36 + 7 * (i - 4));   // module index of this digit's 7-module cell
+            painter.drawText(QRect(x0 + cell * module, textTop, 7 * module, 40), Qt::AlignCenter, QString(eight.at(i)));
+        }
+    }
     painter.end();
 
-    result.success = true;
-    result.image = image;
-    return result;
+    res.success = true;
+    res.image = img;
+    return res;
 }
