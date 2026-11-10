@@ -10,6 +10,8 @@ class QFrame;
 class CameraView;
 class DropZone;
 class SegBar;
+class QTableWidget;
+class QCheckBox;
 
 // Screens 2-4 – "Decode Barcode": camera tab, upload tab and the "Scan Logs" overview.
 // optional details shown next to a decoded result
@@ -28,6 +30,8 @@ public:
 
     // ---- hooks for the backend ----
     void setCameraList(const QStringList &names);
+    QSize cameraResolution() const;
+    bool mirrorCamera() const;
     void setCameraActive(bool on);                  // sync buttons/viewport with the real camera state
     void setCameraMessage(const QString &text, bool error = false);   // hint line under the viewport
     bool cameraActive() const { return m_streaming; }
@@ -43,6 +47,8 @@ public:
 signals:
     void cameraStartRequested(int cameraIndex);
     void cameraStopRequested();
+    void cameraRefreshRequested();
+    void autofocusRequested();
     void decodeImageRequested(const QString &path);
     void sampleRequested(const QString &code, bool damaged);   // "Load Sample": generate a test image of this code
     void generateFromCodeRequested(const QString &code);
@@ -65,10 +71,18 @@ private:
     QFrame *makeFailBox();
     void applyResult(const ResultUi &r, const QString &code);
     void clearDetails(const ResultUi &r);
+    void exportHistory();
 
     QStackedWidget *m_stack;
     // camera
     QComboBox *m_cameraBox = nullptr;
+    QComboBox *m_resolutionBox = nullptr;
+    QCheckBox *m_mirror = nullptr;
+    QPushButton *m_refresh = nullptr, *m_focus = nullptr, *m_snapshot = nullptr;
+    QLabel *m_engine = nullptr;
+    QList<SegBar *> m_tabs;
+    QTableWidget *m_history = nullptr;
+    bool m_autoCopy = false;
     QPushButton *m_stream = nullptr, *m_freeze = nullptr;
     CameraView *m_camera = nullptr;
     QLabel *m_camHint = nullptr;

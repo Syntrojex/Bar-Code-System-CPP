@@ -13,6 +13,14 @@
 #include <QStackedWidget>
 #include <QTime>
 #include <QTimer>
+#include <QCheckBox>
+#include <QFileDialog>
+#include <QHeaderView>
+#include <QMessageBox>
+#include <QSaveFile>
+#include <QTableWidget>
+#include <QTextStream>
+#include <QDateTime>
 
 // ------------------------------------------------------------------ local helpers
 static QLabel *bigCode(const QString &text, int px, const QString &color)
@@ -89,12 +97,14 @@ DecodePage::DecodePage(QWidget *parent) : QWidget(parent)
     l->addWidget(m_stack);
     m_loaded->hide();                                // nothing loaded yet
     resetResult();                                   // no demo data before the first real scan
+    setCameraList({});
 }
 
 void DecodePage::setTab(int i)
 {
     if (i != 0) stopCamera();                        // never keep the webcam on while another tab is shown
     m_stack->setCurrentIndex(i);
+    for (auto *tabs : m_tabs) tabs->setCurrent(i);
 }
 
 SegBar *DecodePage::makeTabs(int current)
@@ -102,6 +112,7 @@ SegBar *DecodePage::makeTabs(int current)
     auto *bar = new SegBar({tr("Scan with Camera"), tr("Upload Image"), tr("Scan Logs")},
                            {"camera", "upload", "history"}, current);
     connect(bar, &SegBar::currentChanged, this, &DecodePage::setTab);
+    m_tabs << bar;
     return bar;
 }
 
@@ -146,7 +157,8 @@ QWidget *DecodePage::buildCameraPage()
     tt->addWidget(T(tr("Real-time hardware optical recognition & industrial symbology parsing"), 14, 400, "#434655"));
     head->addLayout(tt);
     head->addStretch();
-    head->addWidget(monoPill("<span style='color:#0B4BCB'>\xE2\x97\x8F</span>&nbsp; ENGINE: <b>Idle</b>"), 0, Qt::AlignTop);
+    m_engine = monoPill("ENGINE: Idle");
+    head->addWidget(m_engine, 0, Qt::AlignTop);
     root->addLayout(head);
     root->addWidget(makeTabs(0), 0, Qt::AlignLeft);
 
@@ -160,18 +172,35 @@ QWidget *DecodePage::buildCameraPage()
     auto *bl = hbox(bar, 14, 10, 14, 10, 10);
     bl->addWidget(T("CAPTURE INPUT:", 11, 500, "#737686", true));
     m_cameraBox = new QComboBox;
-    m_cameraBox->addItems({tr("Camera 0 (default)"), tr("Camera 1"), tr("Camera 2")});
     m_cameraBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     m_cameraBox->setMinimumContentsLength(10);
     m_cameraBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     bl->addWidget(m_cameraBox, 1);
     m_stream = btn(tr("Start Camera"), "primary", "camera");
     m_freeze = btn(tr("Freeze"), "outline", "pause");
-    auto *cfg = btn("", "square", "sliders");
+    m_refresh = btn("", "square", "history");
+    m_refresh->setToolTip(tr("Refresh camera list"));
     bl->addWidget(m_stream);
     bl->addWidget(m_freeze);
-    bl->addWidget(cfg);
+    bl->addWidget(m_refresh);
     ll->addWidget(bar);
+
+    auto *options = hrow(8);
+    m_resolutionBox = new QComboBox;
+    m_resolutionBox->addItem("640 x 480", QSize(640, 480));
+    m_resolutionBox->addItem("1280 x 720", QSize(1280, 720));
+    m_resolutionBox->addItem("1920 x 1080", QSize(1920, 1080));
+    m_resolutionBox->setCurrentIndex(1);
+    m_resolutionBox->setToolTip(tr("Requested resolution; the camera may choose its nearest supported size."));
+    m_mirror = new QCheckBox(tr("Mirror"));
+    m_focus = btn(tr("Autofocus"), "soft", "target");
+    m_snapshot = btn(tr("Snapshot"), "soft", "download");
+    options->addWidget(m_resolutionBox);
+    options->addWidget(m_mirror);
+    options->addStretch();
+    options->addWidget(m_focus);
+    options->addWidget(m_snapshot);
+    ll->addLayout(options);
 
     m_camera = new CameraView;
     ll->addWidget(m_camera, 1);
@@ -183,7 +212,7 @@ QWidget *DecodePage::buildCameraPage()
     m_camHint->setWordWrap(true);
     hl->addWidget(m_camHint, 1);
     hl->addWidget(iconLabel("target", QColor("#737686"), 18));
-    hl->addWidget(T("Tap to\nRefocus", 11, 400, "#737686", true));
+    hl->addWidget(T("Keep bars\nwell lit", 11, 400, "#737686", true));
     ll->addWidget(hint);
     body->addWidget(left, 1, Qt::AlignTop);
 
@@ -233,12 +262,12 @@ QWidget *DecodePage::buildCameraPage()
     rl->addLayout(kv("Scan Timestamp", m_cam.stamp));
     rl->addLayout(kv("Decode Latency", m_cam.latency));
 
-    auto *save = btn(tr("Save to Scan History"), "tint", "history");
+    auto *save = btn(tr("View Scan History"), "tint", "history");
     save->setMinimumHeight(44);
     rl->addWidget(save);
     auto *two = hrow(10);
     auto *re = btn(tr("Re-encode"), "soft", "barcode");
-    auto *api = btn(tr("Dispatch API"), "soft", "arrow");
+    auto *api = btn(tr("Export Scans"), "soft", "download");
     for (auto *b : {re, api}) b->setStyleSheet("font-size:13px; padding:0 8px;");
     two->addWidget(re, 1);
     two->addWidget(api, 1);
@@ -260,16 +289,36 @@ QWidget *DecodePage::buildCameraPage()
 
     // ---- wiring
     m_freeze->setEnabled(false);
+    m_focus->setEnabled(false);
+    m_snapshot->setEnabled(false);
+    connect(m_refresh, &QPushButton::clicked, this, &DecodePage::cameraRefreshRequested);
+    connect(m_focus, &QPushButton::clicked, this, &DecodePage::autofocusRequested);
+    connect(save, &QPushButton::clicked, this, [this] { setTab(2); });
+    connect(api, &QPushButton::clicked, this, &DecodePage::exportHistory);
+    connect(re, &QPushButton::clicked, this, [this] {
+        if (isValidCode(m_cam.code->text())) emit generateFromCodeRequested(m_cam.code->text());
+    });
+    connect(m_snapshot, &QPushButton::clicked, this, [this] {
+        const auto frame = m_camera->frame();
+        if (frame.isNull()) { setCameraMessage(tr("Wait for the first camera frame.")); return; }
+        QString path = QFileDialog::getSaveFileName(this, tr("Save camera snapshot"), "camera.png", tr("PNG image (*.png)"));
+        if (path.isEmpty()) return;
+        if (!path.endsWith(".png", Qt::CaseInsensitive)) path += ".png";
+        if (!frame.save(path, "PNG")) QMessageBox::warning(this, tr("Snapshot"), tr("Could not save the image."));
+    });
     connect(m_stream, &QPushButton::clicked, this, [this] {
         if (m_streaming) { stopCamera(); return; }
+        if (m_cameraBox->currentData().toInt() < 0) return;
         setCameraActive(true);                       // optimistic; MainWindow reverts it if the camera can't open
         setCameraMessage(tr("Opening camera..."));
-        emit cameraStartRequested(m_cameraBox->currentIndex());
+        emit cameraStartRequested(m_cameraBox->currentData().toInt());
     });
     connect(m_freeze, &QPushButton::clicked, this, [this] {
         const bool frozen = !m_camera->frozen();
         m_camera->setFrozen(frozen);
         m_freeze->setText(frozen ? " Resume" : " Freeze");
+        m_mirror->setEnabled(!frozen);
+        setCameraMessage(frozen ? tr("Image and decoded result frozen. Press Resume to continue.") : tr("Hold the barcode steady inside the frame."));
     });
     return page;
 }
@@ -440,6 +489,7 @@ QWidget *DecodePage::buildUploadPage()
     });
     connect(s1, &QPushButton::clicked, this, [this] { emit sampleRequested("749205", false); });
     connect(s2, &QPushButton::clicked, this, [this] { emit sampleRequested("749205", true); });
+    connect(exp, &QPushButton::clicked, this, &DecodePage::exportHistory);
     connect(m_simulate, &QPushButton::clicked, this, [this] {
         m_simulating = !m_simulating;
         if (m_simulating) { showFailure(); m_simulate->setText(tr("Restore")); }
@@ -524,15 +574,15 @@ QWidget *DecodePage::buildLogsPage()
         return std::pair<QFrame *, QVBoxLayout *>(c, v);
     };
 
-    auto cam = makeEntry("camera", "FPS: 60.0", tr("Camera Scanner"),
+    auto cam = makeEntry("camera", "Live capture", tr("Camera Scanner"),
                          tr("Real-time continuous decoding via direct hardware video stream & industrial optics."));
     cam.second->addStretch();
     auto *dev = panel();
     auto *dv = vbox(dev, 12, 10, 12, 10, 8);
     auto *dr = hrow();
-    dr->addWidget(T("\xE2\x97\x8F  Integrated HD Webcam", 12, 500, "#0B1C30", true));
+    dr->addWidget(T("Select camera in scanner", 12, 500, "#0B1C30", true));
     dr->addStretch();
-    dr->addWidget(T("1080p", 12, 400, "#737686", true));
+    dr->addWidget(T("USB / built-in", 12, 400, "#737686", true));
     dv->addLayout(dr);
     auto *openCam = btn(tr("Open Camera Scanner"), "deep", "scan");
     openCam->setMinimumHeight(40);
@@ -541,14 +591,14 @@ QWidget *DecodePage::buildLogsPage()
     two->addWidget(cam.first, 1);
 
     auto up = makeEntry("upload", "Max: 32MB", tr("File Upload"),
-                        tr("Decode high-resolution PNG, JPG, or TIFF raster files with automatic noise removal."));
+                        tr("Decode PNG, JPG, or BMP barcode images."));
     up.second->addStretch();
     auto *dz = panel();
     auto *dzl = vbox(dz, 12, 10, 12, 10, 8);
     auto *dzt = hrow(8);
     dzt->addStretch();
     dzt->addWidget(iconLabel("image", QColor("#0B4BCB"), 15));
-    dzt->addWidget(T("Drop barcode here", 12, 500, "#0B4BCB", true));
+    dzt->addWidget(T("Choose an image to decode", 12, 500, "#0B4BCB", true));
     dzt->addStretch();
     dzl->addLayout(dzt);
     auto *openUp = btn(tr("Upload Barcode Image"), "outline", "folder");
@@ -565,70 +615,22 @@ QWidget *DecodePage::buildLogsPage()
     hr->addWidget(iconLabel("history", QColor("#0B4BCB"), 22));
     hr->addWidget(T(tr("Recent Scans & Session History"), 18, 600, "#0B1C30"));
     hr->addStretch();
-    hr->addWidget(btn(tr("Clear History"), "link", "trash"));
+    auto *clearHistory = btn(tr("Clear History"), "link", "trash");
+    hr->addWidget(clearHistory);
     hv->addLayout(hr);
 
-    const char *cols[] = {"Timestamp", "Symbology Format", "Decoded Value", "Engine Metric", "Action"};   // 12px headers
-    auto *hdr = panel();
-    hdr->setFixedHeight(40);
-    auto *hl = hbox(hdr, 14, 0, 14, 0, 10);
-    const int stretch[] = {20, 24, 20, 22, 10};
-    for (int i = 0; i < 5; ++i) {
-        auto *c = T(cols[i], 12, 600, "#0B1C30");
-        if (i == 4) c->setAlignment(Qt::AlignCenter);
-        hl->addWidget(c, stretch[i]);
-    }
-    hv->addWidget(hdr);
-
-    struct Row { const char *ts, *fmt, *val; int ms; bool first; };
-    const Row rows[] = {{"14:28:02.11", "EAN-8", "839104", 42, true},
-                        {"14:26:45.88", "EAN-8", "552190", 38, false},
-                        {"14:20:19.04", "DataMatrix", "901423", 51, false}};
-    for (const Row &r : rows) {
-        auto *rowW = new QWidget;
-        rowW->setFixedHeight(58);
-        auto *rl = hbox(rowW, 14, 0, 14, 0, 10);
-        rl->addWidget(T(r.ts, 11, 400, "#737686", true), stretch[0]);
-        auto *fc = new QWidget;
-        auto *fh = hbox(fc, 0, 0, 0, 0, 0);
-        auto *fch = chip(r.fmt, "blue");
-        fh->addWidget(fch, 0, Qt::AlignVCenter);
-        fh->addStretch();
-        rl->addWidget(fc, stretch[1]);
-        rl->addWidget(T(r.val, 14, 700, r.first ? "#0B4BCB" : "#0B1C30", true), stretch[2]);
-        auto *mc = new QWidget;
-        auto *mh = hbox(mc, 0, 0, 0, 0, 8);
-        mh->addWidget(T(QString("%1ms").arg(r.ms), 11, 400, "#737686", true));
-        auto *pb = new QProgressBar;
-        pb->setTextVisible(false);
-        pb->setRange(0, 100);
-        pb->setValue(100 - r.ms);
-        pb->setFixedWidth(64);
-        mh->addWidget(pb);
-        mh->addStretch();
-        rl->addWidget(mc, stretch[3]);
-        auto *cp = btn("", "link", "copy");
-        rl->addWidget(cp, stretch[4], Qt::AlignCenter);
-        hv->addWidget(rowW);
-    }
+    m_history = new QTableWidget(0, 5);
+    m_history->setObjectName("scanHistory");
+    m_history->setHorizontalHeaderLabels({tr("Timestamp"), tr("Format"), tr("Code"), tr("Payload"), tr("Latency")});
+    m_history->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    m_history->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_history->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    m_history->horizontalHeader()->setStretchLastSection(true);
+    m_history->verticalHeader()->hide();
+    m_history->setMinimumHeight(230);
+    hv->addWidget(m_history);
+    hv->addWidget(T(tr("Up to 1,000 scans this session. Export CSV to keep them."), 12, 400, "#737686"));
     left->addWidget(hist);
-
-    auto *stats = hrow(14);
-    struct Stat { const char *k, *v, *s; };
-    const Stat sts[] = {{"Total Parsed", "1,248", "+12.4% this hr"}, {"Success Rate", "99.78%", "0.02% error margin"},
-                        {"Avg Latency", "41.2ms", "Sub-frame lock"}, {"Format Buffer", "1D & 2D", "All engines active"}};
-    for (const Stat &s : sts) {
-        auto *c = card();
-        auto *v = vbox(c, 16, 14, 16, 14, 4);
-        v->addWidget(T(s.k, 13, 500, "#434655"));
-        v->addWidget(T(s.v, 24, 600, "#0B1C30"));
-        auto *sub = T(s.s, 11, 400, QString(s.k) == "Avg Latency" ? "#737686" : "#0B4BCB", true);
-        sub->setWordWrap(true);
-        v->addWidget(sub);
-        c->setMinimumWidth(0);
-        stats->addWidget(c, 1);
-    }
-    left->addLayout(stats);
     left->addStretch();
     body->addLayout(left, 1);
 
@@ -655,11 +657,6 @@ QWidget *DecodePage::buildLogsPage()
     wireCopy(m_log.copy, m_log.code);
     pr2->addWidget(m_log.copy);
     pv->addLayout(pr2);
-    auto *pr3 = hrow();
-    pr3->addWidget(new MiniBarcode("839104", QSize(80, 30)));
-    pr3->addStretch();
-    pr3->addWidget(T("Check digit [Mod10]: OK", 11, 400, "#737686", true));
-    pv->addLayout(pr3);
     rl->addWidget(pay);
 
     auto *tiles = new QGridLayout;
@@ -711,7 +708,9 @@ QWidget *DecodePage::buildLogsPage()
     cs->setWordWrap(true);
     ct->addWidget(cs);
     cl->addLayout(ct, 1);
-    cl->addWidget(new ToggleSwitch(true));
+    auto *autoCopy = new ToggleSwitch(false);
+    cl->addWidget(autoCopy);
+    connect(autoCopy, &ToggleSwitch::toggled, this, [this](bool on) { m_autoCopy = on; });
     right->addWidget(clip);
     right->addStretch();
     body->addLayout(right);
@@ -720,6 +719,8 @@ QWidget *DecodePage::buildLogsPage()
     // ---- wiring
     connect(openCam, &QPushButton::clicked, this, [this] { setTab(0); });
     connect(openUp, &QPushButton::clicked, this, [this] { setTab(1); });
+    connect(exl, &QPushButton::clicked, this, &DecodePage::exportHistory);
+    connect(clearHistory, &QPushButton::clicked, this, [this] { m_history->setRowCount(0); });
     connect(gen, &QPushButton::clicked, this, [this] {
         if (isValidCode(m_log.code->text())) emit generateFromCodeRequested(m_log.code->text());
     });
@@ -753,7 +754,7 @@ void DecodePage::showResult(const QString &code, const ScanInfo &info)
     }
     applyResult(m_cam, code);
     applyResult(m_up, code);
-    m_log.code->setText(code);                       // overview keeps its permanent telemetry box
+    applyResult(m_log, code);
     m_log.copy->setEnabled(true);
     if (m_log.fail) m_log.fail->hide();
     for (QWidget *w : m_okOnly) w->show();
@@ -770,11 +771,17 @@ void DecodePage::showResult(const QString &code, const ScanInfo &info)
     if (m_up.payload) m_up.payload->setText(payload);
     if (m_log.latency) m_log.latency->setText(latency);
     if (m_log.stamp) m_log.stamp->setText(stamp);
+    if (m_autoCopy) QApplication::clipboard()->setText(code);
+    m_history->insertRow(0);
+    const QStringList values{QDateTime::currentDateTime().toString(Qt::ISODateWithMs), "EAN-8", code, payload, latency};
+    for (int column = 0; column < values.size(); ++column)
+        m_history->setItem(0, column, new QTableWidgetItem(values[column]));
+    if (m_history->rowCount() > 1000) m_history->removeRow(1000);
 }
 
 void DecodePage::showFailure(const QString &reason, const QString &errCode)
 {
-    for (const ResultUi *r : {&m_cam, &m_up}) {
+    for (const ResultUi *r : {&m_cam, &m_up, &m_log}) {
         if (!r->code) continue;
         r->code->setText("------");
         r->code->setStyleSheet("color:#C2CCDF;");
@@ -795,7 +802,7 @@ void DecodePage::showFailure(const QString &reason, const QString &errCode)
 
 void DecodePage::resetResult()
 {
-    for (const ResultUi *r : {&m_cam, &m_up}) {
+    for (const ResultUi *r : {&m_cam, &m_up, &m_log}) {
         if (!r->code) continue;
         r->code->setText("------");
         r->code->setStyleSheet("color:#C2CCDF;");
@@ -819,6 +826,12 @@ void DecodePage::setCameraActive(bool on)
     m_stream->setText(on ? " Stop Camera" : " Start Camera");
     setKind(m_stream, on ? "deep" : "primary");
     m_cameraBox->setEnabled(!on);
+    m_resolutionBox->setEnabled(!on);
+    m_refresh->setEnabled(!on);
+    m_focus->setEnabled(on);
+    m_snapshot->setEnabled(on);
+    m_mirror->setEnabled(true);
+    m_engine->setText(on ? "ENGINE: Camera active" : "ENGINE: Idle");
     m_freeze->setEnabled(on);
     m_freeze->setText(" Freeze");
     if (!on) setCameraMessage(tr("Press \"Start Camera\" to open the selected webcam."));
@@ -841,5 +854,42 @@ void DecodePage::stopCamera()
 void DecodePage::setCameraList(const QStringList &names)
 {
     m_cameraBox->clear();
-    m_cameraBox->addItems(names.isEmpty() ? QStringList{tr("No camera found")} : names);
+    for (int i = 0; i < names.size(); ++i) m_cameraBox->addItem(names[i], i);
+    if (names.isEmpty()) m_cameraBox->addItem(tr("No camera found"), -1);
+    m_stream->setEnabled(!names.isEmpty());
+    if (names.isEmpty()) setCameraMessage(tr("No camera detected. Connect a webcam, then refresh the camera list."));
+    else setCameraMessage(tr("Press \"Start Camera\" to open the selected webcam."));
+}
+
+QSize DecodePage::cameraResolution() const { return m_resolutionBox->currentData().toSize(); }
+bool DecodePage::mirrorCamera() const { return m_mirror->isChecked(); }
+
+void DecodePage::exportHistory()
+{
+    if (!m_history->rowCount()) {
+        QMessageBox::information(this, tr("Export scans"), tr("No successful scans to export yet."));
+        return;
+    }
+    QString path = QFileDialog::getSaveFileName(this, tr("Export scans"), "scans.csv", tr("CSV (*.csv)"));
+    if (path.isEmpty()) return;
+    if (!path.endsWith(".csv", Qt::CaseInsensitive)) path += ".csv";
+    QSaveFile file(path);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        QMessageBox::warning(this, tr("Export scans"), file.errorString());
+        return;
+    }
+    QTextStream out(&file);
+    out << "Timestamp,Symbology,Code,Payload,Latency\n";
+    for (int row = 0; row < m_history->rowCount(); ++row) {
+        for (int column = 0; column < m_history->columnCount(); ++column) {
+            QString value = m_history->item(row, column)->text();
+            value.replace('"', "\"\"");
+            if (column) out << ',';
+            out << '"' << value << '"';
+        }
+        out << '\n';
+    }
+    out.flush();
+    if (out.status() != QTextStream::Ok || !file.commit())
+        QMessageBox::warning(this, tr("Export scans"), tr("Could not write the scan log."));
 }

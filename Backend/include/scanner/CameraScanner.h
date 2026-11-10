@@ -3,6 +3,7 @@
 #include <QString>
 #include <QImage>
 #include <QRect>
+#include <QStringList>
 
 #ifdef HAVE_OPENCV
 #include <memory>
@@ -29,8 +30,10 @@ public:
     CameraScanner(const CameraScanner &) = delete;
     CameraScanner &operator=(const CameraScanner &) = delete;
 
-    bool openCamera(int cameraIndex = 0, QString *error = nullptr);
-    CameraFrameResult readFrame();
+    static QStringList availableCameras();
+    bool openCamera(int cameraIndex = 0, QString *error = nullptr, QSize resolution = QSize(1280, 720));
+    CameraFrameResult readFrame(bool decode = true);
+    bool autofocus();
     void closeCamera();
     bool isOpened() const;
 

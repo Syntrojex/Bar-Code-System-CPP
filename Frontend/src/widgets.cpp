@@ -303,8 +303,8 @@ void BarcodeView::paintEvent(QPaintEvent *)
     p.setPen(Qt::NoPen);
     p.drawEllipse(QPoint(20, height() - 22), 3, 3);
     p.setPen(muted);
-    p.drawText(QRect(30, height() - 34, 220, 22), Qt::AlignVCenter | Qt::AlignLeft, "Optical Density: 99.4%");
-    p.drawText(QRect(width() - 262, height() - 34, 246, 22), Qt::AlignVCenter | Qt::AlignRight, "Standard Bumper: Left/Right 12mm");
+    p.drawText(QRect(30, height() - 34, 220, 22), Qt::AlignVCenter | Qt::AlignLeft, "EAN-8 / Mod-10 checksum");
+    p.drawText(QRect(width() - 262, height() - 34, 246, 22), Qt::AlignVCenter | Qt::AlignRight, "Keep white margins when printing");
 
     // center card
     const int cw = qMin(width() - 80, 450), ch = 236;
@@ -429,7 +429,7 @@ void CameraView::paintEvent(QPaintEvent *)
     qreal scale = 1.0;                                                    // widget px per camera px
     if (live) {
         p.setRenderHint(QPainter::SmoothPixmapTransform);
-        scale = qMax(qreal(width()) / m_frame.width(), qreal(height()) / m_frame.height());   // "cover" fit
+        scale = qMin(qreal(width()) / m_frame.width(), qreal(height()) / m_frame.height());   // show the entire camera frame
         const QSizeF sz(m_frame.width() * scale, m_frame.height() * scale);
         p.drawPixmap(QRectF((width() - sz.width()) / 2, (height() - sz.height()) / 2, sz.width(), sz.height()),
                      m_frame, QRectF(m_frame.rect()));

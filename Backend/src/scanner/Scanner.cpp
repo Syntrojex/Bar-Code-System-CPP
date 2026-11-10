@@ -9,7 +9,11 @@ Scanner::Scanner(int idx, int width, int height)
 }
 bool Scanner::openCamera()
 {
-    camera.open(0, cv::CAP_DSHOW);
+#ifdef _WIN32
+    camera.open(index, cv::CAP_DSHOW);
+#else
+    camera.open(index);
+#endif
     if (!camera.isOpened())
     {
         errorMsg = "Camera cannot open";
@@ -57,16 +61,34 @@ bool Scanner::find(const cv::Mat &gray, cv::Rect &box) const
 bool Scanner::frameRead(std::string &six, cv::Rect &box, const cv::Mat &frame)
 {
     box = cv::Rect();
+    six.clear();
+    errorMsg.clear();
     if (frame.empty())
     {
         errorMsg = "Camera stopped sending frames";
         return false;
     }
     cv::Mat gray;
-    cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+    if (frame.channels() == 1) gray = frame;
+    else if (frame.channels() == 3) cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+    else if (frame.channels() == 4) cv::cvtColor(frame, gray, cv::COLOR_BGRA2GRAY);
+    else return false;
+    // Decode across several scan lines before relying on the contour detector.
+    if (decoder.decodeCropping(gray, six)) {
+        cv::Rect detected;
+        box = find(gray, detected) ? detected : cv::Rect(0, 0, gray.cols, gray.rows);
+        return true;
+    }
     cv::Rect Best;
-    if (!find(gray, Best))
+    if (!find(gray, Best)) {
+        cv::Mat rotated;
+        cv::rotate(gray, rotated, cv::ROTATE_90_CLOCKWISE);
+        if (decoder.decodeCropping(rotated, six)) {
+            box = cv::Rect(0, 0, gray.cols, gray.rows);
+            return true;
+        }
         return false;
+    }
     box = Best;
     cv::Rect pad(Best.x - 15, Best.y, Best.width + 30, Best.height);
     pad &= cv::Rect(0, 0, gray.cols, gray.rows);
@@ -75,38 +97,25 @@ bool Scanner::frameRead(std::string &six, cv::Rect &box, const cv::Mat &frame)
 }
 bool Scanner::scan(std::string &sixDigits)
 {
-    while (true)
-    {
-        if (!camera.isOpened() && !openCamera())
-            return false;
+    sixDigits.clear();
+    if (!camera.isOpened() && !openCamera()) return false;
+    const auto start = cv::getTickCount();
+    while ((cv::getTickCount() - start) / cv::getTickFrequency() < 30.0) {
         cv::Mat frame;
-        camera >> frame;
-        if (frame.empty())
+        if (!camera.read(frame) || frame.empty()) {
+            errorMsg = "Camera stopped sending frames";
+            camera.release();
             return false;
-        cv::Rect Best;
-        string six;
-        bool isDecoded = frameRead(six, Best, frame);
-        cv::Mat view = frame.clone();
-        if (Best.area() > 0)
-        {
-            cv::rectangle(view, Best, cv::Scalar(0, 255, 0), 2);
-            cv::putText(view, isDecoded ? six : (decoder.isBadCheck() ? "Wrong check digit" : "searching..."),
-                        cv::Point(Best.x, Best.y - 10), cv::FONT_HERSHEY_SIMPLEX, 0.9,
-                        isDecoded ? cv::Scalar(255, 0, 0) : cv::Scalar(0, 0, 255), 2);
         }
-        cv::imshow("live camera", view);
-        int key = cv::waitKey(1);
-        if (isDecoded)
-        {
-            sixDigits = six;
-        }
-        if (key == 27)
-        {
-            if (sixDigits.empty())
-                errorMsg = "request cancelled";
-            return !sixDigits.empty();
+        cv::Rect box;
+        if (frameRead(sixDigits, box, frame)) {
+            camera.release();
+            return true;
         }
     }
+    camera.release();
+    errorMsg = "No barcode found within 30 seconds";
+    return false;
 }
 std::string Scanner::errMessage() const
 {
@@ -115,5 +124,4 @@ std::string Scanner::errMessage() const
 Scanner::~Scanner()
 {
     camera.release();
-    cv::destroyAllWindows();
 }

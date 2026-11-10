@@ -42,6 +42,7 @@ ImageScanResult ImageScanner::scan(const QImage &image) const
     res.error = "This build has no OpenCV, so barcode images cannot be decoded. Install OpenCV and reconfigure CMake.";
     return res;
 #else
+    try {
     QElapsedTimer timer;
     timer.start();
 
@@ -90,5 +91,9 @@ ImageScanResult ImageScanner::scan(const QImage &image) const
     res.error = badCheck ? "Check digit mismatch: the barcode is damaged or is not a valid EAN-8."
                          : "No readable EAN-8 barcode found in this image.";
     return res;
+    } catch (const cv::Exception &e) {
+        res.error = QString("Image processing failed: %1").arg(QString::fromStdString(e.what()));
+        return res;
+    }
 #endif
 }

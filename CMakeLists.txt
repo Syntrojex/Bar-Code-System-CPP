@@ -1,164 +1,62 @@
-cmake_minimum_required(VERSION 3.16)
-
-# Skip Qt Creator's automatic vcpkg package manager injection and background maintenance tool check
-set(QT_CREATOR_SKIP_VCPKG_SETUP ON CACHE BOOL "Skip Qt Creator vcpkg setup" FORCE)
-set(QT_CREATOR_ENABLE_PACKAGE_MANAGER_SETUP OFF CACHE BOOL "Disable Qt Creator package manager setup" FORCE)
-set(QT_CREATOR_ENABLE_MAINTENANCE_TOOL_PROVIDER OFF CACHE BOOL "Disable Qt Creator maintenance tool check" FORCE)
-
-# Disable vcpkg manifest mode by default
-if(NOT DEFINED VCPKG_MANIFEST_MODE)
-    set(VCPKG_MANIFEST_MODE OFF CACHE BOOL "Disable vcpkg manifest mode by default")
-endif()
-
-# Normalize CMAKE_TOOLCHAIN_FILE path if defined
-if(DEFINED CMAKE_TOOLCHAIN_FILE)
-    file(TO_CMAKE_PATH "${CMAKE_TOOLCHAIN_FILE}" CMAKE_TOOLCHAIN_FILE)
-elseif(DEFINED ENV{VCPKG_ROOT})
-    file(TO_CMAKE_PATH "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" _vcpkg_toolchain)
-    set(CMAKE_TOOLCHAIN_FILE "${_vcpkg_toolchain}" CACHE STRING "vcpkg toolchain file")
-endif()
-
-project(BarcodeHub
-    VERSION 0.1.0
-    LANGUAGES CXX
-)
-
-# C++ Configuration
+cmake_minimum_required(VERSION 3.21)
+project(BarcodeHub VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-
-# Qt Configuration (Qt comes from the Qt installer / Qt Creator kit, NOT from vcpkg)
 set(CMAKE_AUTOMOC ON)
 
-# Auto-detect Qt installation if not already provided by IDE or environment
-if(NOT CMAKE_PREFIX_PATH AND NOT DEFINED ENV{QTDIR})
-    file(GLOB _qt_candidates 
-        "C:/Qt/6.*/mingw_64" 
-        "C:/Qt/6.*/msvc2022_64" 
-        "D:/Qt/6.*/mingw_64" 
-        "D:/Qt/6.*/msvc2022_64"
-    )
-    if(_qt_candidates)
-        list(GET _qt_candidates -1 _latest_qt)
-        list(APPEND CMAKE_PREFIX_PATH "${_latest_qt}")
-    endif()
-endif()
-
+# Qt, OpenCV and the application must use the same compiler ABI.
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(OpenCV 4 REQUIRED COMPONENTS core imgproc imgcodecs videoio)
+message(STATUS "OpenCV ${OpenCV_VERSION}: ${OpenCV_DIR}")
 
-# OpenCV Configuration (automatically detects MinGW or MSVC prebuilt packages)
-if(NOT OpenCV_DIR)
-    if(DEFINED ENV{OpenCV_DIR})
-        set(OpenCV_DIR "$ENV{OpenCV_DIR}")
-    elseif(MINGW)
-        file(GLOB _opencv_mingw_candidates "C:/opencv-mingw" "C:/opencv/mingw*" "D:/opencv-mingw")
-        foreach(_cand IN LISTS _opencv_mingw_candidates)
-            if(EXISTS "${_cand}/OpenCVConfig.cmake")
-                set(OpenCV_DIR "${_cand}")
-                break()
-            endif()
-        endforeach()
-    elseif(MSVC)
-        file(GLOB _opencv_msvc_candidates "C:/opencv-msvc" "C:/opencv/build" "D:/opencv/build" "C:/Users/*/Downloads/opencv/build")
-        foreach(_cand IN LISTS _opencv_msvc_candidates)
-            if(EXISTS "${_cand}/OpenCVConfig.cmake")
-                set(OpenCV_DIR "${_cand}")
-                break()
-            endif()
-        endforeach()
-    endif()
-endif()
-
-find_package(OpenCV QUIET)
-if(OpenCV_FOUND)
-    message(STATUS "OpenCV found: ${OpenCV_VERSION} (${OpenCV_DIR})")
-    add_compile_definitions(HAVE_OPENCV)
-else()
-    message(STATUS "OpenCV not found. Building without OpenCV support (mock camera mode).")
-endif()
-
-# Application Sources
-add_executable(BarcodeHub WIN32
-
-    # Frontend Sources
-    Frontend/src/main.cpp
-    Frontend/src/icons.cpp
-    Frontend/src/widgets.cpp
-    Frontend/src/generatepage.cpp
-    Frontend/src/decodepage.cpp
-    Frontend/src/mainwindow.cpp
-
-    # Frontend Headers
-    Frontend/include/ui/theme.h
-    Frontend/include/ui/icons.h
-    Frontend/include/ui/widgets.h
-    Frontend/include/ui/generatepage.h
-    Frontend/include/ui/decodepage.h
-    Frontend/include/ui/mainwindow.h
-
-    # Backend Sources
+add_library(barcode_core STATIC
     Backend/src/barcode/BarcodeGenerator.cpp
+    Backend/src/barcode/Decoder.cpp
     Backend/src/reader/builtin.cpp
     Backend/src/reader/reader.cpp
     Backend/src/scanner/CameraScanner.cpp
     Backend/src/scanner/ImageScanner.cpp
-
-    # Backend Headers
-    Backend/include/barcode/BarcodeGenerator.h
-    Backend/include/reader/builtin.h
-    Backend/include/reader/reader.h
-    Backend/include/scanner/CameraScanner.h
-    Backend/include/scanner/ImageScanner.h
+    Backend/src/scanner/Scanner.cpp
 )
-
-# Backend decoder (EAN-8 reader + frame scanner) needs OpenCV.
-# NOTE: Backend/src/scanner/Main.cpp is a stand-alone console test with its own main(): never add it here.
-if(OpenCV_FOUND)
-    target_sources(BarcodeHub PRIVATE
-        Backend/src/barcode/Decoder.cpp
-        Backend/src/scanner/Scanner.cpp
-        Backend/include/barcode/Decoder.h
-        Backend/include/scanner/Scanner.h
-    )
-endif()
-
-# Include Directories
-# NOTE: Frontend/include/ui is required because the sources use flat includes
-# like #include "mainwindow.h" while the headers live in Frontend/include/ui/.
-target_include_directories(BarcodeHub PRIVATE
-    Frontend/include
-    Frontend/include/ui
-    Backend/include
-    # Scanner.h / Decoder.h include each other with flat paths ("Decoder.h")
-    Backend/include/barcode
-    Backend/include/scanner
-)
-
-# Link Libraries
-target_link_libraries(BarcodeHub PRIVATE
-    Qt${QT_VERSION_MAJOR}::Widgets
-)
-
-if(OpenCV_FOUND)
-    target_include_directories(BarcodeHub PRIVATE ${OpenCV_INCLUDE_DIRS})
-    target_link_libraries(BarcodeHub PRIVATE ${OpenCV_LIBS})
-
-    # Automatically copy OpenCV runtime DLLs to output directory on Windows
-    if(WIN32 AND OpenCV_LIB_PATH)
-        add_custom_command(TARGET BarcodeHub POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
-                "${OpenCV_LIB_PATH}/../bin"
-                "$<TARGET_FILE_DIR:BarcodeHub>"
-            COMMENT "Copying OpenCV runtime DLLs to output directory..."
-        )
-    endif()
-endif()
-
-# Windows Configuration
+target_include_directories(barcode_core PUBLIC Backend/include
+    Backend/include/barcode Backend/include/scanner ${OpenCV_INCLUDE_DIRS})
+target_compile_definitions(barcode_core PUBLIC HAVE_OPENCV)
+target_link_libraries(barcode_core PUBLIC Qt${QT_VERSION_MAJOR}::Widgets ${OpenCV_LIBS})
 if(WIN32)
-    set_target_properties(BarcodeHub PROPERTIES
-        WIN32_EXECUTABLE TRUE
-    )
+    target_link_libraries(barcode_core PUBLIC ole32 oleaut32 strmiids)
+endif()
+
+add_library(barcode_ui STATIC
+    Frontend/src/icons.cpp Frontend/src/widgets.cpp
+    Frontend/src/generatepage.cpp Frontend/src/decodepage.cpp
+    Frontend/src/mainwindow.cpp
+    Frontend/include/ui/icons.h Frontend/include/ui/widgets.h
+    Frontend/include/ui/generatepage.h Frontend/include/ui/decodepage.h
+    Frontend/include/ui/mainwindow.h Frontend/include/ui/theme.h
+)
+target_include_directories(barcode_ui PUBLIC Frontend/include/ui)
+target_link_libraries(barcode_ui PUBLIC barcode_core)
+add_executable(BarcodeHub WIN32 Frontend/src/main.cpp)
+target_link_libraries(BarcodeHub PRIVATE barcode_ui)
+
+function(copy_runtime target)
+    if(WIN32)
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_RUNTIME_DLLS:${target}> $<TARGET_FILE_DIR:${target}>
+            COMMAND_EXPAND_LISTS VERBATIM)
+    endif()
+endfunction()
+copy_runtime(BarcodeHub)
+
+include(CTest)
+if(BUILD_TESTING)
+    add_executable(barcode_tests tests/regression.cpp)
+    target_link_libraries(barcode_tests PRIVATE barcode_ui)
+    copy_runtime(barcode_tests)
+    add_test(NAME barcode_regression COMMAND barcode_tests)
+    set_tests_properties(barcode_regression PROPERTIES
+        ENVIRONMENT "QT_QPA_PLATFORM=offscreen" TIMEOUT 90)
 endif()

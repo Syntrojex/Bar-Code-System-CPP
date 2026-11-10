@@ -1,5 +1,6 @@
 #pragma once
 #include "Decoder.h"
+#include <opencv2/videoio.hpp>
 #include <string>
 class Scanner
 {
