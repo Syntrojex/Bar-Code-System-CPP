@@ -1,4 +1,4 @@
-﻿#include "barcode/BarcodeGenerator.h"
+#include "barcode/BarcodeGenerator.h"
 #include <QFont>
 #include <QPainter>
 #include <QRegularExpression>
@@ -52,14 +52,18 @@ BarcodeResult BarcodeGenerator::generate(const QString &number, bool humanReadab
     const QString eight = ean8Payload(number);
     const QString bits = modulesFor(eight);
 
-    const int w = 600;
-    const int h = 240;
-    const int module = 7;                           // px per module -> 469 px of bars, ~9 modules of quiet zone each side
+    // High-resolution, print-friendly raster output (approximately 300 DPI at 8 inches).
+    // Integer module widths keep every bar edge crisp and scanner-friendly.
+    const int w = 2400;
+    const int h = 960;
+    const int module = 24;                          // 67 modules = 1608 px; generous quiet zones remain on both sides
     const int x0 = (w - bits.size() * module) / 2;
-    const int barTop = 26;
-    const int barHeight = humanReadable ? 150 : 188;
+    const int barTop = 104;
+    const int barHeight = humanReadable ? 600 : 752;
 
     QImage img(w, h, QImage::Format_RGB32);
+    img.setDotsPerMeterX(11811);                    // 300 DPI metadata
+    img.setDotsPerMeterY(11811);
     img.fill(Qt::white);
 
     QPainter painter(&img);
@@ -75,14 +79,14 @@ BarcodeResult BarcodeGenerator::generate(const QString &number, bool humanReadab
         painter.setRenderHint(QPainter::TextAntialiasing, true);
         QFont font("Consolas");
         font.setStyleHint(QFont::Monospace);
-        font.setPixelSize(28);
+        font.setPixelSize(112);
         font.setBold(true);
         painter.setFont(font);
         painter.setPen(Qt::black);
-        const int textTop = barTop + barHeight + 8;
+        const int textTop = barTop + barHeight + 32;
         for (int i = 0; i < 8; ++i) {
             const int cell = (i < 4) ? (3 + 7 * i) : (36 + 7 * (i - 4));   // module index of this digit's 7-module cell
-            painter.drawText(QRect(x0 + cell * module, textTop, 7 * module, 40), Qt::AlignCenter, QString(eight.at(i)));
+            painter.drawText(QRect(x0 + cell * module, textTop, 7 * module, 144), Qt::AlignCenter, QString(eight.at(i)));
         }
     }
     painter.end();

@@ -7,6 +7,7 @@ Scanner::Scanner(int idx, int width, int height)
     this->width = width;
     this->height = height;
 }
+// Open the camera
 bool Scanner::openCamera()
 {
 #ifdef _WIN32
@@ -19,12 +20,14 @@ bool Scanner::openCamera()
         errorMsg = "Camera cannot open";
         return false;
     }
+    // produces an MJPG of 640x480 screen
     camera.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
     camera.set(cv::CAP_PROP_FRAME_WIDTH, width);
     camera.set(cv::CAP_PROP_FRAME_HEIGHT, height);
     camera.set(cv::CAP_PROP_FPS, 30);
     return true;
 }
+// locate the barcode
 bool Scanner::find(const cv::Mat &gray, cv::Rect &box) const
 {
     cv::Mat gx, gy, score, mask;
@@ -58,6 +61,7 @@ bool Scanner::find(const cv::Mat &gray, cv::Rect &box) const
     }
     return false;
 }
+// read each frame and locate the barcode in grayscale
 bool Scanner::frameRead(std::string &six, cv::Rect &box, const cv::Mat &frame)
 {
     box = cv::Rect();
@@ -69,21 +73,28 @@ bool Scanner::frameRead(std::string &six, cv::Rect &box, const cv::Mat &frame)
         return false;
     }
     cv::Mat gray;
-    if (frame.channels() == 1) gray = frame;
-    else if (frame.channels() == 3) cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-    else if (frame.channels() == 4) cv::cvtColor(frame, gray, cv::COLOR_BGRA2GRAY);
-    else return false;
+    if (frame.channels() == 1)
+        gray = frame;
+    else if (frame.channels() == 3)
+        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+    else if (frame.channels() == 4)
+        cv::cvtColor(frame, gray, cv::COLOR_BGRA2GRAY);
+    else
+        return false;
     // Decode across several scan lines before relying on the contour detector.
-    if (decoder.decodeCropping(gray, six)) {
+    if (decoder.decodeCropping(gray, six))
+    {
         cv::Rect detected;
         box = find(gray, detected) ? detected : cv::Rect(0, 0, gray.cols, gray.rows);
         return true;
     }
     cv::Rect Best;
-    if (!find(gray, Best)) {
+    if (!find(gray, Best))
+    {
         cv::Mat rotated;
         cv::rotate(gray, rotated, cv::ROTATE_90_CLOCKWISE);
-        if (decoder.decodeCropping(rotated, six)) {
+        if (decoder.decodeCropping(rotated, six))
+        {
             box = cv::Rect(0, 0, gray.cols, gray.rows);
             return true;
         }
@@ -95,20 +106,25 @@ bool Scanner::frameRead(std::string &six, cv::Rect &box, const cv::Mat &frame)
     cv::Mat barcode = gray(pad).clone();
     return decoder.decodeCropping(barcode, six);
 }
+// scanning the located barcode for the six digits
 bool Scanner::scan(std::string &sixDigits)
 {
     sixDigits.clear();
-    if (!camera.isOpened() && !openCamera()) return false;
+    if (!camera.isOpened() && !openCamera())
+        return false;
     const auto start = cv::getTickCount();
-    while ((cv::getTickCount() - start) / cv::getTickFrequency() < 30.0) {
+    while ((cv::getTickCount() - start) / cv::getTickFrequency() < 30.0)
+    {
         cv::Mat frame;
-        if (!camera.read(frame) || frame.empty()) {
+        if (!camera.read(frame) || frame.empty())
+        {
             errorMsg = "Camera stopped sending frames";
             camera.release();
             return false;
         }
         cv::Rect box;
-        if (frameRead(sixDigits, box, frame)) {
+        if (frameRead(sixDigits, box, frame))
+        {
             camera.release();
             return true;
         }
@@ -117,10 +133,12 @@ bool Scanner::scan(std::string &sixDigits)
     errorMsg = "No barcode found within 30 seconds";
     return false;
 }
+// store the error message
 std::string Scanner::errMessage() const
 {
     return errorMsg;
 }
+// close the camera
 Scanner::~Scanner()
 {
     camera.release();
