@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <QWidget>
 #include <QString>
 #include <QPixmap>
@@ -16,7 +16,7 @@ class ToggleSwitch;
 class RadioCard;
 class SegBar;
 
-// Screen 1 – "Generate Barcode" (6-digit code -> barcode).
+// Screen 1 â€“ "Generate Barcode" (6-digit code -> barcode).
 class GeneratePage : public QWidget {
     Q_OBJECT
 public:
@@ -53,5 +53,4 @@ private:
     SegBar *m_stageSeg;
     QHBoxLayout *m_sessionRow;
     QList<Session> m_sessions;
-    int m_activeSession = 0;
 };

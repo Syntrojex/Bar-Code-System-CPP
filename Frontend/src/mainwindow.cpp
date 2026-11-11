@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 #include "decodepage.h"
 #include "generatepage.h"
 #include "icons.h"
@@ -340,12 +340,6 @@ QWidget *MainWindow::buildTopBar()
     tb->setObjectName("topbar");
     tb->setFixedHeight(56);
     auto *l = hbox(tb, 24, 0, 24, 0, 12);
-    l->addWidget(new LogoTile(30), 0, Qt::AlignVCenter);
-    l->addWidget(T("BarcodeHub", 17, 600, "#0B1C30"), 0, Qt::AlignVCenter);
-    auto *sep = new QFrame;
-    sep->setFixedSize(1, 20);
-    sep->setStyleSheet("background:#DDE2EC; border:none;");
-    l->addWidget(sep, 0, Qt::AlignVCenter);
     l->addWidget(pill("\xE2\x97\x8F  Increment 1", "tint"), 0, Qt::AlignVCenter);
     l->addStretch();
     auto *themeBtn = btn("", "square", "moon");
@@ -358,7 +352,11 @@ QWidget *MainWindow::buildTopBar()
     });
     l->addWidget(themeBtn, 0, Qt::AlignVCenter);
     l->addSpacing(8);
-    l->addWidget(iconChip("server", "OpenCV Ready", "#EFF4FF", "#434655", "#E1E8F7", true, 12, 8), 0, Qt::AlignVCenter);
+#ifdef HAVE_OPENCV
+    l->addWidget(iconChip("server", "OpenCV Ready", "#EFF4FF", "#0B4BCB", "#E1E8F7", true, 12, 8), 0, Qt::AlignVCenter);
+#else
+    l->addWidget(iconChip("server", "No OpenCV", "#FFF4EF", "#BA1A1A", "#F8D0CC", true, 12, 8), 0, Qt::AlignVCenter);
+#endif
     l->addSpacing(8);
     auto *av = new QFrame;
     av->setObjectName("avatar");

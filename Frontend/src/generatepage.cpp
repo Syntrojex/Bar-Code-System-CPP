@@ -1,4 +1,4 @@
-#include "generatepage.h"
+﻿#include "generatepage.h"
 #include "icons.h"
 #include "widgets.h"
 
@@ -150,13 +150,14 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
     };
     addSlider("Bar Width", 10, 40, 22, m_barVal, m_barSlider);
     addSlider("Quiet Zone", 4, 20, 10, m_quietVal, m_quietSlider);
-    m_barVal->setText("7 px");
-    m_quietVal->setText("9x");
     // not connected to the renderer yet -> disabled so they don't look functional
     m_barSlider->setEnabled(false);
     m_quietSlider->setEnabled(false);
-    m_barSlider->setToolTip(tr("Fixed at 7 pixels per module in this increment"));
-    m_quietSlider->setToolTip(tr("Fixed white margins of at least 9 modules"));
+    m_barSlider->setToolTip(tr("Bar width is fixed for this increment"));
+    m_quietSlider->setToolTip(tr("Quiet zone is fixed for this increment"));
+    // initialise display labels to match the slider default values
+    m_barVal->setText(QString("%1 px").arg(22 / 10.0, 0, 'f', 1));
+    m_quietVal->setText(QString("%1x").arg(10));
     sl->addLayout(sr);
 
     auto *tr3 = hrow(12);

@@ -5,11 +5,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_AUTOMOC ON)
 
-# Qt, OpenCV and the application must use the same compiler ABI.
+# Qt and the application must use the same compiler ABI.
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
-find_package(OpenCV 4 REQUIRED COMPONENTS core imgproc imgcodecs videoio)
-message(STATUS "OpenCV ${OpenCV_VERSION}: ${OpenCV_DIR}")
+
+# OpenCV 4 is optional: camera scanning and image decoding require it,
+# but the barcode generator works without it.
+find_package(OpenCV 4 QUIET COMPONENTS core imgproc imgcodecs videoio)
+if(OpenCV_FOUND)
+    message(STATUS "OpenCV ${OpenCV_VERSION} found: ${OpenCV_DIR}")
+else()
+    message(WARNING
+        "OpenCV 4 NOT found -- building without camera/image-decode support.\n"
+        "To enable it, install OpenCV 4 (MinGW build) and either:\n"
+        "  - Add its install prefix to CMAKE_PREFIX_PATH, or\n"
+        "  - Set OpenCV_DIR to the folder containing OpenCVConfig.cmake.")
+endif()
 
 add_library(barcode_core STATIC
     Backend/src/barcode/BarcodeGenerator.cpp
@@ -21,9 +32,14 @@ add_library(barcode_core STATIC
     Backend/src/scanner/Scanner.cpp
 )
 target_include_directories(barcode_core PUBLIC Backend/include
-    Backend/include/barcode Backend/include/scanner ${OpenCV_INCLUDE_DIRS})
-target_compile_definitions(barcode_core PUBLIC HAVE_OPENCV)
-target_link_libraries(barcode_core PUBLIC Qt${QT_VERSION_MAJOR}::Widgets ${OpenCV_LIBS})
+    Backend/include/barcode Backend/include/scanner)
+if(OpenCV_FOUND)
+    target_include_directories(barcode_core PUBLIC ${OpenCV_INCLUDE_DIRS})
+    target_compile_definitions(barcode_core PUBLIC HAVE_OPENCV)
+    target_link_libraries(barcode_core PUBLIC Qt${QT_VERSION_MAJOR}::Widgets ${OpenCV_LIBS})
+else()
+    target_link_libraries(barcode_core PUBLIC Qt${QT_VERSION_MAJOR}::Widgets)
+endif()
 if(WIN32)
     target_link_libraries(barcode_core PUBLIC ole32 oleaut32 strmiids)
 endif()
