@@ -352,13 +352,18 @@ QWidget *MainWindow::buildTopBar()
     l->addWidget(sep, 0, Qt::AlignVCenter);
     l->addWidget(pill("\xE2\x97\x8F  Increment 1", "tint"), 0, Qt::AlignVCenter);
     l->addStretch();
-    auto *themeBtn = btn("", "square", "moon");
+    auto *themeBtn = new QPushButton(tr("  Dark Mode"));
     themeBtn->setObjectName("themeToggle");
-    themeBtn->setToolTip(tr("Toggle Night Mode"));
+    themeBtn->setCursor(Qt::PointingHandCursor);
+    themeBtn->setIcon(makeIcon("moon", QColor("#334155"), 18));
+    themeBtn->setIconSize(QSize(18, 18));
+    themeBtn->setToolTip(tr("Toggle Dark Mode"));
     connect(themeBtn, &QPushButton::clicked, this, [this, themeBtn] {
-        Theme::toggleNightMode(this);
-        themeBtn->setIcon(makeIcon(Theme::isNightMode() ? "sun" : "moon",
-                                   Theme::isNightMode() ? QColor("#FBBF24") : QColor("#334155"), 18));
+        Theme::toggleDarkMode(this);
+        const bool dark = Theme::isDarkMode();
+        themeBtn->setText(dark ? tr("  Light Mode") : tr("  Dark Mode"));
+        themeBtn->setIcon(makeIcon(dark ? "sun" : "moon",
+                                   dark ? QColor("#FBBF24") : QColor("#334155"), 18));
     });
     l->addWidget(themeBtn, 0, Qt::AlignVCenter);
     l->addSpacing(8);

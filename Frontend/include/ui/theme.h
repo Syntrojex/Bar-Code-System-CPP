@@ -86,6 +86,26 @@ QPushButton#btn[kind="danger"]:hover { background: #FFEDEB; }
 QPushButton#btn[kind="square"] { background: #FFFFFF; color: #334155; border: 1px solid #E1E6F0; padding: 0; min-width: 38px; max-width: 38px; }
 QPushButton#btn[kind="square"]:hover { background: #F8FAFF; }
 
+QPushButton#themeToggle {
+    background: transparent;
+    border: 1px solid #DDE2EC;
+    border-radius: 8px;
+    padding: 0 12px;
+    min-height: 34px;
+    max-height: 34px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 500;
+}
+QPushButton#themeToggle:hover {
+    background: #F1F5F9;
+    border-color: #CBD5E1;
+    color: #0B1C30;
+}
+QPushButton#themeToggle:pressed {
+    background: #E2E8F0;
+}
+
 QPushButton#chipBtn { background: #E8EFFD; border: none; border-radius: 8px; padding: 0 14px; min-height: 32px;
                       font-family: "JetBrains Mono","Consolas","DejaVu Sans Mono",monospace; font-size: 12px; color: #1F2A44; text-align: left; }
 QPushButton#chipBtn:hover { background: #DAE5FB; }
@@ -201,6 +221,26 @@ QPushButton#btn[kind="danger"]{ background: transparent; color: #EF4444; border:
 QPushButton#btn[kind="danger"]:hover { background: #3B1219; }
 QPushButton#btn[kind="square"] { background: #162032; color: #E2E8F0; border: 1px solid #334155; padding: 0; min-width: 38px; max-width: 38px; }
 QPushButton#btn[kind="square"]:hover { background: #1E293B; }
+
+QPushButton#themeToggle {
+    background: #1E293B;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 0 12px;
+    min-height: 34px;
+    max-height: 34px;
+    color: #F8FAFC;
+    font-size: 13px;
+    font-weight: 500;
+}
+QPushButton#themeToggle:hover {
+    background: #334155;
+    border-color: #475569;
+    color: #FFFFFF;
+}
+QPushButton#themeToggle:pressed {
+    background: #0F172A;
+}
 
 QPushButton#chipBtn { background: #162032; border: 1px solid #243047; border-radius: 8px; padding: 0 14px; min-height: 32px;
                       font-family: "JetBrains Mono","Consolas","DejaVu Sans Mono",monospace; font-size: 12px; color: #E2E8F0; text-align: left; }
@@ -333,5 +373,10 @@ inline void toggleNightMode(QWidget *window = nullptr)
 {
     setNightMode(!isNightMode(), window);
 }
+
+// Dark Mode aliases
+inline bool &isDarkMode() { return isNightMode(); }
+inline void setDarkMode(bool enable, QWidget *window = nullptr) { setNightMode(enable, window); }
+inline void toggleDarkMode(QWidget *window = nullptr) { toggleNightMode(window); }
 
 } // namespace Theme
