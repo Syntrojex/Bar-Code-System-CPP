@@ -20,6 +20,7 @@ bool Scanner::openCamera()
         errorMsg = "Camera cannot open";
         return false;
     }
+    // produces an MJPG of 640x480 screen
     camera.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
     camera.set(cv::CAP_PROP_FRAME_WIDTH, width);
     camera.set(cv::CAP_PROP_FRAME_HEIGHT, height);
