@@ -6,6 +6,7 @@ using namespace std;
 // patterns representing numbers 0-9
 const char *const Decoder::patterns[10] = {"0001101", "0011001", "0010011", "0111101", "0100011",
                                            "0110001", "0101111", "0111011", "0110111", "0001011"};
+// store weights at each line
 std::vector<double> Decoder::scanLineRuns(const cv::Mat &barcode) const
 {
     if (barcode.empty() || barcode.type() != CV_8UC1 || barcode.rows < 5)
@@ -139,7 +140,7 @@ bool Decoder::decodeCropping(const cv::Mat &gray, std::string &six) const
     if (gray.empty() || gray.type() != CV_8UC1)
         return false;
     bool badCheck = false;
-    // Thin bands tolerate tilted bars and avoid text/scratches crossing one row.
+    // Thin bands tolerate tilted bars, avoids text/scratches crossing one row.
     for (int percent : {50, 40, 60, 30, 70, 20, 80})
     {
         const int y = gray.rows * percent / 100;
@@ -162,7 +163,8 @@ bool Decoder::decodeCropping(const cv::Mat &gray, std::string &six) const
     badCheckDigit = badCheck;
     return false;
 }
-// display message for a bad check
+// displays 'badCheck' for a bad check digit
+// else shows error in terminal
 bool Decoder::isBadCheck() const
 {
     return badCheckDigit;
