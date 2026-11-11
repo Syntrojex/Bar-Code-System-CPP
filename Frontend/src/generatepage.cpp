@@ -117,68 +117,23 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
     cl->addLayout(br);
     cl->addSpacing(4);
 
-    // ---- symbology parameters panel
-    auto *sym = panel();
-    auto *sl = vbox(sym, 16, 16, 16, 16, 10);
-    auto *sh = hrow();
-    sh->addWidget(T(tr("Symbology Parameters"), 14, 500, "#0B1C30"));
-    sh->addStretch();
-    sh->addWidget(T("SPEC ISO/IEC 15420", 11, 400, "#737686", true));
-    sl->addLayout(sh);
-    sl->addWidget(T("LINEAR STANDARD", 11, 600, "#737686"));
-
-    // EAN-8 is the only symbology: 0 + 6-digit code + check digit
-    m_ean8 = new RadioCard("EAN-8", "0 + code + check digit");
-    m_ean8->setSelected(true);
-    sl->addWidget(m_ean8);
-
-    auto *sr = hrow(16);
-    auto addSlider = [&](const QString &name, int mn, int mx, int val, QLabel *&valLabel, QSlider *&slider) {
-        auto *col = vcol(6);
-        auto *top = hrow();
-        top->addWidget(T(name, 12, 500, "#434655", true));
-        top->addStretch();
-        valLabel = T("", 12, 500, "#0B1C30", true);
-        top->addWidget(valLabel);
-        col->addLayout(top);
-        slider = new QSlider(Qt::Horizontal);
-        slider->setRange(mn, mx);
-        slider->setValue(val);
-        slider->setCursor(Qt::PointingHandCursor);
-        col->addWidget(slider);
-        sr->addLayout(col, 1);
-    };
-    addSlider("Bar Width", 10, 40, 22, m_barVal, m_barSlider);
-    addSlider("Quiet Zone", 4, 20, 10, m_quietVal, m_quietSlider);
-    m_barVal->setText("7 px");
-    m_quietVal->setText("9x");
-    // not connected to the renderer yet -> disabled so they don't look functional
-    m_barSlider->setEnabled(false);
-    m_quietSlider->setEnabled(false);
-    m_barSlider->setToolTip(tr("Fixed at 7 pixels per module in this increment"));
-    m_quietSlider->setToolTip(tr("Fixed white margins of at least 9 modules"));
-    sl->addLayout(sr);
-
-    auto *tr3 = hrow(12);
-    auto *tc = vcol(2);
-    tc->addWidget(T(tr("Include Human-Readable OCR"), 14, 500, "#0B1C30"));
-    auto *ocrSub = T(tr("Render the full EAN-8 digits under the bars"), 12, 400, "#434655");
-    tc->addWidget(ocrSub);
-    tr3->addLayout(tc, 1);
+    // ---- concise symbology information (no disabled/inert controls)
+    auto *symInfo = panel();
+    auto *sil = hbox(symInfo, 14, 14, 14, 14, 10);
+    sil->addWidget(iconLabel("barcode", QColor("#0B4BCB"), 18), 0, Qt::AlignTop);
+    auto *symText = vcol(3);
+    symText->addWidget(T("EAN-8 Standard", 14, 600, "#0B1C30"));
+    auto *symDesc = T("Generates an 8-digit EAN-8 barcode with an automatic check digit.", 12, 400, "#434655");
+    symDesc->setWordWrap(true);
+    symText->addWidget(symDesc);
+    sil->addLayout(symText, 1);
     m_ocr = new ToggleSwitch(true);
-    tr3->addWidget(m_ocr);
-    sl->addLayout(tr3);
-    cl->addWidget(sym);
-
-    auto *note = panel("panelB");
-    auto *nl = hbox(note, 14, 12, 14, 12, 10);
-    nl->addWidget(iconLabel("gauge", QColor("#0B4BCB"), 18), 0, Qt::AlignTop);
-    auto *nt = new QLabel("Linear rasterizer ready.");
-    nt->setWordWrap(true);
-    nt->setStyleSheet("font-size:12px; color:#434655; font-family:" + monoFamily() + ";");
-    nl->addWidget(nt, 1);
-    cl->addWidget(note);
-    cl->addStretch();
+    auto *ocrRow = hrow(10);
+    ocrRow->addWidget(T(tr("Show digits under barcode"), 12, 500, "#434655"));
+    ocrRow->addStretch();
+    ocrRow->addWidget(m_ocr);
+    cl->addWidget(symInfo);
+    cl->addLayout(ocrRow);
 
     body->addWidget(cfg, 0, Qt::AlignTop);
 
@@ -201,37 +156,26 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
     auto *ab = hrow(10);
     m_save = btn(tr("Save as PNG"), "primary", "download");
     m_copy = btn(tr("Copy Image"), "outline", "copy");
-    auto *svg = btn(tr("Export SVG"), "tint", "braces");
-    for (auto *b : {m_save, m_copy, svg}) b->setMinimumHeight(40);
+    m_save->setMinimumHeight(42);
+    m_copy->setMinimumHeight(42);
     ab->addWidget(m_save);
     ab->addWidget(m_copy);
-    ab->addWidget(svg);
     ab->addStretch();
     pl->addLayout(ab);
-    auto *ab2 = hrow();
-    ab2->addStretch();
-    auto *thermal = btn(tr("Thermal Print"), "ghost", "print");
-    thermal->setMinimumHeight(40);
-    ab2->addWidget(thermal);
-    pl->addLayout(ab2);
 
-    // no backend behind these two yet
-    svg->setEnabled(false);
-    svg->setToolTip(tr("Not implemented yet"));
-    thermal->setEnabled(false);
-    thermal->setToolTip(tr("Not implemented yet"));
-
-    auto *info = panel();
-    auto *il = hbox(info, 16, 12, 16, 12, 12);
-    auto *infoL = new QLabel("<span style='color:#434655'>Dimensions: 600\xC3\x97" "240px &nbsp;\xE2\x80\xA2&nbsp; Format: PNG"
-                             " &nbsp;\xE2\x80\xA2&nbsp; Color: Black (#000000)</span>");
-    infoL->setWordWrap(true);
-    infoL->setStyleSheet("font-size:12px; font-family:" + monoFamily() + ";");
-    il->addWidget(iconLabel("image", QColor("#0B4BCB"), 16), 0, Qt::AlignTop);
-    il->addWidget(infoL, 1);
-    il->addWidget(T("Buffer: Lossless", 12, 400, "#737686", true), 0, Qt::AlignTop);
-    pl->addWidget(info);
     right->addWidget(pv);
+
+    // ---- About this project
+    auto *about = panel();
+    auto *aboutLayout = hbox(about, 18, 16, 18, 16, 12);
+    aboutLayout->addWidget(iconLabel("info", QColor("#0B4BCB"), 20), 0, Qt::AlignTop);
+    auto *aboutText = vcol(5);
+    aboutText->addWidget(T(tr("About BarcodeHub"), 15, 600, "#0B1C30"));
+    auto *aboutDesc = T(tr("BarcodeHub is a lightweight C++ and Qt desktop application for generating and decoding EAN-8 barcodes. It validates input, calculates check digits automatically, and supports barcode image export, image decoding, and camera-based scanning."), 13, 400, "#434655");
+    aboutDesc->setWordWrap(true);
+    aboutText->addWidget(aboutDesc);
+    aboutLayout->addLayout(aboutText, 1);
+    right->addWidget(about);
 
     // ---- session card
     auto *sc = card();
@@ -275,9 +219,6 @@ GeneratePage::GeneratePage(QWidget *parent) : QWidget(parent)
         if (!code.isEmpty()) emit generateRequested(code);          // re-render the backend image with / without digits
     });
     connect(m_stageSeg, &SegBar::currentChanged, this, [this](int i) { m_view->setAwaiting(i == 1); });
-    connect(m_ean8, &RadioCard::clicked, this, [this] { m_ean8->setSelected(true); });
-    connect(m_barSlider, &QSlider::valueChanged, this, [this](int v) { m_barVal->setText(QString("%1 px").arg(v / 10.0, 0, 'f', 1)); });
-    connect(m_quietSlider, &QSlider::valueChanged, this, [this](int v) { m_quietVal->setText(QString("%1x").arg(v)); });
 }
 
 void GeneratePage::setBarcodeImage(const QPixmap &pm) { m_view->setImage(pm); }

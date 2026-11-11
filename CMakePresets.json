@@ -14,6 +14,7 @@
       "binaryDir": "${sourceDir}/build/qt-mingw",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
+        "OpenCV_DIR": "C:/opencv-mingw",
         "QT_CREATOR_SKIP_VCPKG_SETUP": true,
         "QT_CREATOR_ENABLE_PACKAGE_MANAGER_SETUP": false,
         "QT_CREATOR_ENABLE_MAINTENANCE_TOOL_PROVIDER": false
@@ -28,6 +29,7 @@
       "architecture": "x64",
       "cacheVariables": {
         "CMAKE_CONFIGURATION_TYPES": "Debug;Release",
+        "OpenCV_DIR": "C:/opencv-msvc/x64/vc16/lib",
         "QT_CREATOR_SKIP_VCPKG_SETUP": true,
         "QT_CREATOR_ENABLE_PACKAGE_MANAGER_SETUP": false,
         "QT_CREATOR_ENABLE_MAINTENANCE_TOOL_PROVIDER": false

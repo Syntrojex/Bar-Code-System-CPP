@@ -234,7 +234,7 @@ void BarcodeView::paintBarcodeCard(QPainter &p, const QRect &r) const
 {
     p.fillRect(r, Qt::white);
     if (!m_image.isNull()) {
-        const QPixmap s = m_image.scaled(r.size() - QSize(40, 24), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        const QPixmap s = m_image.scaled(r.size() - QSize(40, 24), Qt::KeepAspectRatio, Qt::FastTransformation);
         p.drawPixmap(r.center().x() - s.width() / 2, r.center().y() - s.height() / 2, s);
         return;
     }
@@ -282,33 +282,19 @@ void BarcodeView::paintEvent(QPaintEvent *)
     QFont mf = monoFont(11);
     p.setFont(mf);
 
-    // ruler row (top)
-    p.drawPixmap(14, 16, iconPixmap("ruler", muted, 14));
-    p.setPen(muted);
-    p.drawText(QRect(32, 12, 150, 22), Qt::AlignVCenter | Qt::AlignLeft, "600 px width");
-    p.drawText(QRect(width() - 182, 12, 150, 22), Qt::AlignVCenter | Qt::AlignRight, "240 px height");
-    p.drawPixmap(width() - 28, 16, iconPixmap("ruler", muted, 14));
-
-    const QString sym = "Active Symbology: EAN-8";
+    // Keep the preview focused on the barcode; omit internal raster dimensions.
+    const QString sym = "EAN-8 Barcode Preview";
     const int sw = QFontMetrics(mf).horizontalAdvance(sym) + 22;
-    const QRect symR((width() - sw) / 2, 11, sw, 24);
+    const QRect symR((width() - sw) / 2, 12, sw, 24);
     p.setPen(Qt::NoPen);
     p.setBrush(QColor("#E3EAF8"));
     p.drawRoundedRect(symR, 6, 6);
     p.setPen(QColor("#434655"));
     p.drawText(symR, Qt::AlignCenter, sym);
 
-    // bottom row
-    p.setBrush(QColor("#0B4BCB"));
-    p.setPen(Qt::NoPen);
-    p.drawEllipse(QPoint(20, height() - 22), 3, 3);
-    p.setPen(muted);
-    p.drawText(QRect(30, height() - 34, 220, 22), Qt::AlignVCenter | Qt::AlignLeft, "EAN-8 / Mod-10 checksum");
-    p.drawText(QRect(width() - 262, height() - 34, 246, 22), Qt::AlignVCenter | Qt::AlignRight, "Keep white margins when printing");
-
-    // center card
+    // Center the barcode card with comfortable white space.
     const int cw = qMin(width() - 80, 450), ch = 236;
-    const QRect c((width() - cw) / 2, (height() - ch) / 2, cw, ch);
+    const QRect c((width() - cw) / 2, (height() - ch) / 2 + 8, cw, ch);
 
     if (!hasBarcode() || m_awaiting) {
         p.setPen(QPen(QColor("#9DB4E0"), 1.6, Qt::DashLine));
