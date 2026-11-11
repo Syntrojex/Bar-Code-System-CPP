@@ -6,7 +6,7 @@
 namespace {
 // EAN-8 left-hand ("L") digit patterns; right-hand digits use the bitwise complement.
 const char *const kLeft[10] = {"0001101", "0011001", "0010011", "0111101", "0100011",
-                               "0110001", "0101111", "0111011", "0110111", "0001011"};
+                             "0110001", "0101111", "0111011", "0110111", "0001011"};
 
 bool validSix(const QString &s)
 {
@@ -24,14 +24,12 @@ QString modulesFor(const QString &eight)
         QString p = QLatin1String(kLeft[eight.at(i).digitValue()]);
         for (QChar &c : p) c = (c == QLatin1Char('1')) ? QLatin1Char('0') : QLatin1Char('1');
         bits += p;
-
     }
 
     bits += "101";
     return bits;                                    // 3 + 28 + 5 + 28 + 3 = 67 modules
 }
 } // namespace
-
 
 QString BarcodeGenerator::ean8Payload(const QString &six)
 {
@@ -43,9 +41,7 @@ QString BarcodeGenerator::ean8Payload(const QString &six)
     return d + QChar('0' + (10 - sum % 10) % 10);
 }
 
-
 BarcodeResult BarcodeGenerator::generate(const QString &number, bool humanReadable) const
-
 {
     BarcodeResult res;
     if (!validSix(number)) {
@@ -59,11 +55,11 @@ BarcodeResult BarcodeGenerator::generate(const QString &number, bool humanReadab
 
     // High-resolution, print-friendly raster output (approximately 300 DPI at 8 inches).
     // Integer module widths keep every bar edge crisp and scanner-friendly.
-    const int w = 2400;
-    const int h = 960;
-    const int module = 24;                          // 67 modules = 1608 px; generous quiet zones remain on both sides
-    const int x0 = (w - bits.size() * module) / 2;
-    const int barTop = 104;
+    const int w         = 2400;
+    const int h         = 960;
+    const int module    = 24;                      // 67 modules = 1608 px; generous quiet zones remain on both sides
+    const int x0        = (w - bits.size() * module) / 2;
+    const int barTop    = 104;
     const int barHeight = humanReadable ? 600 : 752;
 
     QImage img(w, h, QImage::Format_RGB32);
