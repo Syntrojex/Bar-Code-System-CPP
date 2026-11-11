@@ -6,6 +6,7 @@ using namespace std;
 // patterns representing numbers 0-9
 const char *const Decoder::patterns[10] = {"0001101", "0011001", "0010011", "0111101", "0100011",
                                            "0110001", "0101111", "0111011", "0110111", "0001011"};
+// store weights at each line
 std::vector<double> Decoder::scanLineRuns(const cv::Mat &barcode) const
 {
     if (barcode.empty() || barcode.type() != CV_8UC1 || barcode.rows < 5)
