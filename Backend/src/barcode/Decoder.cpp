@@ -113,6 +113,7 @@ bool Decoder::decodeSix(const std::string &bits, std::string &six) const
 {
     six.clear();
     badCheckDigit = false;
+    // 2 attempts
     for (int a = 0; a < 2; a++)
     {
         string b = (a == 0) ? bits : string(bits.rbegin(), bits.rend());
