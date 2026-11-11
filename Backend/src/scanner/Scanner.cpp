@@ -113,6 +113,7 @@ bool Scanner::scan(std::string &sixDigits)
     if (!camera.isOpened() && !openCamera())
         return false;
     const auto start = cv::getTickCount();
+    // tick count
     while ((cv::getTickCount() - start) / cv::getTickFrequency() < 30.0)
     {
         cv::Mat frame;
