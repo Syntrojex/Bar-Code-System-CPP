@@ -2,20 +2,21 @@
 
 All notable changes to **BarcodeHub** are documented in this file.
 
-## Increment 1 — Initial Project Setup
+## [1.0.0] — Increment 1: Initial Project Setup
 
 ### Added
-- Established the initial project structure and directory organization.
-- Configured CMake as the project build system.
-- Added Qt Widgets-based desktop application foundation.
-- Implemented the initial application window and navigation.
-- Added the Generate Barcode interface for six-digit numeric input.
-- Added the Decode Barcode interface with camera and image-upload sections.
-- Introduced the initial scan logs interface.
-- Organized backend modules for barcode generation, reading, and scanning.
-- Added project documentation and contribution guidelines.
+- Established the initial project architecture and directory structure.
+- Configured CMake for project build management.
+- Set up the Qt Widgets-based desktop application.
+- Implemented the main application window and navigation system.
+- Created the **Generate Barcode** interface with six-digit numeric input.
+- Added the **Decode Barcode** interface with camera scanning and image-upload sections.
+- Introduced the initial **Scan Logs** interface.
+- Organized backend modules for barcode generation, decoding, and scanning.
+- Added project configuration and planning documentation.
+- Established contribution guidelines and repository collaboration structure.
 
 ### Notes
-- Established the initial foundation of BarcodeHub.
-- Some interface elements currently use placeholder data.
-- Actual barcode scanning, decoding, and backend integration will be developed in subsequent increments.
+- Completed the foundational setup for BarcodeHub.
+- Initial interfaces include placeholder elements and data where backend functionality is not yet integrated.
+- Barcode generation, decoding, camera scanning, and complete backend integration are planned for subsequent increments.
