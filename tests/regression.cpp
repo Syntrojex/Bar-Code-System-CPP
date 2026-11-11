@@ -102,7 +102,11 @@ int main(int argc, char **argv) {
         }
     }
     const QImage original = generator.generate("749205").image;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    roundTrip(original.flipped(Qt::Horizontal), "749205", "mirrored barcode");
+#else
     roundTrip(original.mirrored(true, false), "749205", "mirrored barcode");
+#endif
     roundTrip(original.transformed(QTransform().rotate(90)), "749205", "vertical barcode");
     roundTrip(original.transformed(QTransform().rotate(180)), "749205", "upside down barcode");
     roundTrip(original.scaled(300, 120, Qt::IgnoreAspectRatio, Qt::SmoothTransformation), "749205", "small barcode");
