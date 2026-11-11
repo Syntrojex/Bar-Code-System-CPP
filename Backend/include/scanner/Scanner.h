@@ -16,6 +16,7 @@ public:
     Scanner(int idx = 0, int width = 640, int height = 480);
     // opens camera
     bool openCamera();
+    // scans barcdoe located in find()
     bool scan(std::string &six);
     bool frameRead(std::string &six, cv::Rect &box, const cv::Mat &frame);
     std::string errMessage() const;
