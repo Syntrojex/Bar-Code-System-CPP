@@ -24,11 +24,14 @@ QString modulesFor(const QString &eight)
         QString p = QLatin1String(kLeft[eight.at(i).digitValue()]);
         for (QChar &c : p) c = (c == QLatin1Char('1')) ? QLatin1Char('0') : QLatin1Char('1');
         bits += p;
+
     }
+
     bits += "101";
     return bits;                                    // 3 + 28 + 5 + 28 + 3 = 67 modules
 }
 } // namespace
+
 
 QString BarcodeGenerator::ean8Payload(const QString &six)
 {
@@ -40,7 +43,9 @@ QString BarcodeGenerator::ean8Payload(const QString &six)
     return d + QChar('0' + (10 - sum % 10) % 10);
 }
 
+
 BarcodeResult BarcodeGenerator::generate(const QString &number, bool humanReadable) const
+
 {
     BarcodeResult res;
     if (!validSix(number)) {
