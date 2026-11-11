@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <QWidget>
 #include <QString>
 #include <QPixmap>
@@ -7,13 +7,11 @@
 class QLabel;
 class QLineEdit;
 class QPushButton;
-class QSlider;
 class QAction;
 class QVBoxLayout;
 class QHBoxLayout;
 class BarcodeView;
 class ToggleSwitch;
-class RadioCard;
 class SegBar;
 
 // Screen 1 â€“ "Generate Barcode" (6-digit code -> barcode).
@@ -43,11 +41,9 @@ private:
 
     QLineEdit *m_input;
     QAction *m_checkAction;
-    QLabel *m_counter, *m_hint, *m_hintIcon, *m_barVal, *m_quietVal;
+    QLabel *m_counter, *m_hint, *m_hintIcon;
     QWidget *m_validChip;
     QPushButton *m_generate, *m_clear, *m_save, *m_copy;
-    RadioCard *m_ean8;
-    QSlider *m_barSlider, *m_quietSlider;
     ToggleSwitch *m_ocr;
     BarcodeView *m_view;
     SegBar *m_stageSeg;
