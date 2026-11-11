@@ -31,6 +31,7 @@ std::vector<double> Decoder::scanLineRuns(const cv::Mat &barcode) const
     }
     if (edges.size() < 2)
         return {};
+    // add in the new vector
     vector<double> runs;
     for (size_t j = 0; j + 1 < edges.size(); j++)
     {
