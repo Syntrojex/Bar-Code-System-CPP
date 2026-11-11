@@ -1,5 +1,6 @@
 #include "widgets.h"
 #include "icons.h"
+#include "theme.h"
 
 #include <QDragEnterEvent>
 #include <QDropEvent>
@@ -74,6 +75,10 @@ protected:
     }
     void paintEvent(QPaintEvent *e) override
     {
+        if (m_lastNight != Theme::isNightMode()) {
+            m_lastNight = Theme::isNightMode();
+            restyle();
+        }
         {
             QPainter p(this);
             p.setRenderHint(QPainter::Antialiasing);
@@ -88,23 +93,25 @@ private:
     void restyle()
     {
         const QString k = property("kind").toString();
+        const bool dark = Theme::isNightMode();
         m_border = QColor();
         if (m_pill) {
-            if (k == "white")      { m_bg = "#FFFFFF"; m_fg = "#0B1C30"; m_border = QColor("#E4E8F1"); }
-            else if (k == "green") { m_bg = "#E3F6EC"; m_fg = "#0B7A4B"; }
-            else if (k == "red")   { m_bg = "#FFDAD6"; m_fg = "#93000A"; }
-            else if (k == "idle")  { m_bg = "#EEF2FA"; m_fg = "#5A6075"; }
-            else                   { m_bg = "#E1EAFF"; m_fg = "#1D4ED8"; }      // tint
+            if (k == "white")      { m_bg = dark ? "#1E293B" : "#FFFFFF"; m_fg = dark ? "#F8FAFC" : "#0B1C30"; m_border = QColor(dark ? "#334155" : "#E4E8F1"); }
+            else if (k == "green") { m_bg = dark ? "#064E3B" : "#E3F6EC"; m_fg = dark ? "#34D399" : "#0B7A4B"; }
+            else if (k == "red")   { m_bg = dark ? "#7F1D1D" : "#FFDAD6"; m_fg = dark ? "#FCA5A5" : "#93000A"; }
+            else if (k == "idle")  { m_bg = dark ? "#1E293B" : "#EEF2FA"; m_fg = dark ? "#94A3B8" : "#5A6075"; }
+            else                   { m_bg = dark ? "#1E3A8A" : "#E1EAFF"; m_fg = dark ? "#93C5FD" : "#1D4ED8"; }      // tint
         } else {
-            if (k == "neutral")    { m_bg = "#EEF2FA"; m_fg = "#434655"; m_border = QColor("#E2E7F1"); }
-            else if (k == "white") { m_bg = "#FFFFFF"; m_fg = "#434655"; }
-            else if (k == "green") { m_bg = "#E3F6EC"; m_fg = "#0B7A4B"; }
-            else                   { m_bg = "#E1EAFF"; m_fg = "#1F4FCF"; }      // blue
+            if (k == "neutral")    { m_bg = dark ? "#1E293B" : "#EEF2FA"; m_fg = dark ? "#CBD5E1" : "#434655"; m_border = QColor(dark ? "#334155" : "#E2E7F1"); }
+            else if (k == "white") { m_bg = dark ? "#1E293B" : "#FFFFFF"; m_fg = dark ? "#E2E8F0" : "#434655"; m_border = QColor(dark ? "#334155" : ""); }
+            else if (k == "green") { m_bg = dark ? "#064E3B" : "#E3F6EC"; m_fg = dark ? "#34D399" : "#0B7A4B"; }
+            else                   { m_bg = dark ? "#1E3A8A" : "#E1EAFF"; m_fg = dark ? "#93C5FD" : "#1F4FCF"; }      // blue
         }
         setStyleSheet(QString("color:%1; background:transparent; border:none;").arg(m_fg.name()));
         update();
     }
     bool m_pill;
+    bool m_lastNight = false;
     QColor m_bg, m_fg, m_border;
 };
 
@@ -267,18 +274,19 @@ void BarcodeView::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
+    const bool dark = Theme::isNightMode();
 
     // stage + dot grid
     QPainterPath stage;
     stage.addRoundedRect(QRectF(rect()), 10, 10);
-    p.fillPath(stage, QColor("#EEF3FF"));
+    p.fillPath(stage, dark ? QColor("#0B0F19") : QColor("#EEF3FF"));
     p.setClipPath(stage);
-    p.setPen(QPen(QColor("#C9D6EE"), 1.5, Qt::SolidLine, Qt::RoundCap));
+    p.setPen(QPen(dark ? QColor("#1E293B") : QColor("#C9D6EE"), 1.5, Qt::SolidLine, Qt::RoundCap));
     for (int y = 12; y < height(); y += 16)
         for (int x = 12; x < width(); x += 16) p.drawPoint(x, y);
     p.setClipping(false);
 
-    const QColor muted("#737686");
+    const QColor muted(dark ? "#64748B" : "#737686");
     QFont mf = monoFont(11);
     p.setFont(mf);
 
@@ -287,9 +295,9 @@ void BarcodeView::paintEvent(QPaintEvent *)
     const int sw = QFontMetrics(mf).horizontalAdvance(sym) + 22;
     const QRect symR((width() - sw) / 2, 12, sw, 24);
     p.setPen(Qt::NoPen);
-    p.setBrush(QColor("#E3EAF8"));
+    p.setBrush(dark ? QColor("#1E293B") : QColor("#E3EAF8"));
     p.drawRoundedRect(symR, 6, 6);
-    p.setPen(QColor("#434655"));
+    p.setPen(dark ? QColor("#94A3B8") : QColor("#434655"));
     p.drawText(symR, Qt::AlignCenter, sym);
 
     // Center the barcode card with comfortable white space.
@@ -297,16 +305,16 @@ void BarcodeView::paintEvent(QPaintEvent *)
     const QRect c((width() - cw) / 2, (height() - ch) / 2 + 8, cw, ch);
 
     if (!hasBarcode() || m_awaiting) {
-        p.setPen(QPen(QColor("#9DB4E0"), 1.6, Qt::DashLine));
-        p.setBrush(QColor(255, 255, 255, 170));
+        p.setPen(QPen(dark ? QColor("#334155") : QColor("#9DB4E0"), 1.6, Qt::DashLine));
+        p.setBrush(dark ? QColor(17, 24, 39, 200) : QColor(255, 255, 255, 170));
         p.drawRoundedRect(c, 10, 10);
         QFont f; f.setPixelSize(15); f.setWeight(QFont::DemiBold);
         p.setFont(f);
-        p.setPen(QColor("#434655"));
+        p.setPen(dark ? QColor("#E2E8F0") : QColor("#434655"));
         p.drawText(c.adjusted(0, 0, 0, -22), Qt::AlignCenter, tr("Your barcode will appear here"));
         f.setPixelSize(12); f.setWeight(QFont::Normal);
         p.setFont(f);
-        p.setPen(QColor("#737686"));
+        p.setPen(dark ? QColor("#64748B") : QColor("#737686"));
         p.drawText(c.adjusted(0, 34, 0, 0), Qt::AlignCenter, tr("Enter a 6-digit code and press Generate"));
         return;
     }
@@ -547,8 +555,11 @@ void DropZone::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
-    p.setBrush(m_hover ? QColor("#E6EEFF") : QColor("#EFF4FF"));
-    p.setPen(QPen(m_hover ? QColor("#0B4BCB") : QColor("#CBDAF7"), 1.5, Qt::DashLine));
+    const bool dark = Theme::isNightMode();
+    p.setBrush(m_hover ? (dark ? QColor("#1E2D4A") : QColor("#E6EEFF"))
+                       : (dark ? QColor("#111827") : QColor("#EFF4FF")));
+    p.setPen(QPen(m_hover ? (dark ? QColor("#3B82F6") : QColor("#0B4BCB"))
+                          : (dark ? QColor("#334155") : QColor("#CBDAF7")), 1.5, Qt::DashLine));
     p.drawRoundedRect(QRectF(rect()).adjusted(1, 1, -1, -1), 12, 12);
 }
 
@@ -617,14 +628,17 @@ void RadioCard::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
     p.setRenderHint(QPainter::Antialiasing);
-    p.setBrush(m_sel ? QColor("#FFFFFF") : QColor("#E3EBFA"));
-    p.setPen(m_sel ? QPen(QColor("#DDE5F5"), 1) : Qt::NoPen);
+    const bool dark = Theme::isNightMode();
+    p.setBrush(m_sel ? (dark ? QColor("#16233B") : QColor("#FFFFFF"))
+                     : (dark ? QColor("#111827") : QColor("#E3EBFA")));
+    p.setPen(m_sel ? QPen(dark ? QColor("#2563EB") : QColor("#DDE5F5"), 1) : Qt::NoPen);
     p.drawRoundedRect(QRectF(rect()).adjusted(0.5, 0.5, -0.5, -0.5), 8, 8);
     const QPoint c(width() - 22, 26);
     p.setBrush(Qt::NoBrush);
-    p.setPen(QPen(m_sel ? QColor("#0B4BCB") : QColor("#8A93A8"), 1.8));
+    p.setPen(QPen(m_sel ? (dark ? QColor("#60A5FA") : QColor("#0B4BCB"))
+                        : (dark ? QColor("#64748B") : QColor("#8A93A8")), 1.8));
     p.drawEllipse(c, 8, 8);
-    if (m_sel) { p.setPen(Qt::NoPen); p.setBrush(QColor("#0B4BCB")); p.drawEllipse(c, 4, 4); }
+    if (m_sel) { p.setPen(Qt::NoPen); p.setBrush(dark ? QColor("#60A5FA") : QColor("#0B4BCB")); p.drawEllipse(c, 4, 4); }
 }
 
 // ======================================================= SegBar
