@@ -1,7 +1,7 @@
 {
   "project": {
-    "name": "Bar-Code-Generator-CPP",
-    "title": "Barcode Generator",
+    "name": "BarcodeHub",
+    "title": "Barcode Management System",
     "course": "Introduction to Software Engineering",
     "language": "C++",
     "version": "1.0.0",
@@ -13,11 +13,33 @@
     "repository": "Syntrojex/Bar-Code-System-CPP",
     "default_branch": "main"
   },
+  "team": [
+    {
+      "name": "Muhammad Mustafa Amir",
+      "github": "Syntrojex",
+      "email": "mustafaamir398a@gmail.com",
+    },
+    {
+      "name": "Ali Abdullah",
+      "github": "aliabdullah-se",
+      "email": "x.ali.abdullah176@gmail.com"
+    },
+    {
+      "name": "Farzam Zeeshan",
+      "github": "farzamzeeshan1",
+      "email": "farzamzeeshan1@gmail.com"
+    },
+    {
+      "name": "Shauzab Mukhtar",
+      "github": "shauzab-72",
+      "email": "tcs204287@gmail.com"
+    }
+  ],
   "increments": [
     {
       "increment": 1,
       "version": "1.0.0",
-      "status": "In Progress"
+      "status": "Completed"
     }
   ]
 }
