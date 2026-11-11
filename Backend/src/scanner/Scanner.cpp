@@ -27,6 +27,7 @@ bool Scanner::openCamera()
     camera.set(cv::CAP_PROP_FPS, 30);
     return true;
 }
+// locate the barcode
 bool Scanner::find(const cv::Mat &gray, cv::Rect &box) const
 {
     cv::Mat gx, gy, score, mask;
@@ -60,6 +61,7 @@ bool Scanner::find(const cv::Mat &gray, cv::Rect &box) const
     }
     return false;
 }
+// read each frame and locate the barcode in grayscale
 bool Scanner::frameRead(std::string &six, cv::Rect &box, const cv::Mat &frame)
 {
     box = cv::Rect();
@@ -130,6 +132,7 @@ bool Scanner::scan(std::string &sixDigits)
     errorMsg = "No barcode found within 30 seconds";
     return false;
 }
+// store the error message
 std::string Scanner::errMessage() const
 {
     return errorMsg;
