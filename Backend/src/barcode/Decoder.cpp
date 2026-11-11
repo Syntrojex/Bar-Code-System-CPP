@@ -3,6 +3,7 @@
 #include <opencv2/imgproc.hpp>
 #include "Decoder.h"
 using namespace std;
+// patterns representing numbers 0-9
 const char *const Decoder::patterns[10] = {"0001101", "0011001", "0010011", "0111101", "0100011",
                                            "0110001", "0101111", "0111011", "0110111", "0001011"};
 std::vector<double> Decoder::scanLineRuns(const cv::Mat &barcode) const
@@ -37,6 +38,7 @@ std::vector<double> Decoder::scanLineRuns(const cv::Mat &barcode) const
     }
     return runs;
 }
+// converting 43 stripes to modules (between 1 and 4)
 std::string Decoder::runsToModules(const std::vector<double> &runs) const
 {
     if (runs.size() != stripes)
@@ -55,6 +57,7 @@ std::string Decoder::runsToModules(const std::vector<double> &runs) const
     }
     return (bits.size() == modules) ? bits : "";
 }
+// matching digit with the given pattern
 int Decoder::digitMatch(const std::string &seven, bool right)
 {
     for (int i = 0; i < 10; i++)
@@ -70,6 +73,7 @@ int Decoder::digitMatch(const std::string &seven, bool right)
     }
     return -1;
 }
+// converting modules to digits
 std::string Decoder::modulesToDigits(const std::string &bits) const
 {
     if (bits.size() != modules || bits.substr(0, 3) != "101" || bits.substr(64, 3) != "101" || bits.substr(31, 5) != "01010")
@@ -93,6 +97,7 @@ std::string Decoder::modulesToDigits(const std::string &bits) const
     }
     return digits;
 }
+// is the check digit valid or not?
 bool Decoder::isCheckDigit(const std::string &d) const
 {
     int sum = 0;
@@ -100,6 +105,7 @@ bool Decoder::isCheckDigit(const std::string &d) const
         sum += (d[i] - '0') * ((i % 2 == 0) ? 3 : 1);
     return (10 - sum % 10) % 10 == d[7] - '0';
 }
+// store the six digits
 bool Decoder::decodeSix(const std::string &bits, std::string &six) const
 {
     six.clear();
@@ -124,14 +130,17 @@ bool Decoder::decodeSix(const std::string &bits, std::string &six) const
     }
     return false;
 }
+// calls the above functions
 bool Decoder::decodeCropping(const cv::Mat &gray, std::string &six) const
 {
     badCheckDigit = false;
     six.clear();
-    if (gray.empty() || gray.type() != CV_8UC1) return false;
+    if (gray.empty() || gray.type() != CV_8UC1)
+        return false;
     bool badCheck = false;
     // Thin bands tolerate tilted bars and avoid text/scratches crossing one row.
-    for (int percent : {50, 40, 60, 30, 70, 20, 80}) {
+    for (int percent : {50, 40, 60, 30, 70, 20, 80})
+    {
         const int y = gray.rows * percent / 100;
         const int top = std::max(0, y - 3);
         const int bottom = std::min(gray.rows, y + 4);
@@ -140,16 +149,19 @@ bool Decoder::decodeCropping(const cv::Mat &gray, std::string &six) const
                            cv::BORDER_CONSTANT, cv::Scalar(255));
         const auto runs = scanLineRuns(band);
         // A barcode can be surrounded by other dark objects on the scan line.
-        for (size_t start = 0; start + stripes <= runs.size(); start += 2) {
+        for (size_t start = 0; start + stripes <= runs.size(); start += 2)
+        {
             const vector<double> candidate(runs.begin() + start, runs.begin() + start + stripes);
             const string bits = runsToModules(candidate);
-            if (!bits.empty() && decodeSix(bits, six)) return true;
+            if (!bits.empty() && decodeSix(bits, six))
+                return true;
             badCheck = badCheck || badCheckDigit;
         }
     }
     badCheckDigit = badCheck;
     return false;
 }
+// display message for a bad check
 bool Decoder::isBadCheck() const
 {
     return badCheckDigit;
