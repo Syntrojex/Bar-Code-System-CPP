@@ -1,4 +1,4 @@
-<h1 align="center">🏷️ BarcodeHub</h1>
+ <h1 align="center">🏷️ BarcodeHub</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/C%2B%2B-17-00599C?style=for-the-badge&logo=cplusplus&logoColor=white" />
@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  **A C++ desktop application for barcode generation, image decoding, and real-time camera scanning.**
+  <b>A C++ desktop application for barcode generation, image decoding, and real-time camera scanning.</b>
   <br />
   Developed as an academic project for Introduction to Software Engineering at FAST-NUCES.
 </p>
