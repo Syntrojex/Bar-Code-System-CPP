@@ -11,7 +11,7 @@ int main()
         cout << "Barcode Number: " << six << endl;
     }
     else
-    {
+    { // error message dispaly in terminal
         cout << "Error: " << camScanner.errMessage() << endl;
     }
     return 0;
