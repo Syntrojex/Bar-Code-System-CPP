@@ -7,6 +7,7 @@ Scanner::Scanner(int idx, int width, int height)
     this->width = width;
     this->height = height;
 }
+// Open the camera
 bool Scanner::openCamera()
 {
 #ifdef _WIN32
@@ -69,21 +70,28 @@ bool Scanner::frameRead(std::string &six, cv::Rect &box, const cv::Mat &frame)
         return false;
     }
     cv::Mat gray;
-    if (frame.channels() == 1) gray = frame;
-    else if (frame.channels() == 3) cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
-    else if (frame.channels() == 4) cv::cvtColor(frame, gray, cv::COLOR_BGRA2GRAY);
-    else return false;
+    if (frame.channels() == 1)
+        gray = frame;
+    else if (frame.channels() == 3)
+        cv::cvtColor(frame, gray, cv::COLOR_BGR2GRAY);
+    else if (frame.channels() == 4)
+        cv::cvtColor(frame, gray, cv::COLOR_BGRA2GRAY);
+    else
+        return false;
     // Decode across several scan lines before relying on the contour detector.
-    if (decoder.decodeCropping(gray, six)) {
+    if (decoder.decodeCropping(gray, six))
+    {
         cv::Rect detected;
         box = find(gray, detected) ? detected : cv::Rect(0, 0, gray.cols, gray.rows);
         return true;
     }
     cv::Rect Best;
-    if (!find(gray, Best)) {
+    if (!find(gray, Best))
+    {
         cv::Mat rotated;
         cv::rotate(gray, rotated, cv::ROTATE_90_CLOCKWISE);
-        if (decoder.decodeCropping(rotated, six)) {
+        if (decoder.decodeCropping(rotated, six))
+        {
             box = cv::Rect(0, 0, gray.cols, gray.rows);
             return true;
         }
@@ -98,17 +106,21 @@ bool Scanner::frameRead(std::string &six, cv::Rect &box, const cv::Mat &frame)
 bool Scanner::scan(std::string &sixDigits)
 {
     sixDigits.clear();
-    if (!camera.isOpened() && !openCamera()) return false;
+    if (!camera.isOpened() && !openCamera())
+        return false;
     const auto start = cv::getTickCount();
-    while ((cv::getTickCount() - start) / cv::getTickFrequency() < 30.0) {
+    while ((cv::getTickCount() - start) / cv::getTickFrequency() < 30.0)
+    {
         cv::Mat frame;
-        if (!camera.read(frame) || frame.empty()) {
+        if (!camera.read(frame) || frame.empty())
+        {
             errorMsg = "Camera stopped sending frames";
             camera.release();
             return false;
         }
         cv::Rect box;
-        if (frameRead(sixDigits, box, frame)) {
+        if (frameRead(sixDigits, box, frame))
+        {
             camera.release();
             return true;
         }
