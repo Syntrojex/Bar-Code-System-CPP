@@ -101,10 +101,11 @@ std::string Decoder::modulesToDigits(const std::string &bits) const
 }
 // is the check digit valid or not?
 bool Decoder::isCheckDigit(const std::string &d) const
-{
+{ // 0482915 7
     int sum = 0;
     for (int i = 0; i < 7; i++)
         sum += (d[i] - '0') * ((i % 2 == 0) ? 3 : 1);
+    // eg 73 -> 80 80-73 =7
     return (10 - sum % 10) % 10 == d[7] - '0';
 }
 // store the six digits
@@ -123,9 +124,9 @@ bool Decoder::decodeSix(const std::string &bits, std::string &six) const
             badCheckDigit = true;
             continue;
         }
-        if (d[0] == '0' && d[1] != '0')
+        if (d[0] == '0' && d[1] != '0') // 04829157
         {
-            six = d.substr(1, 6);
+            six = d.substr(1, 6); // six=482915
             badCheckDigit = false;
             return true;
         }
