@@ -1,5 +1,6 @@
 {
-  "project": {
+  "project": 
+  {
     "name": "BarcodeHub",
     "title": "Barcode Management System",
     "course": "Introduction to Software Engineering",
@@ -8,12 +9,16 @@
     "current_increment": 1,
     "status": "In Development"
   },
-  "development": {
+  
+  "development":
+  {
     "methodology": "Incremental Development",
     "repository": "Syntrojex/Bar-Code-System-CPP",
     "default_branch": "main"
   },
-  "team": [
+  
+  "team": 
+  [
     {
       "name": "Muhammad Mustafa Amir",
       "github": "Syntrojex",
@@ -35,7 +40,9 @@
       "email": "tcs204287@gmail.com"
     }
   ],
-  "increments": [
+  
+  "increments": 
+  [
     {
       "increment": 1,
       "version": "1.0.0",
