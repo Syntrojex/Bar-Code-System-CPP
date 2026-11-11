@@ -5,6 +5,7 @@ int main()
 {
     Scanner camScanner;
     string six;
+    // call scaner to display the six digits or the error message
     if (camScanner.scan(six))
     {
         cout << "Barcode Number: " << six << endl;
