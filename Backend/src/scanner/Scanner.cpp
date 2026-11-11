@@ -106,6 +106,7 @@ bool Scanner::frameRead(std::string &six, cv::Rect &box, const cv::Mat &frame)
     cv::Mat barcode = gray(pad).clone();
     return decoder.decodeCropping(barcode, six);
 }
+// scanning the located barcode for the six digits
 bool Scanner::scan(std::string &sixDigits)
 {
     sixDigits.clear();
@@ -137,6 +138,7 @@ std::string Scanner::errMessage() const
 {
     return errorMsg;
 }
+// close the camera
 Scanner::~Scanner()
 {
     camera.release();
