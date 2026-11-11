@@ -198,7 +198,11 @@ void MainWindow::acceptCameraFrame(const CameraFrameResult &r)
         // mirrored for display only (like a mirror / selfie view); the original frame stays unflipped for decoding
         CameraView *view = m_decode->cameraView();
         const bool mirror = m_decode->mirrorCamera();
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        view->setFrame(QPixmap::fromImage(mirror ? r.frame.flipped(Qt::Horizontal) : r.frame));
+#else
         view->setFrame(QPixmap::fromImage(mirror ? r.frame.mirrored(true, false) : r.frame));
+#endif
 
         if (!r.decodedText.isEmpty()) {              // Backend/Scanner found and decoded an EAN-8 barcode in this frame
             m_missFrames = 0;
@@ -342,13 +346,18 @@ QWidget *MainWindow::buildTopBar()
     auto *l = hbox(tb, 24, 0, 24, 0, 12);
     l->addWidget(pill("\xE2\x97\x8F  Increment 1", "tint"), 0, Qt::AlignVCenter);
     l->addStretch();
-    auto *themeBtn = btn("", "square", "moon");
+    auto *themeBtn = new QPushButton(tr("  Dark Mode"));
     themeBtn->setObjectName("themeToggle");
-    themeBtn->setToolTip(tr("Toggle Night Mode"));
+    themeBtn->setCursor(Qt::PointingHandCursor);
+    themeBtn->setIcon(makeIcon("moon", QColor("#334155"), 18));
+    themeBtn->setIconSize(QSize(18, 18));
+    themeBtn->setToolTip(tr("Toggle Dark Mode"));
     connect(themeBtn, &QPushButton::clicked, this, [this, themeBtn] {
-        Theme::toggleNightMode(this);
-        themeBtn->setIcon(makeIcon(Theme::isNightMode() ? "sun" : "moon",
-                                   Theme::isNightMode() ? QColor("#FBBF24") : QColor("#334155"), 18));
+        Theme::toggleDarkMode(this);
+        const bool dark = Theme::isDarkMode();
+        themeBtn->setText(dark ? tr("  Light Mode") : tr("  Dark Mode"));
+        themeBtn->setIcon(makeIcon(dark ? "sun" : "moon",
+                                   dark ? QColor("#FBBF24") : QColor("#334155"), 18));
     });
     l->addWidget(themeBtn, 0, Qt::AlignVCenter);
     l->addSpacing(8);

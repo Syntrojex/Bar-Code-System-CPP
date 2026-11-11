@@ -86,6 +86,26 @@ QPushButton#btn[kind="danger"]:hover { background: #FFEDEB; }
 QPushButton#btn[kind="square"] { background: #FFFFFF; color: #334155; border: 1px solid #E1E6F0; padding: 0; min-width: 38px; max-width: 38px; }
 QPushButton#btn[kind="square"]:hover { background: #F8FAFF; }
 
+QPushButton#themeToggle {
+    background: transparent;
+    border: 1px solid #DDE2EC;
+    border-radius: 8px;
+    padding: 0 12px;
+    min-height: 34px;
+    max-height: 34px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 500;
+}
+QPushButton#themeToggle:hover {
+    background: #F1F5F9;
+    border-color: #CBD5E1;
+    color: #0B1C30;
+}
+QPushButton#themeToggle:pressed {
+    background: #E2E8F0;
+}
+
 QPushButton#chipBtn { background: #E8EFFD; border: none; border-radius: 8px; padding: 0 14px; min-height: 32px;
                       font-family: "JetBrains Mono","Consolas","DejaVu Sans Mono",monospace; font-size: 12px; color: #1F2A44; text-align: left; }
 QPushButton#chipBtn:hover { background: #DAE5FB; }
@@ -202,6 +222,26 @@ QPushButton#btn[kind="danger"]:hover { background: #3B1219; }
 QPushButton#btn[kind="square"] { background: #162032; color: #E2E8F0; border: 1px solid #334155; padding: 0; min-width: 38px; max-width: 38px; }
 QPushButton#btn[kind="square"]:hover { background: #1E293B; }
 
+QPushButton#themeToggle {
+    background: #1E293B;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 0 12px;
+    min-height: 34px;
+    max-height: 34px;
+    color: #F8FAFC;
+    font-size: 13px;
+    font-weight: 500;
+}
+QPushButton#themeToggle:hover {
+    background: #334155;
+    border-color: #475569;
+    color: #FFFFFF;
+}
+QPushButton#themeToggle:pressed {
+    background: #0F172A;
+}
+
 QPushButton#chipBtn { background: #162032; border: 1px solid #243047; border-radius: 8px; padding: 0 14px; min-height: 32px;
                       font-family: "JetBrains Mono","Consolas","DejaVu Sans Mono",monospace; font-size: 12px; color: #E2E8F0; text-align: left; }
 QPushButton#chipBtn:hover { background: #1E293B; }
@@ -240,6 +280,7 @@ QProgressBar { background: #1E293B; border: none; border-radius: 2px; max-height
 QProgressBar::chunk { background: #3B82F6; border-radius: 2px; }
 
 QScrollArea { border: none; background: transparent; }
+QScrollArea > QWidget > QWidget { background: transparent; }
 QScrollBar:vertical { background: transparent; width: 10px; margin: 2px; }
 QScrollBar::handle:vertical { background: #334155; border-radius: 4px; min-height: 30px; }
 QScrollBar::handle:vertical:hover { background: #475569; }
@@ -280,12 +321,50 @@ inline void setNightMode(bool enable, QWidget *window = nullptr)
                 s.replace("#0B4BCB", "#3B82F6");
                 s.replace("#004AC6", "#60A5FA");
                 l->setStyleSheet(s);
+
+                const QString txt = l->text();
+                if (txt.contains("#0B1C30") || txt.contains("#434655") || txt.contains("#1F2A44")) {
+                    if (!l->property("dayText").isValid()) {
+                        l->setProperty("dayText", txt);
+                    }
+                    QString t = l->property("dayText").toString();
+                    t.replace("#0B1C30", "#F8FAFC");
+                    t.replace("#434655", "#94A3B8");
+                    t.replace("#1F2A44", "#E2E8F0");
+                    l->setText(t);
+                }
             } else {
                 if (l->property("dayStyle").isValid()) {
                     l->setStyleSheet(l->property("dayStyle").toString());
                 }
+                if (l->property("dayText").isValid()) {
+                    l->setText(l->property("dayText").toString());
+                }
             }
         }
+
+        const auto frames = window->findChildren<QFrame *>();
+        for (QFrame *f : frames) {
+            if (f->objectName() == "iconChip" || f->objectName() == "iconTile") {
+                if (enable) {
+                    if (!f->property("dayStyle").isValid()) {
+                        f->setProperty("dayStyle", f->styleSheet());
+                    }
+                    QString s = f->property("dayStyle").toString();
+                    s.replace("#EFF4FF", "#1E293B");
+                    s.replace("#E5EEFF", "#1E293B");
+                    s.replace("#E1E8F7", "#334155");
+                    s.replace("#D6E1F7", "#334155");
+                    s.replace("#434655", "#E2E8F0");
+                    f->setStyleSheet(s);
+                } else {
+                    if (f->property("dayStyle").isValid()) {
+                        f->setStyleSheet(f->property("dayStyle").toString());
+                    }
+                }
+            }
+        }
+
         window->update();
     }
 }
@@ -294,5 +373,10 @@ inline void toggleNightMode(QWidget *window = nullptr)
 {
     setNightMode(!isNightMode(), window);
 }
+
+// Dark Mode aliases
+inline bool &isDarkMode() { return isNightMode(); }
+inline void setDarkMode(bool enable, QWidget *window = nullptr) { setNightMode(enable, window); }
+inline void toggleDarkMode(QWidget *window = nullptr) { toggleNightMode(window); }
 
 } // namespace Theme

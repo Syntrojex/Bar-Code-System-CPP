@@ -140,7 +140,7 @@ bool Decoder::decodeCropping(const cv::Mat &gray, std::string &six) const
     if (gray.empty() || gray.type() != CV_8UC1)
         return false;
     bool badCheck = false;
-    // Thin bands tolerate tilted bars and avoid text/scratches crossing one row.
+    // Thin bands tolerate tilted bars, avoids text/scratches crossing one row.
     for (int percent : {50, 40, 60, 30, 70, 20, 80})
     {
         const int y = gray.rows * percent / 100;
@@ -163,7 +163,8 @@ bool Decoder::decodeCropping(const cv::Mat &gray, std::string &six) const
     badCheckDigit = badCheck;
     return false;
 }
-// display message for a bad check
+// displays 'badCheck' for a bad check digit
+// else shows error in terminal
 bool Decoder::isBadCheck() const
 {
     return badCheckDigit;
