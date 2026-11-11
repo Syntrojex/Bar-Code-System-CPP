@@ -4,6 +4,8 @@
 #include <QPainterPath>
 #include <QPolygonF>
 
+
+
 QPixmap iconPixmap(const QString &n, const QColor &c, int size)
 {
     const qreal dpr = 2.0;
@@ -65,6 +67,8 @@ QPixmap iconPixmap(const QString &n, const QColor &c, int size)
         s.cubicTo(16.5, 14, 13.5, 16.5, 10, 17.5); s.cubicTo(6.5, 16.5, 3.5, 14, 3.5, 10); s.lineTo(3.5, 5); s.closeSubpath();
         p.drawPath(s);
         QPainterPath t; t.moveTo(7, 10); t.lineTo(9.2, 12.2); t.lineTo(13, 8); p.drawPath(t);
+
+
     } else if (n == "user") {
         p.drawEllipse(QRectF(7, 3.5, 6, 6));
         QPainterPath b; b.moveTo(4, 17); b.cubicTo(4, 13.5, 7, 12, 10, 12); b.cubicTo(13, 12, 16, 13.5, 16, 17); p.drawPath(b);
@@ -114,6 +118,8 @@ QPixmap iconPixmap(const QString &n, const QColor &c, int size)
         p.drawPolygon(b);
         p.drawLine(QPointF(10, 8), QPointF(14, 12)); p.drawLine(QPointF(14, 8), QPointF(10, 12));
     } else if (n == "folder") {
+
+
         p.drawRoundedRect(QRectF(2.5, 6.5, 15, 9.5), 2, 2);
         QPainterPath t; t.moveTo(2.5, 7); t.lineTo(2.5, 5); t.quadTo(2.5, 4, 3.5, 4); t.lineTo(7.5, 4); t.lineTo(9.2, 6.5); p.drawPath(t);
     } else if (n == "bug") {
@@ -163,3 +169,5 @@ QLabel *iconLabel(const QString &name, const QColor &color, int size)
     l->setStyleSheet("background: transparent; border: none;");
     return l;
 }
+
+
