@@ -24,6 +24,8 @@ The application aims to simplify product identification and barcode-related oper
 
 Developed incrementally, the project focuses on reliability, usability, and maintainable software architecture.
 
+---
+
 ## ✨ Key Features
 
 - 🏷️ **Barcode Generation** — Generate barcodes from supported six-digit product codes.
@@ -33,12 +35,16 @@ Developed incrementally, the project focuses on reliability, usability, and main
 - 📤 **CSV Export** — Export scan history.
 - 🎨 **Desktop GUI** — Interactive interface built with Qt Widgets.
 
+---
+
 ## 📷 Camera & Image Scanning
 
 - Select a camera and resolution to start live scanning.
 - Freeze, resume, mirror, and capture camera frames.
 - Upload PNG, JPEG, or BMP images for decoding.
 - View successful scans in Scan Logs and export them as CSV.
+
+---
 
 ## 🔢 Supported Barcode Format
 
@@ -52,6 +58,8 @@ This is a project-specific encoding based on an EAN-8-sized structure. It does n
 
 SVG export and thermal printing are currently disabled.
 
+---
+
 ## 🛠️ Technology Stack
 
 | Technology | Purpose |
@@ -64,6 +72,8 @@ SVG export and thermal printing are currently disabled.
 | **PowerShell** | Automated setup and packaging |
 | **Git & GitHub** | Version control and collaboration |
 | **GitHub Actions** | Automatic branch synchronization |
+
+---
 
 ## 📂 Project Structure
 
@@ -96,6 +106,8 @@ Bar-Code-System-CPP/
 └── README.md
 ```
 
+---
+
 ## 🎓 Academic Information
 
 | Detail | Information |
@@ -110,6 +122,8 @@ Bar-Code-System-CPP/
 | Methodology | Incremental Development |
 | Submission Platform | GitHub |
 
+---
+
 ## 👥 Project Team & Credits
 
 This project was collaboratively developed by the following team members:
@@ -120,6 +134,8 @@ This project was collaboratively developed by the following team members:
 | **Ali Abdullah** | 25L-3022 | [@aliabdullah-se](https://github.com/aliabdullah-se) |
 | **Farzam Zeeshan** | 25L-3049 | [@farzamzeeshan1](https://github.com/farzamzeeshan1) |
 | **Shauzab Mukhtar** | 25L-3084 | [@shauzab-72](https://github.com/shauzab-72) |
+
+---
 
 ## 🤝 Contributing
 
