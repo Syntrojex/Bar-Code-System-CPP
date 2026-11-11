@@ -19,7 +19,9 @@ class Decoder
     mutable bool badCheckDigit = false;
 
 public:
+    // store the digits
     bool decodeSix(const std::string &bits, std::string &six) const;
+    // calls the functions above
     bool decodeCropping(const cv::Mat &gray, std::string &six) const;
     bool isBadCheck() const;
 };
