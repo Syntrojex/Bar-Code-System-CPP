@@ -12,6 +12,7 @@ All notable changes to **BarcodeHub** are documented in this file.
 - Created the **Generate Barcode** interface with six-digit numeric input.
 - Added the **Decode Barcode** interface with camera scanning and image-upload sections.
 - Introduced the initial **Scan Logs** interface.
+- Added an **About Project** page (overview, barcode format, architecture, tech stack, course details and team) to the sidebar.
 - Organized backend modules for barcode generation, decoding, and scanning.
 - Added project configuration and planning documentation.
 - Established contribution guidelines and repository collaboration structure.
