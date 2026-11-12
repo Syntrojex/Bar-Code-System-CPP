@@ -22,5 +22,6 @@ public:
     bool frameRead(std::string &six, cv::Rect &box, const cv::Mat &frame);
     // showing an error message in terminal
     std::string errMessage() const;
+    // close the camera
     ~Scanner();
 };
