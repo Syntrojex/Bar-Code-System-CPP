@@ -18,7 +18,10 @@ public:
     bool openCamera();
     // scans barcdoe located in find()
     bool scan(std::string &six);
+    // read frame by fraem to search for the barcode (blob)
     bool frameRead(std::string &six, cv::Rect &box, const cv::Mat &frame);
+    // showing an error message in terminal
     std::string errMessage() const;
+    // close the camera
     ~Scanner();
 };

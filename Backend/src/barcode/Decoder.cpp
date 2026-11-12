@@ -115,7 +115,7 @@ bool Decoder::decodeSix(const std::string &bits, std::string &six) const
     badCheckDigit = false;
     // 2 attempts
     for (int a = 0; a < 2; a++)
-    {
+    { // straight and upside down case
         string b = (a == 0) ? bits : string(bits.rbegin(), bits.rend());
         string d = modulesToDigits(b);
         if (d.size() != 8)
