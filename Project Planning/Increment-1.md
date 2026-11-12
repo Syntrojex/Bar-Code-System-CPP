@@ -54,16 +54,14 @@ The application must be able to read a barcode generated through the application
 ### Farzam — UI Development & Barcode Reading
 
 - UI Development (with Ali)
-- Barcode Reading (with Shauzab)
 - Barcode Decoding
 - Decoded Value Return Handling
 - Invalid Input Handling
-- File Handling (with Mustafa)
 
 ### Ali — UI Development & Barcode Generation
 
 - UI Development (with Farzam)
-- Barcode Generation
+- Barcode Reading
 - Image Processing
 - Input Handling
 - Taking 6-Digit Number as Input
@@ -73,9 +71,7 @@ The application must be able to read a barcode generated through the application
 - Project Management
 - Project Integration
 - Error Handling
-- File Handling (with Farzam)
 - CMake Build Configuration
-- Live Scanner Implementation (with Farzam and Shauzab)
 
 ### Shauzab — Camera & Live Scanner Development
 
