@@ -1,4 +1,5 @@
 ﻿#include "mainwindow.h"
+#include "aboutpage.h"
 #include "decodepage.h"
 #include "generatepage.h"
 #include "icons.h"
@@ -70,6 +71,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     m_pages = new QStackedWidget;
     m_pages->addWidget(scrollWrap(m_generate));
     m_pages->addWidget(scrollWrap(m_decode));
+    m_pages->addWidget(scrollWrap(new AboutPage));
     right->addWidget(m_pages, 1);
     h->addLayout(right, 1);
 
@@ -302,9 +304,9 @@ QWidget *MainWindow::buildSidebar()
 
     m_nav = new QButtonGroup(this);
     m_nav->setExclusive(true);
-    const QString names[] = {tr("Generate Barcode"), tr("Decode Barcode")};
-    const QString icons[] = {"barcode", "scan"};
-    for (int i = 0; i < 2; ++i) {
+    const QString names[] = {tr("Generate Barcode"), tr("Decode Barcode"), tr("About Project")};
+    const QString icons[] = {"barcode", "scan", "info"};
+    for (int i = 0; i < 3; ++i) {
         auto *b = new QPushButton("  " + names[i]);
         b->setObjectName("nav");
         b->setCheckable(true);

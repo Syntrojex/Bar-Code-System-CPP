@@ -46,10 +46,10 @@ endif()
 
 add_library(barcode_ui STATIC
     Frontend/src/icons.cpp Frontend/src/widgets.cpp
-    Frontend/src/generatepage.cpp Frontend/src/decodepage.cpp
+    Frontend/src/generatepage.cpp Frontend/src/decodepage.cpp Frontend/src/aboutpage.cpp
     Frontend/src/mainwindow.cpp
     Frontend/include/ui/icons.h Frontend/include/ui/widgets.h
-    Frontend/include/ui/generatepage.h Frontend/include/ui/decodepage.h
+    Frontend/include/ui/generatepage.h Frontend/include/ui/decodepage.h Frontend/include/ui/aboutpage.h
     Frontend/include/ui/mainwindow.h Frontend/include/ui/theme.h
 )
 target_include_directories(barcode_ui PUBLIC Frontend/include/ui)
