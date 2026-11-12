@@ -13,6 +13,7 @@
 #include <QImageReader>
 #include <QPainter>
 #include <QPixmap>
+#include <QShortcut>
 #include <QScrollArea>
 #include <QStackedWidget>
 #include <QTemporaryDir>
@@ -57,6 +58,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     setWindowTitle("BarcodeHub");
     resize(1360, 900);
     setMinimumSize(960, 640);
+
+    // Esc closes the window
+    auto* escClose = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+    connect(escClose, &QShortcut::activated, this, &QWidget::close);
 
     auto *root = new QWidget;
     root->setObjectName("root");
