@@ -35,6 +35,7 @@ bool Scanner::find(const cv::Mat &gray, cv::Rect &box) const
     cv::Sobel(gray, gy, CV_32F, 0, 1, 3);
     score = cv::max(cv::abs(gx) - cv::abs(gy), 0.0);
     score.convertTo(score, CV_8U, 0.25);
+    //find the blob
     cv::blur(score, score, cv::Size(9, 9));
     cv::threshold(score, mask, 0, 255, cv::THRESH_BINARY | cv::THRESH_OTSU);
     cv::Mat k = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(21, 7));
