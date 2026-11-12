@@ -1,7 +1,8 @@
 ﻿#pragma once
 
 #include <QString>
-
-namespace Reader {
+// is the code valid?
+namespace Reader
+{
     bool isValidCode(const QString &code);
 }
