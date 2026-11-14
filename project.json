@@ -1,11 +1,11 @@
 {
   "project": {
     "name": "BarcodeHub",
-    "title": "Barcode Management System",
+    "title": "Barcode-Based Point of Sale System",
     "course": "Introduction to Software Engineering",
     "language": "C++",
-    "version": "1.0.0",
-    "current_increment": 1,
+    "version": "2.0.0",
+    "current_increment": 2,
     "status": "In Development"
   },
   "development": {
@@ -16,23 +16,27 @@
   "team": [
     {
       "name": "Muhammad Mustafa Amir",
+      "roll_number": "25L-3107",
       "github": "Syntrojex",
-      "email": "mustafaamir398a@gmail.com"
-    },
-    {
-      "name": "Ali Abdullah",
-      "github": "aliabdullah-se",
-      "email": "x.ali.abdullah176@gmail.com"
+      "role": "Project Lead & Developer"
     },
     {
       "name": "Farzam Zeeshan",
+      "roll_number": "25L-3049",
       "github": "farzamzeeshan1",
-      "email": "farzamzeeshan1@gmail.com"
+      "role": "Developer"
+    },
+    {
+      "name": "Ali Abdullah",
+      "roll_number": "25L-3022",
+      "github": "aliabdullah-se",
+      "role": "Developer"
     },
     {
       "name": "Shauzab Mukhtar",
+      "roll_number": "25L-3084",
       "github": "shauzab-72",
-      "email": "tcs204287@gmail.com"
+      "role": "Developer"
     }
   ],
   "increments": [
@@ -40,6 +44,11 @@
       "increment": 1,
       "version": "1.0.0",
       "status": "Completed"
+    },
+    {
+      "increment": 2,
+      "version": "2.0.0",
+      "status": "In Development"
     }
   ]
-} 
+}
